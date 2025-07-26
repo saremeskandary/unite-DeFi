@@ -3,7 +3,6 @@ import { appInfo } from "@/constants/app-info"
 import Link from "next/link"
 import { Github, Linkedin, Mail } from "lucide-react"
 import Image from "next/image"
-import Logo from "@/public/Unite-Defi-favicon.png"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,12 +10,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <header>
         <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
           <Link href="/" className="text-foreground hover:text-primary transition-colors left-2">
-            <Image src={Logo} alt={`${appInfo.name} Logo`} width={70} height={70} />
+            <Image src="/Unite-Defi-favicon.png" alt={`${appInfo.name} Logo`} width={70} height={70} />
           </Link>
           <nav className="flex items-center space-x-6 mt-4 md:mt-0">
-            <Link href="/" className="text-foreground/80 hover:text-primary transition-colors">
-              Projects
-            </Link>
             <Link href="/about" className="text-foreground/80 hover:text-primary transition-colors">
               About
             </Link>

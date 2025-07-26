@@ -44,13 +44,6 @@ export default function ResponsiveHeader() {
           <div className="md:hidden absolute top-16 left-0 right-0 bg-card/95 backdrop-blur-sm border-b border-border/50 p-4 z-50">
             <nav className="flex flex-col space-y-4">
               <Link
-                href="/"
-                className="text-foreground/80 hover:text-primary transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Projects
-              </Link>
-              <Link
                 href="/about"
                 className="text-foreground/80 hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
@@ -126,9 +119,6 @@ export default function ResponsiveHeader() {
 
         {/* Desktop navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <Link href="/" className="text-foreground/80 hover:text-primary transition-colors">
-            Projects
-          </Link>
           <Link href="/about" className="text-foreground/80 hover:text-primary transition-colors">
             About
           </Link>
