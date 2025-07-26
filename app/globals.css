@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 13%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 252 87% 73%;
+  --primary-foreground: 222 47% 11%;
+  --secondary: 217 32% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 32% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 217 32% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 32% 17%;
+  --input: 217 32% 17%;
+  --ring: 224 76% 48%;
+  --radius: 0.5rem;
+}
+
+body {
+  @apply bg-background text-foreground;
+  background-image: radial-gradient(circle at 25% 10%, rgba(124, 58, 237, 0.05) 0%, transparent 25%),
+    radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.05) 0%, transparent 25%);
+  background-attachment: fixed;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+}
+
+@layer components {
+  .tech-badge {
+    @apply px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground;
+  }
+
+  .project-image {
+    background: linear-gradient(to bottom, #2a2a3c, #1a1a2e);
+  }
+
+  .project-card {
+    @apply bg-card rounded-lg overflow-hidden border border-border/50 transition-all duration-300;
+  }
+
+  .project-card:hover {
+    @apply shadow-md shadow-primary/10;
+  }
+}
