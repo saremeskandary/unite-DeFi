@@ -3,7 +3,6 @@
 import { appInfo } from "@/constants/app-info"
 import Link from "next/link"
 import Image from "next/image"
-import Logo from "@/public/Unite-Defi-favicon.png"
 import { Github, Linkedin, Mail } from "lucide-react"
 import { InstagramIcon, FarcasterIcon, NostrIcon, StackOverflowIcon } from "./social-icons"
 import { useState } from "react"
@@ -15,7 +14,7 @@ export default function ResponsiveHeader() {
     <header className="max-w-[950px] mx-auto flex justify-center">
       <div className="container mx-auto px-4 py-4 flex flex-row justify-between items-center">
         <Link href="/" className="text-foreground hover:text-primary transition-colors left-2">
-          <Image src={Logo} alt={`${appInfo.name} Logo`} width={70} height={70} />
+          <Image src="/Unite-Defi-favicon.png" alt={`${appInfo.name} Logo`} width={70} height={70} />
         </Link>
 
         {/* Mobile menu button */}

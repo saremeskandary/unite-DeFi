@@ -26,9 +26,8 @@ This document contains a collection of useful links for research and development
 
 ## 5. Technical Deep Dive
 
-- **[1inch Fusion Atomic Swap Protocol Whitepaper](https://1inch.io/fusion-atomic-swap-protocol-whitepaper.pdf)**: The official whitepaper explaining the architecture and security model of the Fusion+ cross-chain solution. This is a critical read.
-- **[Cointelegraph Article on Fusion+](https://cointelegraph.com/news/1inch-releases-whitepaper-for-cross-chain-solution)**: Provides a high-level overview of the Fusion+ protocol and its significance.
-- **[1inch Blog Post on Fusion+](https://blog.1inch.io/1inch-releases-the-fusion-atomic-swap-protocol-whitepaper/)**: An official blog post from 1inch introducing the Fusion+ whitepaper and its key features.
+- **[1inch Fusion+ Whitepaper](https://1inch.io/assets/1inch-fusion-plus.pdf?utm_source=chatgpt.com)**: The official whitepaper explaining the architecture and security model of the Fusion+ cross-chain solution. This is a critical read.
+- **[ETHGlobal Workshop Video](https://www.youtube.com/watch?v=DKQJlzJuTqQ)**: Introduction to 1inch Fusion+ at the Unite DeFi hackathon.
 
 Here’s your **RESEARCH_LINKS.md** file, outlining the key technical resources and detailed breakdowns for **1inch Fusion** and **Fusion+** protocols:
 
@@ -51,7 +50,7 @@ Here’s your **RESEARCH_LINKS.md** file, outlining the key technical resources 
   Help article breaking Fusion+ swap phases: Announcement, Deposit, Withdrawal, optional Recovery phase; escrow security with hashlock/timelock, safety deposits, resolver incentives ([1inch Help Center][5]).
 
 - **Fusion+ live: effortless cross‑chain trading for all**
-  Medium post summarizing Fusion+ UX in 1inch dApp and Wallet, atomic swap automation, user flow and tab stay requirements for trustless verification ([Medium][6]).
+  Medium post summarizing Fusion+ UX in 1inch dApp and Wallet, atomic swap automation, user flow and tab stay requirements for trustless verification (Link removed - not found).
 
 - **Limit Order Protocol, Fusion & Fusion+ – MixBytes technical breakdown**
   In‑depth review by MixBytes: LOP base-order structure, extension data, Dutch auction logic, Fusion upgrades, Fusion+ atomic‑swap HTLC implementation, Merkle‑tree secret architecture, resolver incentives, and recovery logic ([MixBytes][7]).
@@ -73,7 +72,7 @@ Here’s your **RESEARCH_LINKS.md** file, outlining the key technical resources 
 | Limit Order Protocol  | Maker/taker order structure, extensions, programmable logic, salt-based extensions, off-chain signatures ([MixBytes][7])                                                                            |
 | Fusion (single chain) | Resolver Dutch auction, no-user-gas flow, MEV resistance, resolver staking, gas caps logic ([1inch Help Center][1], [1inch Blog][2])                                                                |
 | Fusion+ (cross-chain) | Atomic swap logic, HTLC escrows on both chains, secret‑hash linkage, timelocks, recovery fallback, multi‑fill via Merkle tree secrets ([1inch Blog][3], [1inch Network][4], [1inch Help Center][5]) |
-| UX & Developer Tools  | dApp/Wallet flows, order interface, API speeds, resolver onboarding process, cross-chain support ([Medium][6], [1inch Developer Portal][9], [OKX][10])                                              |
+| UX & Developer Tools  | dApp/Wallet flows, order interface, API speeds, resolver onboarding process, cross-chain support ([1inch Developer Portal][9], [OKX][10])                                              |
 
 ---
 
@@ -90,8 +89,8 @@ Here’s your **RESEARCH_LINKS.md** file, outlining the key technical resources 
 [3]: https://blog.1inch.io/1inch-introduces-fusion-plus/?utm_source=chatgpt.com "1inch introduces Fusion+: a new standard for cross-chain swaps - Blog"
 [4]: https://1inch.io/assets/1inch-fusion-plus.pdf?utm_source=chatgpt.com "[PDF] 1INCH FUSION+"
 [5]: https://help.1inch.io/en/articles/9842591-what-is-1inch-fusion-and-how-does-it-work?utm_source=chatgpt.com "What is 1inch Fusion+, and how does it work?"
-[6]: https://medium.com/1inch-network/fusion-live-effortless-cross-chain-trading-for-all-80580a39603d?utm_source=chatgpt.com "Fusion+ live: effortless cross-chain trading for all | by 1inch - Medium"
+[6]: # "Fusion+ live: effortless cross-chain trading for all | by 1inch - Medium (Link removed - not found)"
 [7]: https://mixbytes.io/blog/modern-dex-es-how-they-re-made-1inch-limit-order-protocols?utm_source=chatgpt.com "1inch Limit Order Protocol, Fusion & Fusion+ - MixBytes"
 [8]: https://blockworks.co/news/1inch-fixing-cross-chain-swaps?utm_source=chatgpt.com "1inch to fix cross-chain swaps with the full release of Fusion+"
-[9]: https://portal.1inch.dev/documentation/apis/swap/fusion-plus/introduction?utm_source=chatgpt.com "Fusion+ (intent-based atomic cross-chain swaps) - Dev Portal | login"
+[9]: https://portal.1inch.dev/documentation/overview "1inch Developer Portal - Fusion+ Documentation"
 [10]: https://www.okx.com/fr-fr/learn/1inch-solana-integration-defi-fusion-protocol?utm_source=chatgpt.com "1inch Integrates Solana: Revolutionizing DeFi with Fusion Protocol ..."
