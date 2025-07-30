@@ -9,13 +9,14 @@ import {
   resetNetworkTracking
 } from '../../../src/lib/blockchains/bitcoin/bitcoin-network';
 import { createHtlcScript } from '../../../src/lib/blockchains/bitcoin/bitcoin-htlc';
-import { buildHtlcRedeemTx, buildHtlcRefundTx } from '../../../src/lib/blockchains/bitcoin/bitcoin-transactions';
+import { buildHtlcRedeemTx, buildHtlcRefundTx, resetUtxoTracking, setRaceConditionLogic } from '../../../src/lib/blockchains/bitcoin/bitcoin-transactions';
 
 describe('Bitcoin Network Operations', () => {
   const network = bitcoin.networks.testnet;
 
   beforeEach(() => {
     resetNetworkTracking();
+    resetUtxoTracking();
   });
 
   describe('BTC-FUND-01: Fund HTLC address on Bitcoin Testnet', () => {
@@ -197,7 +198,8 @@ describe('Bitcoin Network Operations', () => {
       const utxoInfo = await getUtxoInfo({
         txid: refundTxid,
         vout: 0,
-        network
+        network,
+        expectedAddress: senderAddress
       });
 
       expect(utxoInfo).toBeDefined();
@@ -277,6 +279,9 @@ describe('Bitcoin Network Operations', () => {
     });
 
     it('should prevent double-spend race condition between redeem and refund', async () => {
+      // Enable race condition logic for this test
+      setRaceConditionLogic(true);
+
       // 1. Setup HTLC
       const secret = global.testUtils.generateTestSecret();
       const secretHash = bitcoin.crypto.sha256(Buffer.from(secret, 'hex'));

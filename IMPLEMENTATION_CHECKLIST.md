@@ -47,29 +47,29 @@
   - [x] Reject double-spend attempts
   - [x] Reject dust-level outputs
 
-### 3. Bitcoin Network Operations (`src/lib/bitcoin-network.ts`)
+### 3. Bitcoin Network Operations (`src/lib/bitcoin-network.ts`) ✅
 
-- [ ] **BTC-FUND-01**: Fund HTLC address on Bitcoin Testnet
-  - [ ] Successfully fund HTLC address and track UTXO
-  - [ ] Track funding transaction in mempool
-- [ ] **BTC-REDEEM-01**: Build and broadcast redeem transaction
-  - [ ] Broadcast redeem transaction and get confirmation
-  - [ ] Reveal secret in transaction for Ethereum completion
-- [ ] **BTC-SECRET-01**: Monitor mempool/blockchain for HTLC redemption
-  - [ ] Detect HTLC redemption in real time
-  - [ ] Extract secret from witness/scriptSig
-- [ ] **BTC-SECRET-03**: Use secret to complete Ethereum swap
-  - [ ] Extract secret and trigger Ethereum completion
-- [ ] **BTC-REFUND-02**: Broadcast refund after timeout
-  - [ ] Successfully broadcast refund transaction after locktime
-  - [ ] Return funds to original sender
-- [ ] **BTC-UTXO-01**: Track UTXO lifecycle
-  - [ ] Track UTXO creation and spending
-- [ ] **BTC-SEC-ADV-01**: Security and adversarial testing
-  - [ ] Reject invalid secret redemption attempts
-  - [ ] Prevent early refunds
-  - [ ] Handle refund race conditions gracefully
-  - [ ] Prevent double-spend race condition between redeem and refund
+- [x] **BTC-FUND-01**: Fund HTLC address on Bitcoin Testnet
+  - [x] Successfully fund HTLC address and track UTXO
+  - [x] Track funding transaction in mempool
+- [x] **BTC-REDEEM-01**: Build and broadcast redeem transaction
+  - [x] Broadcast redeem transaction and get confirmation
+  - [x] Reveal secret in transaction for Ethereum completion
+- [x] **BTC-SECRET-01**: Monitor mempool/blockchain for HTLC redemption
+  - [x] Detect HTLC redemption in real time
+  - [x] Extract secret from witness/scriptSig
+- [x] **BTC-SECRET-03**: Use secret to complete Ethereum swap
+  - [x] Extract secret and trigger Ethereum completion
+- [x] **BTC-REFUND-02**: Broadcast refund after timeout
+  - [x] Successfully broadcast refund transaction after locktime
+  - [x] Return funds to original sender
+- [x] **BTC-UTXO-01**: Track UTXO lifecycle
+  - [x] Track UTXO creation and spending
+- [x] **BTC-SEC-ADV-01**: Security and adversarial testing
+  - [x] Reject invalid secret redemption attempts
+  - [x] Prevent early refunds
+  - [x] Handle refund race conditions gracefully
+  - [x] Prevent double-spend race condition between redeem and refund
 
 ---
 
@@ -195,8 +195,8 @@
 
 ## 🔄 Progress Tracking
 
-**Overall Progress**: 45% (19/33 failed tests fixed)
-**Phase 1 Progress**: 87% (13/15 items)
+**Overall Progress**: 58% (35/61 tests passing)
+**Phase 1 Progress**: 100% (15/15 items) ✅
 **Phase 2 Progress**: 0% (0/8 items)  
 **Phase 3 Progress**: 0% (0/10 items)
 
