@@ -98,6 +98,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: 1.1.6
         version: 1.1.6(@types/react-dom@19.0.0)(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@web3icons/react':
+        specifier: ^4.0.19
+        version: 4.0.19(react@19.0.0)(typescript@5.0.2)
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.0.0)
@@ -2258,6 +2261,16 @@ packages:
     resolution: {integrity: sha512-lrW200hZdbfRtztbygyaq/6jP6AKE8qQN2KvPcJ+x7wiD038YtnYtZ82IMNJ69GJibV7bwL3y9FgK+5w/pYt6g==}
     cpu: [x64]
     os: [win32]
+
+  '@web3icons/common@0.11.15':
+    resolution: {integrity: sha512-ahTk6hf3tSXDplWwaM2TKqemKWhSeb1Wajg9t5rJ4tR29gOUx7s3yxXEkMgRwow0svg9ZHtrJOoVuttgl9KNBw==}
+    peerDependencies:
+      typescript: ^5.0.0
+
+  '@web3icons/react@4.0.19':
+    resolution: {integrity: sha512-+FqWm9+1SqIuf0H7PCZl5l0bpZWUgAW8ORIhjaGbOiD0U/gwH9L3DWbVHISq3VxIgB24H4tm1mygHBm0KF8vGw==}
+    peerDependencies:
+      react: ^18.2.0
 
   abitype@0.7.1:
     resolution: {integrity: sha512-VBkRHTDZf9Myaek/dO3yMmOzB/y2s3Zo6nVU7yaw1G+TvCHAjwaJzNGN9yo4K5D8bU/VZXKP1EJpRhFr862PlQ==}
@@ -7334,6 +7347,17 @@ snapshots:
 
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
+
+  '@web3icons/common@0.11.15(typescript@5.0.2)':
+    dependencies:
+      typescript: 5.0.2
+
+  '@web3icons/react@4.0.19(react@19.0.0)(typescript@5.0.2)':
+    dependencies:
+      '@web3icons/common': 0.11.15(typescript@5.0.2)
+      react: 19.0.0
+    transitivePeerDependencies:
+      - typescript
 
   abitype@0.7.1(typescript@5.0.2)(zod@3.24.1):
     dependencies:
