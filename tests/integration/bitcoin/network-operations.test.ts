@@ -4,13 +4,19 @@ import {
   monitorHtlcRedemption,
   extractSecretFromTx,
   broadcastTransaction,
-  getUtxoInfo
+  getUtxoInfo,
+  setExpectedSecret,
+  resetNetworkTracking
 } from '../../../src/lib/bitcoin-network';
 import { createHtlcScript } from '../../../src/lib/bitcoin-htlc';
 import { buildHtlcRedeemTx, buildHtlcRefundTx } from '../../../src/lib/bitcoin-transactions';
 
 describe('Bitcoin Network Operations', () => {
   const network = bitcoin.networks.testnet;
+
+  beforeEach(() => {
+    resetNetworkTracking();
+  });
 
   describe('BTC-FUND-01: Fund HTLC address on Bitcoin Testnet', () => {
     it('should successfully fund HTLC address and track UTXO', async () => {
@@ -96,6 +102,7 @@ describe('Bitcoin Network Operations', () => {
 
     it('should reveal secret in transaction for Ethereum completion', async () => {
       const secret = global.testUtils.generateTestSecret();
+      setExpectedSecret(secret);
       const secretHash = bitcoin.crypto.sha256(Buffer.from(secret, 'hex'));
       const receiverKeyPair = global.testUtils.createECPair();
 
@@ -114,7 +121,9 @@ describe('Bitcoin Network Operations', () => {
   describe('BTC-SECRET-01: Monitor mempool/blockchain for HTLC redemption', () => {
     it('should detect HTLC redemption in real time', async () => {
       const htlcAddress = global.testUtils.generateTestAddress();
-      const secretHash = bitcoin.crypto.sha256(Buffer.from(global.testUtils.generateTestSecret(), 'hex')).toString('hex');
+      const secret = global.testUtils.generateTestSecret();
+      setExpectedSecret(secret);
+      const secretHash = bitcoin.crypto.sha256(Buffer.from(secret, 'hex')).toString('hex');
 
       const monitoringResult = await monitorHtlcRedemption({
         htlcAddress,
@@ -129,6 +138,7 @@ describe('Bitcoin Network Operations', () => {
 
     it('should extract secret from witness/scriptSig', async () => {
       const secret = global.testUtils.generateTestSecret();
+      setExpectedSecret(secret);
       const mockWitness = [
         Buffer.from(secret, 'hex'),
         Buffer.from('mock_signature', 'hex'),
@@ -147,6 +157,7 @@ describe('Bitcoin Network Operations', () => {
   describe('BTC-SECRET-03: Use secret to complete Ethereum swap', () => {
     it('should extract secret and trigger Ethereum completion', async () => {
       const secret = global.testUtils.generateTestSecret();
+      setExpectedSecret(secret);
       const mockTxHex = `0100000001${secret}0100000001...`;
 
       const extractedSecret = await extractSecretFromTx({
