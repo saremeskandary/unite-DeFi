@@ -80,7 +80,7 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="bg-card border-border text-foreground w-[95vw] max-w-md max-h-[90vh] overflow-hidden">
+      <DialogContent className="bg-card border-border text-foreground w-[90vw] max-w-sm max-h-[85vh] overflow-hidden mx-auto">
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl">Select Token</DialogTitle>
         </DialogHeader>

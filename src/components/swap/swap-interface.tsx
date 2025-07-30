@@ -84,7 +84,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
                   <Settings className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-card border-border w-[95vw] max-w-md">
+              <DialogContent className="bg-card border-border w-[90vw] max-w-sm mx-auto">
                 <DialogHeader>
                   <DialogTitle className="text-foreground">Swap Settings</DialogTitle>
                 </DialogHeader>
