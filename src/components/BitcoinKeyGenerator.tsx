@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Key, Copy, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
-import { BitcoinKeyGenerator } from '@/lib/bitcoin-key-generator';
+import BitcoinKeyGenerator from '@/lib/blockchains/bitcoin/bitcoin-key-generator';
 
 interface GeneratedKey {
   privateKeyWIF: string;
@@ -198,11 +198,10 @@ export function BitcoinKeyGeneratorComponent() {
 
                   <div className="flex items-center justify-between">
                     <Label className="font-semibold">Network</Label>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      generatedKey.network === 'testnet' 
-                        ? 'bg-yellow-100 text-yellow-800' 
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${generatedKey.network === 'testnet'
+                        ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-green-100 text-green-800'
-                    }`}>
+                      }`}>
                       {generatedKey.network}
                     </span>
                   </div>
@@ -211,7 +210,7 @@ export function BitcoinKeyGeneratorComponent() {
 
               <Alert className="border-blue-200 bg-blue-50">
                 <AlertDescription>
-                  <strong>Security Note:</strong> 
+                  <strong>Security Note:</strong>
                   <ul className="mt-2 list-disc list-inside text-sm">
                     <li>Use testnet keys for development and testing</li>
                     <li>Never share or commit private keys to version control</li>
@@ -238,11 +237,10 @@ export function BitcoinKeyGeneratorComponent() {
               </div>
 
               {validationResult && (
-                <Alert className={`${
-                  validationResult.isValid 
-                    ? 'border-green-200 bg-green-50' 
+                <Alert className={`${validationResult.isValid
+                    ? 'border-green-200 bg-green-50'
                     : 'border-red-200 bg-red-50'
-                }`}>
+                  }`}>
                   <div className="flex items-center gap-2">
                     {validationResult.isValid ? (
                       <CheckCircle className="h-4 w-4 text-green-500" />

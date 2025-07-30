@@ -5,11 +5,13 @@ This guide explains how to generate Bitcoin private keys in WIF (Wallet Import F
 ## 🔑 What is WIF Format?
 
 WIF (Wallet Import Format) is a way to represent Bitcoin private keys in a readable format that includes:
+
 - The actual private key
 - Network information (mainnet vs testnet)
 - Checksum for error detection
 
 **WIF Format Examples:**
+
 - **Testnet**: `cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQow2hC`
 - **Mainnet**: `L34utF8ADEqe7JvLxCAGReNMwEreNRdzLPPP55WwTdL2zmHyu2MQ`
 
@@ -18,11 +20,13 @@ WIF (Wallet Import Format) is a way to represent Bitcoin private keys in a reada
 ### Quick Start
 
 1. **Generate a testnet key** (for development/testing):
+
    ```bash
    npx tsx scripts/generate-bitcoin-keys.ts testnet
    ```
 
 2. **Generate a mainnet key** (for production):
+
    ```bash
    npx tsx scripts/generate-bitcoin-keys.ts mainnet
    ```
@@ -65,40 +69,41 @@ Network: testnet
 ```
 
 ## 🔧 Method 2: Using Bitcoin.js in Code
-
+import BitcoinKeyGenerator from '@/lib/blockchains/bitcoin/bitcoin-key-generator';
 ### Generate WIF Key Programmatically
 
 ```typescript
-import { BitcoinKeyGenerator } from '@/lib/bitcoin-key-generator';
+import BitcoinKeyGenerator from "@/lib/blockchains/bitcoin/bitcoin-key-generator";
 
 // Generate testnet key
 const testnetKey = BitcoinKeyGenerator.generateWIFKeyPair(true);
-console.log('WIF:', testnetKey.privateKeyWIF);
-console.log('Address:', testnetKey.address);
+console.log("WIF:", testnetKey.privateKeyWIF);
+console.log("Address:", testnetKey.address);
 
 // Generate mainnet key
 const mainnetKey = BitcoinKeyGenerator.generateWIFKeyPair(false);
-console.log('WIF:', mainnetKey.privateKeyWIF);
-console.log('Address:', mainnetKey.address);
+console.log("WIF:", mainnetKey.privateKeyWIF);
+console.log("Address:", mainnetKey.address);
 ```
 
 ### Convert Existing Hex Key to WIF
 
 ```typescript
 // If you have a hex private key
-const hexKey = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+const hexKey =
+  "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
 const wifKey = BitcoinKeyGenerator.hexToWIF(hexKey, true); // true for testnet
-console.log('WIF:', wifKey.privateKeyWIF);
+console.log("WIF:", wifKey.privateKeyWIF);
 ```
 
 ### Validate a WIF Key
 
 ```typescript
-const wifKey = 'cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQow2hC';
+const wifKey = "cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQow2hC";
 const validation = BitcoinKeyGenerator.validateWIF(wifKey);
-console.log('Is Valid:', validation.isValid);
-console.log('Network:', validation.network);
-console.log('Address:', validation.address);
+console.log("Is Valid:", validation.isValid);
+console.log("Network:", validation.network);
+console.log("Address:", validation.address);
 ```
 
 ## 🌐 Method 3: Online Tools (Use with Caution)
@@ -123,12 +128,14 @@ console.log('Address:', validation.address);
 For maximum security with real funds:
 
 ### Ledger
+
 1. Connect your Ledger device
 2. Open Bitcoin app
 3. Export private key (if supported)
 4. Convert to WIF format if needed
 
 ### Trezor
+
 1. Connect your Trezor device
 2. Use Trezor Suite
 3. Export private key
@@ -137,17 +144,20 @@ For maximum security with real funds:
 ## 📋 WIF Format Details
 
 ### Structure
+
 ```
 [Version Byte][Private Key][Compression Flag][Checksum]
 ```
 
 ### Version Bytes
+
 - **Mainnet**: `0x80` (starts with `5` or `K/L`)
 - **Testnet**: `0xEF` (starts with `9` or `c`)
 
 ### Examples by Network
 
 #### Testnet WIF Keys
+
 ```
 cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQow2hC
 cVmqSWVCD4PyqE24snnGwV1so94aG2ZapBeooGMNykepwhnLE9VR
@@ -155,6 +165,7 @@ cU21WuSXa6WPuPKvuaFqt2pSnyVCB3721DF8g21seSbtTfGuvqVu
 ```
 
 #### Mainnet WIF Keys
+
 ```
 L34utF8ADEqe7JvLxCAGReNMwEreNRdzLPPP55WwTdL2zmHyu2MQ
 5KJvsngHeMpm884wtkJNzQGaCErckhHJBGFsvd3VyK5qMZXj3hS
@@ -164,27 +175,32 @@ KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU73sVHnoWn
 ## 🧪 Testing Your WIF Key
 
 ### 1. Validate the Key
+
 ```bash
 npx tsx scripts/generate-bitcoin-keys.ts validate cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQow2hC
 ```
 
 ### 2. Check the Address
+
 - Testnet addresses start with `m` or `n`
 - Mainnet addresses start with `1`, `3`, or `bc1`
 
 ### 3. Test with Small Amounts
+
 - Use testnet faucets to get test Bitcoin
 - Test your integration with small amounts first
 
 ## 🔐 Security Best Practices
 
 ### For Development/Testing
+
 1. ✅ Use testnet keys
 2. ✅ Generate keys programmatically
 3. ✅ Never commit keys to version control
 4. ✅ Use environment variables
 
 ### For Production
+
 1. ✅ Use hardware wallets
 2. ✅ Generate keys offline
 3. ✅ Use secure key management
@@ -214,16 +230,19 @@ NEXT_PUBLIC_BTC_PRIVATE_KEY_WIF=cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQo
 ## 🔍 Troubleshooting
 
 ### Invalid WIF Key Error
+
 - Check the key format (should be 51-52 characters)
 - Verify the checksum
 - Ensure you're using the correct network
 
 ### Address Mismatch
+
 - Testnet addresses start with `m` or `n`
 - Mainnet addresses start with `1`, `3`, or `bc1`
 - Verify the key is for the correct network
 
 ### Import Issues
+
 - Ensure the key is in WIF format, not hex
 - Check for extra spaces or characters
 - Verify the key hasn't been corrupted
@@ -238,7 +257,8 @@ NEXT_PUBLIC_BTC_PRIVATE_KEY_WIF=cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQo
 ## 🆘 Need Help?
 
 If you encounter issues:
+
 1. Check the troubleshooting section above
 2. Validate your WIF key using our tool
 3. Ensure you're using the correct network
-4. Test with a fresh generated key 
+4. Test with a fresh generated key

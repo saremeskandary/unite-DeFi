@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Bitcoin, Coins, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
-import { FusionBitcoinIntegration } from '@/lib/fusion-bitcoin-integration';
+import { FusionBitcoinIntegration } from '@/lib/blockchains/bitcoin/fusion-bitcoin-integration';
 import { NetworkEnum } from '@1inch/fusion-sdk';
 import { ethers } from 'ethers';
 
@@ -84,9 +84,9 @@ export function BitcoinSwapInterface() {
 
     try {
       // Check if environment variables are available
-      if (!process.env.NEXT_PUBLIC_ETH_PRIVATE_KEY || 
-          !process.env.NEXT_PUBLIC_BTC_PRIVATE_KEY_WIF || 
-          !process.env.NEXT_PUBLIC_ETH_RPC_URL) {
+      if (!process.env.NEXT_PUBLIC_ETH_PRIVATE_KEY ||
+        !process.env.NEXT_PUBLIC_BTC_PRIVATE_KEY_WIF ||
+        !process.env.NEXT_PUBLIC_ETH_RPC_URL) {
         throw new Error('Environment variables not configured. Please check your .env.local file.');
       }
 
@@ -108,7 +108,7 @@ export function BitcoinSwapInterface() {
         });
 
         const submission = await integration.submitBitcoinSwapOrder(fusionOrder, [secretHash]);
-        
+
         setSwapStatus({
           status: 'success',
           message: 'Swap order submitted successfully!',
@@ -278,11 +278,10 @@ export function BitcoinSwapInterface() {
 
           {/* Status Display */}
           {swapStatus.status !== 'idle' && (
-            <Alert className={`mt-4 ${
-              swapStatus.status === 'error' ? 'border-red-200 bg-red-50' :
-              swapStatus.status === 'success' ? 'border-green-200 bg-green-50' :
-              'border-blue-200 bg-blue-50'
-            }`}>
+            <Alert className={`mt-4 ${swapStatus.status === 'error' ? 'border-red-200 bg-red-50' :
+                swapStatus.status === 'success' ? 'border-green-200 bg-green-50' :
+                  'border-blue-200 bg-blue-50'
+              }`}>
               <div className="flex items-center gap-2">
                 {getStatusIcon()}
                 <AlertDescription>

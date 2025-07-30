@@ -26,6 +26,7 @@ npx tsx scripts/generate-bitcoin-keys.ts convert <HEX_KEY> [mainnet|testnet]
 ### Method 2: Web Interface
 
 Visit `/bitcoin-keys` in your app to use the web-based key generator with:
+
 - One-click key generation
 - WIF validation
 - Hex to WIF conversion
@@ -34,17 +35,18 @@ Visit `/bitcoin-keys` in your app to use the web-based key generator with:
 ### Method 3: Programmatic Generation
 
 ```typescript
-import { BitcoinKeyGenerator } from '@/lib/bitcoin-key-generator';
+import BitcoinKeyGenerator from "@/lib/blockchains/bitcoin/bitcoin-key-generator";
 
 // Generate testnet key
 const key = BitcoinKeyGenerator.generateWIFKeyPair(true);
-console.log('WIF:', key.privateKeyWIF);
-console.log('Address:', key.address);
+console.log("WIF:", key.privateKeyWIF);
+console.log("Address:", key.address);
 ```
 
 ## 📋 What You'll Get
 
 ### Testnet Key Example
+
 ```
 Private Key (WIF): cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQow2hC
 Public Key: 03865e9f939e9b36cd32de4cc4a2ac679ef8c099e12331bb07bf7f518ec31cb2cc
@@ -53,6 +55,7 @@ Network: testnet
 ```
 
 ### Mainnet Key Example
+
 ```
 Private Key (WIF): L34utF8ADEqe7JvLxCAGReNMwEreNRdzLPPP55WwTdL2zmHyu2MQ
 Public Key: 03c652e9e893fba837d096b2dc318bee8bb7a97b0d99d3ca5d0dff3207fe82e57b
@@ -63,6 +66,7 @@ Network: mainnet
 ## 🔧 Available Tools
 
 ### 1. Command Line Script (`scripts/generate-bitcoin-keys.ts`)
+
 - ✅ Generate single keys (testnet/mainnet)
 - ✅ Generate multiple keys
 - ✅ Validate existing WIF keys
@@ -70,6 +74,7 @@ Network: mainnet
 - ✅ Full demo with examples
 
 ### 2. Web Interface (`/bitcoin-keys`)
+
 - ✅ User-friendly UI
 - ✅ Real-time key generation
 - ✅ WIF validation
@@ -78,6 +83,7 @@ Network: mainnet
 - ✅ Security guidelines
 
 ### 3. Programmatic API (`src/lib/bitcoin-key-generator.ts`)
+
 - ✅ `BitcoinKeyGenerator.generateWIFKeyPair(useTestnet)`
 - ✅ `BitcoinKeyGenerator.hexToWIF(hexKey, useTestnet)`
 - ✅ `BitcoinKeyGenerator.validateWIF(wifKey)`
@@ -86,12 +92,14 @@ Network: mainnet
 ## 🔐 Security Guidelines
 
 ### For Development/Testing
+
 1. ✅ Use **testnet keys** only
 2. ✅ Generate keys programmatically
 3. ✅ Never commit keys to version control
 4. ✅ Use environment variables for storage
 
 ### For Production
+
 1. ✅ Use **hardware wallets** when possible
 2. ✅ Generate keys offline
 3. ✅ Use secure key management systems
@@ -113,30 +121,36 @@ NEXT_PUBLIC_BTC_PRIVATE_KEY_WIF=cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQo
 ## 🧪 Testing Your Keys
 
 ### 1. Validate the Key
+
 ```bash
 npx tsx scripts/generate-bitcoin-keys.ts validate cQAPyLxx84YtechDcCtsgzmboC7zk5gmM6sxdN6qErs3AqQow2hC
 ```
 
 ### 2. Check the Address Format
+
 - **Testnet**: Addresses start with `m` or `n`
 - **Mainnet**: Addresses start with `1`, `3`, or `bc1`
 
 ### 3. Get Test Bitcoin
+
 - Use [Bitcoin Testnet Faucet](https://testnet-faucet.mempool.co/)
 - Test your integration with small amounts
 
 ## 🚨 Common Issues & Solutions
 
 ### Invalid WIF Key
+
 - Check key length (should be 51-52 characters)
 - Verify checksum
 - Ensure correct network (testnet vs mainnet)
 
 ### Address Mismatch
+
 - Verify the key is for the correct network
 - Check address format (testnet vs mainnet prefixes)
 
 ### Import Errors
+
 - Ensure key is in WIF format, not hex
 - Remove extra spaces or characters
 - Check for corruption
@@ -159,6 +173,7 @@ npx tsx scripts/generate-bitcoin-keys.ts validate cQAPyLxx84YtechDcCtsgzmboC7zk5
 ## 🆘 Need Help?
 
 If you encounter issues:
+
 1. Check the troubleshooting section above
 2. Validate your WIF key using our tool
 3. Ensure you're using the correct network
@@ -167,4 +182,4 @@ If you encounter issues:
 
 ---
 
-**Remember**: Always use testnet keys for development and testing. Only use mainnet keys when you're ready for real transactions! 
+**Remember**: Always use testnet keys for development and testing. Only use mainnet keys when you're ready for real transactions!
