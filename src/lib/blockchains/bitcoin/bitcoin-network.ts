@@ -163,17 +163,15 @@ export async function extractSecretFromTx(params: SecretExtractionParams): Promi
       const tx = bitcoin.Transaction.fromHex(txHex);
 
       // Extract secret from witness data
-      if (tx.witness && tx.witness.length > 0) {
-        for (const witnessStack of tx.witness) {
-          if (witnessStack && witnessStack.length > 0) {
-            // Look for the secret in the witness stack
-            for (let i = 0; i < witnessStack.length; i++) {
-              const witnessElement = witnessStack[i];
-              if (witnessElement && witnessElement.length === 32) {
-                const secretHex = witnessElement.toString('hex');
-                if (isValidSecret(secretHex)) {
-                  return secretHex;
-                }
+      for (const input of tx.ins) {
+        if (input.witness && input.witness.length > 0) {
+          // Look for the secret in the witness stack
+          for (let i = 0; i < input.witness.length; i++) {
+            const witnessElement = input.witness[i];
+            if (witnessElement && witnessElement.length === 32) {
+              const secretHex = witnessElement.toString('hex');
+              if (isValidSecret(secretHex)) {
+                return secretHex;
               }
             }
           }
