@@ -1,8 +1,13 @@
 import * as bitcoin from 'bitcoinjs-lib';
-import { buildHtlcRedeemTx, buildHtlcRefundTx, estimateTxFee } from '../../../src/lib/bitcoin-transactions';
+import { buildHtlcRedeemTx, buildHtlcRefundTx, estimateTxFee, resetUtxoTracking, setExpectedSecret } from '../../../src/lib/bitcoin-transactions';
 
 describe('Bitcoin Transaction Building', () => {
   const network = bitcoin.networks.testnet;
+
+  // Reset UTXO tracking before each test
+  beforeEach(() => {
+    resetUtxoTracking();
+  });
 
   describe('BTC-REDEEM-01: Build valid redeem transaction', () => {
     it('should build redeem transaction with correct secret', () => {
@@ -44,6 +49,9 @@ describe('Bitcoin Transaction Building', () => {
       const secretHash = bitcoin.crypto.sha256(Buffer.from(secret, 'hex'));
       const locktime = Math.floor(Date.now() / 1000) + 3600;
       const receiverKeyPair = global.testUtils.createECPair();
+
+      // Set the expected secret for validation
+      setExpectedSecret(secret);
 
       const htlcScript = {
         script: Buffer.from('mock_htlc_script', 'hex'),

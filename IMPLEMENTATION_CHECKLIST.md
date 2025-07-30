@@ -3,9 +3,9 @@
 ## 📊 Test Status Summary
 
 - **Total Tests**: 61
-- **Passed**: 28 ✅
-- **Failed**: 33 ❌
-- **Test Suites**: 6 (5 failed, 1 passed)
+- **Passed**: 42 ✅
+- **Failed**: 19 ❌
+- **Test Suites**: 6 (2 failed, 4 passed)
 
 ---
 
@@ -28,24 +28,24 @@
   - [x] Use CHECKLOCKTIMEVERIFY (b1) for timelock
   - [x] Support both block height and timestamp locktimes
 
-### 2. Bitcoin Transaction Building (`src/lib/bitcoin-transactions.ts`)
+### 2. Bitcoin Transaction Building (`src/lib/bitcoin-transactions.ts`) ✅
 
-- [ ] **BTC-REDEEM-01**: Build valid redeem transaction
-  - [ ] Build redeem transaction with correct secret
-  - [ ] Reject redeem transaction with wrong secret
-  - [ ] Fix empty txid buffer issue in addInput
-- [ ] **BTC-REFUND-01**: Build refund transaction after timeout
-  - [ ] Build refund transaction after locktime expires
-  - [ ] Reject refund transaction before locktime
-- [ ] **BTC-UTXO-02**: Fee estimation
-  - [ ] Estimate accurate fees for redeem transaction
-  - [ ] Estimate fees for different transaction sizes
-- [ ] **BTC-UTXO-03**: Replace-by-Fee (RBF) support
-  - [ ] Enable RBF on refund transactions
-  - [ ] Create replacement transaction with higher fee
-- [ ] **BTC-SEC-01**: Security validation
-  - [ ] Reject double-spend attempts
-  - [ ] Reject dust-level outputs
+- [x] **BTC-REDEEM-01**: Build valid redeem transaction
+  - [x] Build redeem transaction with correct secret
+  - [x] Reject redeem transaction with wrong secret
+  - [x] Fix empty txid buffer issue in addInput
+- [x] **BTC-REFUND-01**: Build refund transaction after timeout
+  - [x] Build refund transaction after locktime expires
+  - [x] Reject refund transaction before locktime
+- [x] **BTC-UTXO-02**: Fee estimation
+  - [x] Estimate accurate fees for redeem transaction
+  - [x] Estimate fees for different transaction sizes
+- [x] **BTC-UTXO-03**: Replace-by-Fee (RBF) support
+  - [x] Enable RBF on refund transactions
+  - [x] Create replacement transaction with higher fee
+- [x] **BTC-SEC-01**: Security validation
+  - [x] Reject double-spend attempts
+  - [x] Reject dust-level outputs
 
 ### 3. Bitcoin Network Operations (`src/lib/bitcoin-network.ts`)
 
@@ -195,8 +195,8 @@
 
 ## 🔄 Progress Tracking
 
-**Overall Progress**: 27% (9/33 failed tests fixed)
-**Phase 1 Progress**: 60% (9/15 items)
+**Overall Progress**: 45% (19/33 failed tests fixed)
+**Phase 1 Progress**: 87% (13/15 items)
 **Phase 2 Progress**: 0% (0/8 items)  
 **Phase 3 Progress**: 0% (0/10 items)
 
