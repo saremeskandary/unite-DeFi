@@ -7,9 +7,9 @@ import {
   getUtxoInfo,
   setExpectedSecret,
   resetNetworkTracking
-} from '../../../src/lib/bitcoin-network';
-import { createHtlcScript } from '../../../src/lib/bitcoin-htlc';
-import { buildHtlcRedeemTx, buildHtlcRefundTx } from '../../../src/lib/bitcoin-transactions';
+} from '../../../src/lib/blockchains/bitcoin/bitcoin-network';
+import { createHtlcScript } from '../../../src/lib/blockchains/bitcoin/bitcoin-htlc';
+import { buildHtlcRedeemTx, buildHtlcRefundTx } from '../../../src/lib/blockchains/bitcoin/bitcoin-transactions';
 
 describe('Bitcoin Network Operations', () => {
   const network = bitcoin.networks.testnet;

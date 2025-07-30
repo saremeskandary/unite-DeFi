@@ -1,5 +1,5 @@
 import * as bitcoin from 'bitcoinjs-lib';
-import { buildHtlcRedeemTx, buildHtlcRefundTx, estimateTxFee, resetUtxoTracking, setExpectedSecret } from '../../../src/lib/bitcoin-transactions';
+import { buildHtlcRedeemTx, buildHtlcRefundTx, estimateTxFee, resetUtxoTracking, setExpectedSecret } from '../../../../src/lib/blockchains/bitcoin/bitcoin-transactions';
 
 describe('Bitcoin Transaction Building', () => {
   const network = bitcoin.networks.testnet;

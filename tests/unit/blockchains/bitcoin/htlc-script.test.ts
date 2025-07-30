@@ -1,9 +1,9 @@
 import * as bitcoin from 'bitcoinjs-lib';
-import { createHtlcScript, validateHtlcScript } from '../../../src/lib/bitcoin-htlc';
+import { createHtlcScript, validateHtlcScript } from '../../../../src/lib/blockchains/bitcoin/bitcoin-htlc';
 
 describe('Bitcoin HTLC Script Logic', () => {
   const network = bitcoin.networks.testnet;
-  
+
   describe('BTC-HTLC-01: Generate script with secret hash and locktime', () => {
     it('should generate valid HTLC script with correct OP codes', () => {
       const secret = global.testUtils.generateTestSecret();
@@ -22,7 +22,7 @@ describe('Bitcoin HTLC Script Logic', () => {
 
       expect(script).toBeDefined();
       expect(script.script).toBeInstanceOf(Buffer);
-      
+
       // Verify script contains expected OP codes
       const scriptHex = script.script.toString('hex');
       expect(scriptHex).toContain('63'); // OP_IF
@@ -41,7 +41,7 @@ describe('Bitcoin HTLC Script Logic', () => {
       const secret2 = global.testUtils.generateTestSecret();
       const secretHash1 = bitcoin.crypto.sha256(Buffer.from(secret1, 'hex'));
       const secretHash2 = bitcoin.crypto.sha256(Buffer.from(secret2, 'hex'));
-      
+
       const script1 = createHtlcScript({
         secretHash: secretHash1.toString('hex'),
         locktime: 1000,
@@ -80,7 +80,7 @@ describe('Bitcoin HTLC Script Logic', () => {
 
       expect(script.address).toBeDefined();
       expect(script.address).toMatch(/^[2mn][1-9A-HJ-NP-Za-km-z]{25,34}$/); // P2SH format
-      
+
       // Verify address is valid for testnet
       expect(bitcoin.address.toOutputScript(script.address, network)).toBeDefined();
     });
@@ -103,7 +103,7 @@ describe('Bitcoin HTLC Script Logic', () => {
 
       expect(script.address).toBeDefined();
       expect(script.address).toMatch(/^tb1[ac-hj-np-z02-9]{11,90}$/); // P2WSH bech32 format
-      
+
       // Verify address is valid for testnet
       expect(bitcoin.address.toOutputScript(script.address, network)).toBeDefined();
     });
