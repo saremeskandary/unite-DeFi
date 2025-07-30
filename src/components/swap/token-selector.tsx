@@ -71,16 +71,28 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
+<<<<<<< HEAD
         <Button variant="ghost" className="bg-muted/50 hover:bg-accent text-foreground border-0 h-10 sm:h-12 px-2 sm:px-3">
           <div className="flex items-center space-x-1 sm:space-x-2">
             {renderTokenIcon(token.symbol, 24)}
             <span className="font-medium text-xs sm:text-sm">{token.symbol}</span>
             <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+=======
+        <Button variant="ghost" className="bg-muted/50 hover:bg-accent text-foreground border-0 h-12 px-3">
+          <div className="flex items-center space-x-2">
+            {renderTokenIcon(token.symbol, 60)}
+            <span className="font-medium">{token.symbol}</span>
+            <ChevronDown className="w-4 h-4" />
+>>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
           </div>
         </Button>
       </DialogTrigger>
 
+<<<<<<< HEAD
       <DialogContent className="bg-card border-border text-foreground w-[90vw] max-w-sm max-h-[85vh] overflow-hidden mx-auto">
+=======
+      <DialogContent className="bg-card border-border text-foreground">
+>>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl">Select Token</DialogTitle>
         </DialogHeader>
@@ -93,7 +105,11 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
               placeholder="Search tokens..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+<<<<<<< HEAD
               className="pl-10 bg-muted border-border text-foreground h-10"
+=======
+              className="pl-10 bg-muted border-border text-foreground"
+>>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
             />
           </div>
 
@@ -105,14 +121,22 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
                 <Badge
                   key={symbol}
                   variant="secondary"
+<<<<<<< HEAD
                   className="bg-muted hover:bg-accent cursor-pointer text-xs"
+=======
+                  className="bg-muted hover:bg-accent cursor-pointer"
+>>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
                   onClick={() => {
                     const tokenData = TOKENS.find((t) => t.symbol === symbol)
                     if (tokenData) handleSelect(tokenData)
                   }}
                 >
                   <div className="flex items-center space-x-1">
+<<<<<<< HEAD
                     {renderTokenIcon(symbol, 16)}
+=======
+                    {renderTokenIcon(symbol, 60)}
+>>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
                     <span>{symbol}</span>
                   </div>
                 </Badge>
@@ -126,6 +150,7 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
               <Button
                 key={tokenOption.symbol}
                 variant="ghost"
+<<<<<<< HEAD
                 className="w-full justify-between p-2 sm:p-3 h-auto hover:bg-accent"
                 onClick={() => handleSelect(tokenOption)}
               >
@@ -138,6 +163,20 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
                 </div>
                 <div className="text-right">
                   <div className="text-xs sm:text-sm">{tokenOption.balance}</div>
+=======
+                className="w-full justify-between p-3 h-auto hover:bg-accent"
+                onClick={() => handleSelect(tokenOption)}
+              >
+                <div className="flex items-center space-x-3">
+                  {renderTokenIcon(tokenOption.symbol, 60)}
+                  <div className="text-left">
+                    <div className="font-medium">{tokenOption.symbol}</div>
+                    <div className="text-sm text-muted-foreground">{tokenOption.name}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm">{tokenOption.balance}</div>
+>>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
                   <div className="text-xs text-muted-foreground">{tokenOption.symbol}</div>
                 </div>
               </Button>
