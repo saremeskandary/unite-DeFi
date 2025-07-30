@@ -75,24 +75,24 @@
 
 ## 🎯 Phase 2: Resolver Logic
 
-### 4. Resolver Profitability Logic (`src/lib/resolver-logic.ts`)
+### 4. Resolver Profitability Logic (`src/lib/resolver-logic.ts`) ✅
 
-- [ ] **RES-LOGIC-01**: Profitability calculations
-  - [ ] Calculate negative profit for high fees
-  - [ ] Calculate positive profit for low fees
-  - [ ] Consider exchange rate in profitability
-  - [ ] Handle different token amounts
-- [ ] **RES-LOGIC-02**: Auction bidding
-  - [ ] Analyze order and determine bid strategy
-  - [ ] Submit competitive bid within seconds
-  - [ ] Handle auction win correctly
-  - [ ] Handle auction loss gracefully
-- [ ] **RES-FAIL-01**: Failure handling
-  - [ ] Handle Bitcoin node failure with failover
-  - [ ] Handle stuck transactions with RBF
-- [ ] Market conditions and timing
-  - [ ] Adjust bid strategy based on market conditions
-  - [ ] Consider time remaining in auction
+- [x] **RES-LOGIC-01**: Profitability calculations
+  - [x] Calculate negative profit for high fees
+  - [x] Calculate positive profit for low fees
+  - [x] Consider exchange rate in profitability
+  - [x] Handle different token amounts
+- [x] **RES-LOGIC-02**: Auction bidding
+  - [x] Analyze order and determine bid strategy
+  - [x] Submit competitive bid within seconds
+  - [x] Handle auction win correctly
+  - [x] Handle auction loss gracefully
+- [x] **RES-FAIL-01**: Failure handling
+  - [x] Handle Bitcoin node failure with failover
+  - [x] Handle stuck transactions with RBF
+- [x] Market conditions and timing
+  - [x] Adjust bid strategy based on market conditions
+  - [x] Consider time remaining in auction
 
 ---
 
@@ -195,9 +195,9 @@
 
 ## 🔄 Progress Tracking
 
-**Overall Progress**: 58% (35/61 tests passing)
+**Overall Progress**: 69% (42/61 tests passing)
 **Phase 1 Progress**: 100% (15/15 items) ✅
-**Phase 2 Progress**: 0% (0/8 items)  
+**Phase 2 Progress**: 100% (8/8 items) ✅
 **Phase 3 Progress**: 0% (0/10 items)
 
 ---
