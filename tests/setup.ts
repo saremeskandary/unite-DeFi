@@ -1,5 +1,5 @@
-import '@testing-library/jest-dom'
-import { config } from 'dotenv'
+import "@testing-library/jest-dom";
+import { config } from "dotenv";
 
 // Load environment variables for testing
 config({ path: '.env.test' })
@@ -113,34 +113,52 @@ if (typeof global.NextResponse === 'undefined') {
 // Global test configuration
 beforeAll(() => {
   // Set up Bitcoin testnet configuration
-  process.env.BITCOIN_NETWORK = 'testnet'
-  process.env.BITCOIN_RPC_URL = process.env.BITCOIN_RPC_URL || 'http://localhost:18332'
-  process.env.BITCOIN_RPC_USER = process.env.BITCOIN_RPC_USER || 'test'
-  process.env.BITCOIN_RPC_PASS = process.env.BITCOIN_RPC_PASS || 'test'
-})
+  process.env.BITCOIN_NETWORK = "testnet";
+  process.env.BITCOIN_RPC_URL =
+    process.env.BITCOIN_RPC_URL || "http://localhost:18332";
+  process.env.BITCOIN_RPC_USER = process.env.BITCOIN_RPC_USER || "test";
+  process.env.BITCOIN_RPC_PASS = process.env.BITCOIN_RPC_PASS || "test";
+});
 
 // Global test utilities
 global.testUtils = {
   // Generate test secrets and hashes
   generateTestSecret: () => {
-    const crypto = require('crypto')
-    return crypto.randomBytes(32).toString('hex')
+    const crypto = require("crypto");
+    return crypto.randomBytes(32).toString("hex");
   },
 
   // Generate test Bitcoin addresses (mock implementation)
   generateTestAddress: () => {
     // Mock Bitcoin address for testing - generate different addresses
-    const crypto = require('crypto')
-    const randomBytes = crypto.randomBytes(20)
-    const base58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-    let num = 0n
+    const crypto = require("crypto");
+    const randomBytes = crypto.randomBytes(20);
+    const base58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    let num = 0;
     for (let i = 0; i < randomBytes.length; i++) {
-      num = num * 256n + BigInt(randomBytes[i])
+      num = num * 256 + randomBytes[i];
     }
-    let str = ''
+    let str = "";
     while (num > 0) {
-      str = base58[Number(num % 58n)] + str
-      num = num / 58n
+      str = base58[num % 58] + str;
+      num = Math.floor(num / 58);
+    }
+    return "2" + str.padStart(33, "1"); // P2SH format
+  },
+
+  // Generate test Bitcoin address (alias for compatibility)
+  generateTestBitcoinAddress: () => {
+    const crypto = require("crypto");
+    const randomBytes = crypto.randomBytes(20);
+    const base58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    let num = 0;
+    for (let i = 0; i < randomBytes.length; i++) {
+      num = num * 256 + randomBytes[i];
+    }
+    let str = "";
+    while (num > 0) {
+      str = base58[num % 58] + str;
+      num = Math.floor(num / 58);
     }
     return '2' + str.padStart(33, '1') // P2SH format
   },
@@ -153,33 +171,33 @@ global.testUtils = {
   // Create mock ECPair for testing
   createECPair: () => {
     // Mock ECPair implementation for testing
-    const crypto = require('crypto')
-    const mockPublicKey = crypto.randomBytes(33)
+    const crypto = require("crypto");
+    const mockPublicKey = crypto.randomBytes(33);
     return {
       publicKey: mockPublicKey,
       privateKey: crypto.randomBytes(32),
-      network: { bech32: 'tb' }
-    }
+      network: { bech32: "tb" },
+    };
   },
 
   // Wait for Bitcoin block confirmation
   waitForConfirmation: async (txid: string, confirmations: number = 1) => {
     // Implementation for waiting for Bitcoin confirmations
-    return new Promise(resolve => setTimeout(resolve, 1000 * confirmations))
+    return new Promise((resolve) => setTimeout(resolve, 1000 * confirmations));
   },
 
   // Get future block height
   getFutureBlockHeight: async (blocksInFuture: number) => {
     // Mock implementation - in a real test env, this would query the node
-    return new Promise(resolve => resolve(100 + blocksInFuture));
+    return new Promise((resolve) => resolve(100 + blocksInFuture));
   },
 
   // Mine new blocks
   mineBlocks: async (blockCount: number) => {
     // Mock implementation - in a real test env, this would trigger mining
-    return new Promise(resolve => setTimeout(resolve, 100 * blockCount));
-  }
-}
+    return new Promise((resolve) => setTimeout(resolve, 100 * blockCount));
+  },
+};
 
 // Extend global types
 declare global {
