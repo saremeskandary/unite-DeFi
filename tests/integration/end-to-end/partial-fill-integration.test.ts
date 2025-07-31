@@ -2,7 +2,6 @@ import { PartialFillManager } from '@/lib/blockchains/bitcoin/partial-fill-manag
 import { PartialFillLogic } from '@/lib/blockchains/bitcoin/partial-fill-logic';
 import { BitcoinRelayer } from '@/lib/blockchains/bitcoin/bitcoin-relayer';
 import { BitcoinResolver } from '@/lib/blockchains/bitcoin/bitcoin-resolver';
-import { generateTestSecret, generateTestBitcoinAddress } from '../../setup';
 
 describe('Partial Fill Integration', () => {
   let partialFillManager: PartialFillManager;
@@ -37,7 +36,7 @@ describe('Partial Fill Integration', () => {
         partialAmounts: ['0.3', '0.4', '0.3'],
         fromToken: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // WBTC
         toToken: 'bitcoin',
-        userAddress: generateTestBitcoinAddress(),
+        userAddress: global.testUtils.generateTestBitcoinAddress(),
         timelock: Math.floor(Date.now() / 1000) + 3600
       };
 
@@ -74,6 +73,7 @@ describe('Partial Fill Integration', () => {
       const bids = await Promise.all(
         profitableAssignments.map(assignment =>
           partialFillLogic.submitResolverBid(assignment.partialOrderId, {
+            partialOrderId: assignment.partialOrderId,
             resolverId: assignment.resolverId,
             bidAmount: orderParams.partialAmounts[0],
             fee: '0.001'
@@ -85,9 +85,11 @@ describe('Partial Fill Integration', () => {
 
       // 6. Execute partial fills
       const executions = await Promise.all(
-        bids.map(bid =>
-          partialFillLogic.executePartialFill(bid.partialOrderId, bid.resolverId)
-        )
+        bids.map(bid => {
+          // The bid object contains the partialOrderId from the input parameter
+          const partialOrderId = bid.partialOrderId;
+          return partialFillLogic.executePartialFill(partialOrderId, bid.resolverId);
+        })
       );
 
       executions.forEach(execution => {
@@ -114,7 +116,7 @@ describe('Partial Fill Integration', () => {
         partialAmounts: ['0.3', '0.3', '0.3'],
         fromToken: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
         toToken: 'bitcoin',
-        userAddress: generateTestBitcoinAddress(),
+        userAddress: global.testUtils.generateTestBitcoinAddress(),
         timelock: Math.floor(Date.now() / 1000) + 3600
       };
 
@@ -151,7 +153,7 @@ describe('Partial Fill Integration', () => {
         partialAmounts: ['0.2', '0.2'],
         fromToken: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
         toToken: 'bitcoin',
-        userAddress: generateTestBitcoinAddress(),
+        userAddress: global.testUtils.generateTestBitcoinAddress(),
         timelock: Math.floor(Date.now() / 1000) + 3600
       };
 
@@ -172,7 +174,9 @@ describe('Partial Fill Integration', () => {
       // Failed attempts should be handled gracefully
       const failed = raceCondition.filter(result => result.status === 'rejected');
       failed.forEach(result => {
-        expect(result.reason).toContain('already executed');
+        if (result.status === 'rejected') {
+          expect(String(result.reason)).toContain('already executed');
+        }
       });
     });
 
@@ -182,7 +186,7 @@ describe('Partial Fill Integration', () => {
         partialAmounts: ['0.2', '0.2', '0.2'],
         fromToken: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
         toToken: 'bitcoin',
-        userAddress: generateTestBitcoinAddress(),
+        userAddress: global.testUtils.generateTestBitcoinAddress(),
         timelock: Math.floor(Date.now() / 1000) + 3600
       };
 
@@ -218,7 +222,7 @@ describe('Partial Fill Integration', () => {
         partialAmounts: ['0.25', '0.25'],
         fromToken: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
         toToken: 'bitcoin',
-        userAddress: generateTestBitcoinAddress(),
+        userAddress: global.testUtils.generateTestBitcoinAddress(),
         timelock: Math.floor(Date.now() / 1000) + 3600
       };
 
@@ -242,7 +246,7 @@ describe('Partial Fill Integration', () => {
       // Execute partial fills with coordination
       const executions = await Promise.all(
         resolverAssignments.map(assignment =>
-          partialFillLogic.executePartialFill(assignment.partialOrderId, assignment.resolverId)
+          partialFillLogic.executePartialFill(assignment.partialOrderId, assignment.resolverId, { crossChainCoordinated: true })
         )
       );
 
@@ -258,7 +262,7 @@ describe('Partial Fill Integration', () => {
         partialAmounts: ['0.15', '0.15'],
         fromToken: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
         toToken: 'bitcoin',
-        userAddress: generateTestBitcoinAddress(),
+        userAddress: global.testUtils.generateTestBitcoinAddress(),
         timelock: Math.floor(Date.now() / 1000) + 3600
       };
 
@@ -273,7 +277,7 @@ describe('Partial Fill Integration', () => {
       const resolverAssignments = await partialFillLogic.assignResolvers(order.orderId);
       const executions = await Promise.all(
         resolverAssignments.map(assignment =>
-          partialFillLogic.executePartialFill(assignment.partialOrderId, assignment.resolverId)
+          partialFillLogic.executePartialFill(assignment.partialOrderId, assignment.resolverId, { fallbackMode: true })
         )
       );
 

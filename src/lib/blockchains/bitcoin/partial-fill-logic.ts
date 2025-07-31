@@ -203,7 +203,7 @@ export class PartialFillLogic {
   /**
    * Execute partial fill
    */
-  async executePartialFill(partialOrderId: string, resolverId: string): Promise<any> {
+  async executePartialFill(partialOrderId: string, resolverId: string, options?: { crossChainCoordinated?: boolean; fallbackMode?: boolean }): Promise<any> {
     // Check if already executed
     const existingExecutions = this.executions.get(partialOrderId) || [];
     if (existingExecutions.length > 0) {
@@ -215,8 +215,8 @@ export class PartialFillLogic {
       resolverId,
       status: 'executed',
       executionTime: Date.now(),
-      crossChainCoordinated: false,
-      fallbackMode: false
+      crossChainCoordinated: options?.crossChainCoordinated || false,
+      fallbackMode: options?.fallbackMode || false
     };
 
     if (!this.executions.has(partialOrderId)) {

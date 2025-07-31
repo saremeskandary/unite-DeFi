@@ -4,6 +4,50 @@ import { config } from 'dotenv'
 // Load environment variables for testing
 config({ path: '.env.test' })
 
+// Polyfills for Node.js globals required by MSW v2
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util')
+  global.TextEncoder = TextEncoder
+  global.TextDecoder = TextDecoder
+}
+
+if (typeof global.crypto === 'undefined') {
+  const crypto = require('crypto')
+  global.crypto = crypto.webcrypto || crypto
+}
+
+if (typeof global.BroadcastChannel === 'undefined') {
+  global.BroadcastChannel = class BroadcastChannel {
+    name: string
+    onmessage: ((event: any) => void) | null = null
+    onmessageerror: ((event: any) => void) | null = null
+
+    constructor(name: string) {
+      this.name = name
+    }
+
+    postMessage(message: any) {
+      // Mock implementation
+    }
+
+    close() {
+      // Mock implementation
+    }
+  } as any
+}
+
+if (typeof global.TransformStream === 'undefined') {
+  global.TransformStream = class TransformStream {
+    readable: any
+    writable: any
+
+    constructor() {
+      this.readable = {}
+      this.writable = {}
+    }
+  } as any
+}
+
 // Polyfill for Request and Response objects in test environment
 if (typeof global.Request === 'undefined') {
   // Simple Request polyfill for testing

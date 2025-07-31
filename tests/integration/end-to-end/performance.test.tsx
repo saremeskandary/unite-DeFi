@@ -3,44 +3,12 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
+import PortfolioPage from '@/app/portfolio/page'
+import { SwapInterface } from '@/components/swap/swap-interface'
+import OrdersPage from '@/app/orders/page'
 import { enhancedWallet } from '@/lib/enhanced-wallet'
 import { toast } from 'sonner'
-
-// Mock components since they don't exist in the test environment
-const PortfolioPage = () => React.createElement('div', null,
-  React.createElement('h1', null, 'Portfolio Overview'),
-  React.createElement('div', { 'data-testid': 'total-value' }, '$12,450.75'),
-  React.createElement('div', { 'data-testid': 'loading' }, 'Loading...'),
-  React.createElement('div', { 'data-testid': 'timeout-warning' }, 'Taking longer than usual...'),
-  React.createElement('div', { 'data-testid': 'tokens-tab' }, 'Tokens'),
-  React.createElement('div', { 'data-testid': 'token-holdings' }, 'Token Holdings'),
-  React.createElement('div', { 'data-testid': 'next-page' }, 'Next'),
-  React.createElement('div', { 'data-testid': 'page-2' }, 'Page 2'),
-  React.createElement('ul', { role: 'list', 'data-testid': 'token-list' },
-    React.createElement('li', null, 'TOKEN0'),
-    React.createElement('li', null, 'TOKEN50')
-  )
-)
-
-const SwapInterface = ({ onOrderCreated }: { onOrderCreated?: () => void }) => React.createElement('div', null,
-  React.createElement('div', null, 'USDC'),
-  React.createElement('input', { placeholder: 'Enter amount', 'data-testid': 'amount-input' }),
-  React.createElement('div', { 'data-testid': 'quote-amount' }, '0.023'),
-  React.createElement('input', { placeholder: 'Bitcoin address', 'data-testid': 'address-input' }),
-  React.createElement('button', { 'data-testid': 'create-swap' }, 'Create Swap'),
-  React.createElement('div', { 'data-testid': 'getting-quote' }, 'Getting quote...'),
-  React.createElement('button', { 'data-testid': 'cancel-button' }, 'Cancel'),
-  React.createElement('div', { 'data-testid': 'quote-cancelled' }, 'Quote cancelled')
-)
-
-const OrdersPage = () => React.createElement('div', null,
-  React.createElement('h1', null, 'Order History'),
-  React.createElement('div', { 'data-testid': 'reconnecting' }, 'Reconnecting...'),
-  React.createElement('ul', { role: 'list', 'data-testid': 'order-list' },
-    React.createElement('li', null, 'TOKEN0'),
-    React.createElement('li', null, 'TOKEN50')
-  )
-)
+import { performance } from 'perf_hooks'
 
 // Mock the enhanced wallet
 jest.mock('@/lib/enhanced-wallet', () => ({
@@ -65,23 +33,15 @@ jest.mock('sonner', () => ({
   }
 }))
 
-// Mock fetch globally
-global.fetch = jest.fn()
-
 // Mock performance API for browser environment
 Object.defineProperty(window, 'performance', {
   value: {
-    now: () => Date.now(),
+    now: () => performance.now(),
     mark: jest.fn(),
     measure: jest.fn(),
     getEntriesByType: jest.fn(() => []),
     clearMarks: jest.fn(),
     clearMeasures: jest.fn(),
-    memory: {
-      usedJSHeapSize: 50 * 1024 * 1024, // 50MB
-      totalJSHeapSize: 100 * 1024 * 1024, // 100MB
-      jsHeapSizeLimit: 200 * 1024 * 1024 // 200MB
-    }
   },
   writable: true,
 })
@@ -167,7 +127,7 @@ describe('Performance Tests', () => {
         toToken: `TOKEN${(i + 1) % 10}`,
         fromAmount: (Math.random() * 1000).toFixed(2),
         toAmount: (Math.random() * 10).toFixed(6),
-        status: ['completed', 'pending', 'failed'][i % 3] as string,
+        status: ['completed', 'pending', 'failed'][i % 3],
         timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
       }))
 
@@ -189,11 +149,11 @@ describe('Performance Tests', () => {
 
       const startTime = performance.now()
 
-      render(React.createElement(PortfolioPage))
+      render(<PortfolioPage />)
 
       // Wait for portfolio to load
       await waitFor(() => {
-        expect(screen.getByTestId('total-value')).toBeInTheDocument()
+        expect(screen.getByText('$12,450.75')).toBeInTheDocument()
       }, { timeout: 10000 })
 
       const endTime = performance.now()
@@ -206,11 +166,11 @@ describe('Performance Tests', () => {
       expect(screen.getByText('Portfolio Overview')).toBeInTheDocument()
 
       // Test pagination for large datasets
-      const nextPageButton = screen.getByTestId('next-page')
+      const nextPageButton = screen.getByRole('button', { name: /next/i })
       if (nextPageButton) {
         await user.click(nextPageButton)
         await waitFor(() => {
-          expect(screen.getByTestId('page-2')).toBeInTheDocument()
+          expect(screen.getByText('Page 2')).toBeInTheDocument()
         })
       }
     })
@@ -233,18 +193,18 @@ describe('Performance Tests', () => {
         })
       )
 
-      render(React.createElement(PortfolioPage))
+      render(<PortfolioPage />)
 
       // Verify loading state is shown
-      expect(screen.getByTestId('loading')).toBeInTheDocument()
+      expect(screen.getByText(/loading/i)).toBeInTheDocument()
 
       // Wait for data to load despite latency
       await waitFor(() => {
-        expect(screen.getByTestId('total-value')).toBeInTheDocument()
+        expect(screen.getByText('$12,450.75')).toBeInTheDocument()
       }, { timeout: 10000 })
 
       // Verify loading state is removed
-      expect(screen.queryByTestId('loading')).not.toBeInTheDocument()
+      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
     })
 
     it('should implement virtual scrolling for large token lists', async () => {
@@ -268,35 +228,32 @@ describe('Performance Tests', () => {
             topTokens: veryLargeTopTokens,
             recentActivity: [],
             lastUpdated: new Date().toISOString()
-          })
+          }))
         })
       )
 
-      render(React.createElement(PortfolioPage))
+      render(<PortfolioPage />)
 
       await waitFor(() => {
         expect(screen.getByText('Portfolio Overview')).toBeInTheDocument()
       })
 
       // Navigate to tokens tab
-      const tokensTab = screen.getByTestId('tokens-tab')
+      const tokensTab = screen.getByRole('tab', { name: /tokens/i })
       await user.click(tokensTab)
 
       // Verify virtual scrolling is implemented
       await waitFor(() => {
-        expect(screen.getByTestId('token-holdings')).toBeInTheDocument()
+        expect(screen.getByText('Token Holdings')).toBeInTheDocument()
       })
 
       // Test scroll performance
-      const tokenList = screen.getByTestId('token-list')
+      const tokenList = screen.getByRole('list')
       if (tokenList) {
         const scrollStart = performance.now()
 
         // Simulate scrolling
-        Object.defineProperty(tokenList, 'scrollTop', {
-          value: 1000,
-          writable: true
-        })
+        tokenList.scrollTop = 1000
 
         const scrollEnd = performance.now()
         const scrollTime = scrollEnd - scrollStart
@@ -315,18 +272,18 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      render(React.createElement(SwapInterface, { onOrderCreated: jest.fn() }))
+      render(<SwapInterface onOrderCreated={ jest.fn() } />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
       })
 
       // Simulate multiple concurrent quote requests
-      const quotePromises: Promise<Response>[] = []
+      const quotePromises = []
       const startTime = performance.now()
 
       for (let i = 0; i < 5; i++) {
-        const amountInput = screen.getByTestId('amount-input')
+        const amountInput = screen.getByPlaceholderText(/enter amount/i)
         amountInput.setAttribute('value', `${100 + i * 10}`)
 
         // Trigger quote request
@@ -365,26 +322,26 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      render(React.createElement(SwapInterface, { onOrderCreated: jest.fn() }))
+      render(<SwapInterface onOrderCreated={ jest.fn() } />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
       })
 
       // Enter amount
-      const amountInput = screen.getByTestId('amount-input')
+      const amountInput = screen.getByPlaceholderText(/enter amount/i)
       await user.type(amountInput, '100')
 
       await waitFor(() => {
-        expect(screen.getByTestId('quote-amount')).toBeInTheDocument()
+        expect(screen.getByText('0.023')).toBeInTheDocument()
       })
 
       // Enter Bitcoin address
-      const addressInput = screen.getByTestId('address-input')
+      const addressInput = screen.getByPlaceholderText(/bitcoin address/i)
       await user.type(addressInput, 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh')
 
       // Rapidly click swap button multiple times
-      const swapButton = screen.getByTestId('create-swap')
+      const swapButton = screen.getByRole('button', { name: /create swap/i })
 
       const startTime = performance.now()
 
@@ -431,20 +388,20 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      render(React.createElement(SwapInterface, { onOrderCreated: jest.fn() }))
+      render(<SwapInterface onOrderCreated={ jest.fn() } />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
       })
 
       // Start multiple swaps
-      const swapPromises: Promise<Response>[] = []
+      const swapPromises = []
 
       for (let i = 0; i < 3; i++) {
-        const amountInput = screen.getByTestId('amount-input')
+        const amountInput = screen.getByPlaceholderText(/enter amount/i)
         amountInput.setAttribute('value', `${100 + i * 10}`)
 
-        const addressInput = screen.getByTestId('address-input')
+        const addressInput = screen.getByPlaceholderText(/bitcoin address/i)
         addressInput.setAttribute('value', 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh')
 
         swapPromises.push(
@@ -482,7 +439,7 @@ describe('Performance Tests', () => {
 
       global.WebSocket = jest.fn(() => mockWebSocket) as any
 
-      render(React.createElement(OrdersPage))
+      render(<OrdersPage />)
 
       await waitFor(() => {
         expect(screen.getByText('Order History')).toBeInTheDocument()
@@ -525,7 +482,7 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      render(React.createElement(SwapInterface, { onOrderCreated: jest.fn() }))
+      render(<SwapInterface onOrderCreated={ jest.fn() } />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
@@ -537,7 +494,7 @@ describe('Performance Tests', () => {
 
       for (let i = 0; i < priceUpdateCount; i++) {
         // Trigger price update
-        const amountInput = screen.getByTestId('amount-input')
+        const amountInput = screen.getByPlaceholderText(/enter amount/i)
         amountInput.setAttribute('value', '100')
         amountInput.dispatchEvent(new Event('input', { bubbles: true }))
       }
@@ -565,7 +522,7 @@ describe('Performance Tests', () => {
 
       global.WebSocket = jest.fn(() => mockWebSocket) as any
 
-      render(React.createElement(OrdersPage))
+      render(<OrdersPage />)
 
       await waitFor(() => {
         expect(screen.getByText('Order History')).toBeInTheDocument()
@@ -578,7 +535,7 @@ describe('Performance Tests', () => {
 
       // Verify reconnection attempt
       await waitFor(() => {
-        expect(screen.getByTestId('reconnecting')).toBeInTheDocument()
+        expect(screen.getByText(/reconnecting/i)).toBeInTheDocument()
       })
 
       // Simulate successful reconnection
@@ -592,7 +549,7 @@ describe('Performance Tests', () => {
 
       // Verify reconnection success
       await waitFor(() => {
-        expect(screen.queryByTestId('reconnecting')).not.toBeInTheDocument()
+        expect(screen.queryByText(/reconnecting/i)).not.toBeInTheDocument()
       })
     })
   })
@@ -607,7 +564,7 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      const { unmount } = render(React.createElement(SwapInterface, { onOrderCreated: jest.fn() }))
+      const { unmount } = render(<SwapInterface onOrderCreated={ jest.fn() } />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
@@ -643,7 +600,7 @@ describe('Performance Tests', () => {
         })
       )
 
-      const { unmount } = render(React.createElement(OrdersPage))
+      const { unmount } = render(<OrdersPage />)
 
       await waitFor(() => {
         expect(screen.getByText('Order History')).toBeInTheDocument()
@@ -672,7 +629,9 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      render(React.createElement(SwapInterface, { onOrderCreated: jest.fn() }))
+      const renderCount = jest.fn()
+
+      render(<SwapInterface onOrderCreated={ jest.fn() } />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
@@ -684,7 +643,7 @@ describe('Performance Tests', () => {
 
       for (let i = 0; i < updateCount; i++) {
         // Trigger state update
-        const amountInput = screen.getByTestId('amount-input')
+        const amountInput = screen.getByPlaceholderText(/enter amount/i)
         amountInput.setAttribute('value', `${i}`)
         amountInput.dispatchEvent(new Event('input', { bubbles: true }))
       }
@@ -716,19 +675,19 @@ describe('Performance Tests', () => {
         })
       )
 
-      render(React.createElement(PortfolioPage))
+      render(<PortfolioPage />)
 
       // Verify loading state is shown immediately
-      expect(screen.getByTestId('loading')).toBeInTheDocument()
+      expect(screen.getByText(/loading/i)).toBeInTheDocument()
 
       // Verify timeout warning is shown
       await waitFor(() => {
-        expect(screen.getByTestId('timeout-warning')).toBeInTheDocument()
+        expect(screen.getByText(/taking longer than usual/i)).toBeInTheDocument()
       }, { timeout: 3000 })
 
       // Wait for data to load
       await waitFor(() => {
-        expect(screen.getByTestId('total-value')).toBeInTheDocument()
+        expect(screen.getByText('$12,450.75')).toBeInTheDocument()
       }, { timeout: 10000 })
     })
 
@@ -757,24 +716,24 @@ describe('Performance Tests', () => {
         })
       )
 
-      render(React.createElement(SwapInterface, { onOrderCreated: jest.fn() }))
+      render(<SwapInterface onOrderCreated={ jest.fn() } />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
       })
 
       // Enter amount to trigger quote
-      const amountInput = screen.getByTestId('amount-input')
+      const amountInput = screen.getByPlaceholderText(/enter amount/i)
       await user.type(amountInput, '100')
 
       // Wait for loading state
       await waitFor(() => {
-        expect(screen.getByTestId('getting-quote')).toBeInTheDocument()
+        expect(screen.getByText(/getting quote/i)).toBeInTheDocument()
       })
 
       // Cancel request after 3 seconds
       setTimeout(() => {
-        const cancelButton = screen.getByTestId('cancel-button')
+        const cancelButton = screen.getByRole('button', { name: /cancel/i })
         if (cancelButton) {
           user.click(cancelButton)
         }
@@ -782,7 +741,7 @@ describe('Performance Tests', () => {
 
       // Verify cancellation
       await waitFor(() => {
-        expect(screen.getByTestId('quote-cancelled')).toBeInTheDocument()
+        expect(screen.getByText(/quote cancelled/i)).toBeInTheDocument()
       }, { timeout: 5000 })
     })
 
@@ -794,7 +753,7 @@ describe('Performance Tests', () => {
         toToken: `TOKEN${(i + 1) % 10}`,
         fromAmount: (Math.random() * 1000).toFixed(2),
         toAmount: (Math.random() * 10).toFixed(6),
-        status: ['completed', 'pending', 'failed'][i % 3] as string,
+        status: ['completed', 'pending', 'failed'][i % 3],
         timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
       }))
 
@@ -817,7 +776,7 @@ describe('Performance Tests', () => {
         })
       )
 
-      render(React.createElement(OrdersPage))
+      render(<OrdersPage />)
 
       await waitFor(() => {
         expect(screen.getByText('Order History')).toBeInTheDocument()
@@ -834,12 +793,9 @@ describe('Performance Tests', () => {
       expect(initialLoadDuration).toBeLessThan(2000) // Should load first page quickly
 
       // Test infinite scroll
-      const orderList = screen.getByTestId('order-list')
+      const orderList = screen.getByRole('list')
       if (orderList) {
-        Object.defineProperty(orderList, 'scrollTop', {
-          value: orderList.scrollHeight,
-          writable: true
-        })
+        orderList.scrollTop = orderList.scrollHeight
 
         // Wait for next page to load
         await waitFor(() => {
@@ -848,4 +804,4 @@ describe('Performance Tests', () => {
       }
     })
   })
-})
+}) 

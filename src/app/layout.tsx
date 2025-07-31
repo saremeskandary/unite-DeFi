@@ -3,6 +3,7 @@ import "@/app/globals.css"
 import { Inter } from "next/font/google"
 import type { Metadata } from "next"
 import { QueryProvider } from "@/components/providers/query-provider"
+import { WebSocketProvider } from "@/components/providers/websocket-provider"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { Toaster } from "@/components/ui/toaster"
 
@@ -28,8 +29,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <ErrorBoundary>
           <QueryProvider>
-            {children}
-            <Toaster />
+            <WebSocketProvider>
+              {children}
+              <Toaster />
+            </WebSocketProvider>
           </QueryProvider>
         </ErrorBoundary>
       </body>
