@@ -101,6 +101,11 @@ global.testUtils = {
     return '2' + str.padStart(33, '1') // P2SH format
   },
 
+  // Alias for generateTestAddress to match test expectations
+  generateTestBitcoinAddress: () => {
+    return global.testUtils.generateTestAddress()
+  },
+
   // Create mock ECPair for testing
   createECPair: () => {
     // Mock ECPair implementation for testing
@@ -137,6 +142,7 @@ declare global {
   var testUtils: {
     generateTestSecret: () => string
     generateTestAddress: () => string
+    generateTestBitcoinAddress: () => string
     createECPair: () => any
     waitForConfirmation: (txid: string, confirmations?: number) => Promise<void>
     getFutureBlockHeight: (blocksInFuture: number) => Promise<number>
