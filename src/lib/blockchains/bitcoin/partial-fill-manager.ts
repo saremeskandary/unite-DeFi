@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
 export interface SecretStats {
   totalSecrets: number;
@@ -27,12 +27,14 @@ export class PartialFillManager {
    */
   async generateMultipleSecrets(count: number): Promise<string[]> {
     if (count < 0 || count > this.MAX_SECRETS) {
-      throw new Error(`Invalid secret count. Must be between 0 and ${this.MAX_SECRETS}`);
+      throw new Error(
+        `Invalid secret count. Must be between 0 and ${this.MAX_SECRETS}`
+      );
     }
 
     const secrets: string[] = [];
     for (let i = 0; i < count; i++) {
-      const secret = crypto.randomBytes(32).toString('hex');
+      const secret = crypto.randomBytes(32).toString("hex");
       secrets.push(secret);
     }
 
@@ -43,11 +45,17 @@ export class PartialFillManager {
    * Generate hash160 for each secret (Bitcoin standard)
    */
   async generateSecretHashes(secrets: string[]): Promise<string[]> {
-    return secrets.map(secret => {
-      const secretBuffer = Buffer.from(secret, 'hex');
-      const sha256Hash = crypto.createHash('sha256').update(secretBuffer).digest();
-      const hash160 = crypto.createHash('ripemd160').update(sha256Hash).digest();
-      return hash160.toString('hex');
+    return secrets.map((secret) => {
+      const secretBuffer = Buffer.from(secret, "hex");
+      const sha256Hash = crypto
+        .createHash("sha256")
+        .update(secretBuffer)
+        .digest();
+      const hash160 = crypto
+        .createHash("ripemd160")
+        .update(sha256Hash)
+        .digest();
+      return hash160.toString("hex");
     });
   }
 
@@ -71,7 +79,7 @@ export class PartialFillManager {
   async storeSecretHashes(secrets: string[], hashes: string[]): Promise<void> {
     secrets.forEach((secret, index) => {
       this.secretStorage[secret] = {
-        hash: hashes[index]
+        hash: hashes[index],
       };
     });
   }
@@ -89,7 +97,7 @@ export class PartialFillManager {
     secrets.forEach((secret, index) => {
       this.secretStorage[secret] = {
         hash: hashes[index],
-        expiresAt
+        expiresAt,
       };
     });
   }
@@ -98,7 +106,7 @@ export class PartialFillManager {
    * Retrieve stored secret hashes
    */
   async getSecretHashes(secrets: string[]): Promise<(string | null)[]> {
-    return secrets.map(secret => {
+    return secrets.map((secret) => {
       const stored = this.secretStorage[secret];
       if (!stored) return null;
 
@@ -116,6 +124,12 @@ export class PartialFillManager {
    * Validate secret hash for known secret
    */
   async validateSecretHash(secret: string, hash: string): Promise<boolean> {
+    // Check if secret is in storage and not invalidated
+    const stored = this.secretStorage[secret];
+    if (stored && stored.hash === "INVALIDATED") {
+      return false; // Secret has been rotated/invalidated
+    }
+
     const expectedHash = await this.generateSecretHashes([secret]);
     return expectedHash[0] === hash;
   }
@@ -125,7 +139,8 @@ export class PartialFillManager {
    */
   async getSecretStats(secrets: string[]): Promise<SecretStats> {
     const totalSecrets = secrets.length;
-    const averageLength = secrets.reduce((sum, secret) => sum + secret.length, 0) / totalSecrets;
+    const averageLength =
+      secrets.reduce((sum, secret) => sum + secret.length, 0) / totalSecrets;
     const uniqueCount = new Set(secrets).size;
 
     // Calculate entropy score (simplified)
@@ -135,22 +150,33 @@ export class PartialFillManager {
       totalSecrets,
       averageLength,
       uniqueCount,
-      entropyScore
+      entropyScore,
     };
   }
 
   /**
    * Rotate secrets - invalidate old ones and replace with new ones
    */
-  async rotateSecrets(oldSecrets: string[], newSecrets: string[]): Promise<void> {
+  async rotateSecrets(
+    oldSecrets: string[],
+    newSecrets: string[]
+  ): Promise<void> {
     // Remove old secrets from storage
-    oldSecrets.forEach(secret => {
+    oldSecrets.forEach((secret) => {
       delete this.secretStorage[secret];
     });
 
     // Store new secrets
     const newHashes = await this.generateSecretHashes(newSecrets);
     await this.storeSecretHashes(newSecrets, newHashes);
+
+    // Mark old secrets as invalidated by storing them with a special flag
+    oldSecrets.forEach((secret) => {
+      this.secretStorage[secret] = {
+        hash: "INVALIDATED",
+        expiresAt: Date.now(), // Immediate expiration
+      };
+    });
   }
 
   /**
@@ -158,11 +184,11 @@ export class PartialFillManager {
    */
   async cleanupExpiredSecrets(): Promise<void> {
     const now = Date.now();
-    Object.keys(this.secretStorage).forEach(secret => {
+    Object.keys(this.secretStorage).forEach((secret) => {
       const stored = this.secretStorage[secret];
       if (stored.expiresAt && now > stored.expiresAt) {
         delete this.secretStorage[secret];
       }
     });
   }
-} 
+}
