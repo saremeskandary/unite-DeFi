@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Search, ChevronDown } from "lucide-react"
 import { TokenIcon } from "@web3icons/react"
+import { enhancedWallet } from "@/lib/enhanced-wallet"
 
 interface Token {
   symbol: string
@@ -28,19 +29,55 @@ interface TokenSelectorProps {
 }
 
 const TOKENS: Token[] = [
-  { symbol: "USDC", name: "USD Coin", balance: "1,234.56" },
-  { symbol: "USDT", name: "Tether USD", balance: "2,345.67" },
-  { symbol: "WETH", name: "Wrapped Ethereum", balance: "3.45" },
-  { symbol: "WBTC", name: "Wrapped Bitcoin", balance: "0.12" },
-  { symbol: "DAI", name: "Dai Stablecoin", balance: "567.89" },
-  { symbol: "UNI", name: "Uniswap", balance: "45.67" },
-  { symbol: "LINK", name: "Chainlink", balance: "123.45" },
-  { symbol: "AAVE", name: "Aave", balance: "8.90" },
+  { symbol: "USDC", name: "USD Coin", balance: "0.00" },
+  { symbol: "USDT", name: "Tether USD", balance: "0.00" },
+  { symbol: "WETH", name: "Wrapped Ethereum", balance: "0.00" },
+  { symbol: "WBTC", name: "Wrapped Bitcoin", balance: "0.00" },
+  { symbol: "DAI", name: "Dai Stablecoin", balance: "0.00" },
+  { symbol: "UNI", name: "Uniswap", balance: "0.00" },
+  { symbol: "LINK", name: "Chainlink", balance: "0.00" },
+  { symbol: "AAVE", name: "Aave", balance: "0.00" },
+  { symbol: "ETH", name: "Ethereum", balance: "0.00" },
+  { symbol: "BTC", name: "Bitcoin", balance: "0.00" },
 ]
 
 export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const [tokens, setTokens] = useState<Token[]>(TOKENS)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Load real token data when component mounts
+  useEffect(() => {
+    loadTokenData()
+  }, [])
+
+  const loadTokenData = async () => {
+    setIsLoading(true)
+    try {
+      // Get wallet address from enhanced wallet
+      const walletAddress = enhancedWallet.getCurrentAddress()
+      if (!walletAddress) {
+        setTokens(TOKENS)
+        return
+      }
+
+      const response = await fetch(`/api/tokens?address=${walletAddress}&includePrices=true`)
+      if (response.ok) {
+        const data = await response.json()
+        setTokens(data.tokens.map((t: any) => ({
+          symbol: t.symbol,
+          name: t.name,
+          balance: t.balance || '0.00'
+        })))
+      }
+    } catch (error) {
+      console.error('Error loading token data:', error)
+      setTokens(TOKENS)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleSelect = (selectedToken: Token) => {
     onSelect(selectedToken)
@@ -78,13 +115,13 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
   }
 
   const filteredTokens = useMemo(() => {
-    if (!search) return TOKENS
-    return TOKENS.filter(
+    if (!search) return tokens
+    return tokens.filter(
       (token) =>
         token.symbol.toLowerCase().includes(search.toLowerCase()) ||
         token.name.toLowerCase().includes(search.toLowerCase())
     )
-  }, [search])
+  }, [search, tokens])
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

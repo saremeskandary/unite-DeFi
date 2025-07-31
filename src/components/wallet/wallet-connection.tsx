@@ -11,60 +11,83 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { useWallet } from "@/hooks/use-wallet"
-import { walletManager } from "@/lib/wallet"
-import { Loader2, ExternalLink, Copy, CheckCircle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useEnhancedWallet } from "@/hooks/use-enhanced-wallet"
+import { enhancedWallet } from "@/lib/enhanced-wallet"
+import { Loader2, ExternalLink, Copy, CheckCircle, Wallet } from "lucide-react"
+import { toast } from "sonner"
 
 export function WalletConnection() {
-  const { wallet, isConnecting, isConnected, connect, disconnect, error } = useWallet()
-  const { toast } = useToast()
+  const {
+    isConnected,
+    address,
+    chainId,
+    network,
+    nativeBalance,
+    tokens,
+    totalValue,
+    isLoading,
+    error,
+    connect,
+    disconnect,
+    switchToSupportedNetwork
+  } = useEnhancedWallet()
   const [copied, setCopied] = useState(false)
 
-  const handleConnect = async (providerName: string) => {
-    await connect(providerName)
+  const handleConnect = async () => {
+    try {
+      await connect()
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Unsupported network')) {
+        // Try to switch to a supported network
+        const switched = await switchToSupportedNetwork()
+        if (switched) {
+          // Try connecting again
+          await connect()
+        } else {
+          toast.error("Please manually switch to Ethereum Mainnet, Goerli, or Sepolia in MetaMask")
+        }
+      } else {
+        toast.error(error instanceof Error ? error.message : "Failed to connect wallet")
+      }
+    }
   }
 
   const handleDisconnect = async () => {
-    await disconnect()
+    disconnect()
   }
 
   const copyAddress = async () => {
-    if (!wallet?.address) return
+    if (!address) return
 
     try {
-      await navigator.clipboard.writeText(wallet.address)
+      await navigator.clipboard.writeText(address)
       setCopied(true)
-      toast({
-        title: "Address Copied",
-        description: "Wallet address copied to clipboard",
-      })
+      toast.success("Address copied to clipboard")
       setTimeout(() => setCopied(false), 2000)
     } catch (error) {
-      toast({
-        title: "Copy Failed",
-        description: "Failed to copy address to clipboard",
-        variant: "destructive",
-      })
+      toast.error("Failed to copy address to clipboard")
     }
   }
 
   const openExplorer = () => {
-    if (!wallet?.address) return
+    if (!address) return
 
-    const explorerUrl = `https://etherscan.io/address/${wallet.address}`
+    const explorerUrl = `https://etherscan.io/address/${address}`
     window.open(explorerUrl, '_blank')
   }
 
-  if (isConnected && wallet) {
+  if (isConnected && address) {
     return (
       <div className="flex items-center space-x-3">
         <div className="text-right">
           <div className="text-sm text-white font-medium">
-            {parseFloat(wallet.balance).toFixed(4)} ETH
+            {parseFloat(nativeBalance).toFixed(4)} ETH
+          </div>
+          <div className="text-xs text-slate-400">
+            ${totalValue.toFixed(2)}
           </div>
           <div className="text-xs text-slate-400 flex items-center space-x-1">
-            <span>{wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}</span>
+            <span>{address.slice(0, 6)}...{address.slice(-4)}</span>
             <button
               onClick={copyAddress}
               className="hover:text-white transition-colors"
@@ -97,19 +120,20 @@ export function WalletConnection() {
     )
   }
 
-  const availableProviders = walletManager.getAvailableProviders()
-
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white">
-          {isConnecting ? (
+          {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Connecting...
             </>
           ) : (
-            "Connect Wallet"
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              Connect Wallet
+            </>
           )}
         </Button>
       </DialogTrigger>
@@ -117,7 +141,7 @@ export function WalletConnection() {
         <DialogHeader>
           <DialogTitle>Connect Your Wallet</DialogTitle>
           <DialogDescription className="text-slate-400">
-            Choose your preferred wallet to connect to BitSwap
+            Connect your wallet to start swapping tokens
           </DialogDescription>
         </DialogHeader>
 
@@ -128,40 +152,33 @@ export function WalletConnection() {
         )}
 
         <div className="space-y-3 mt-6">
-          {availableProviders.map((provider) => (
-            <Button
-              key={provider.name}
-              onClick={() => handleConnect(provider.name.toLowerCase().replace(' ', ''))}
-              variant="outline"
-              className="w-full justify-start border-slate-600 bg-slate-700 hover:bg-slate-600 text-white"
-              disabled={isConnecting}
-            >
-              <span className="mr-3">{provider.icon}</span>
-              {provider.name}
-              {provider.name === 'MetaMask' && (
-                <Badge variant="secondary" className="ml-auto bg-green-500/20 text-green-400">
-                  Popular
-                </Badge>
-              )}
-              {isConnecting && (
-                <Loader2 className="w-4 h-4 ml-auto animate-spin" />
-              )}
-            </Button>
-          ))}
+          <Button
+            onClick={handleConnect}
+            variant="outline"
+            className="w-full justify-start border-slate-600 bg-slate-700 hover:bg-slate-600 text-white"
+            disabled={isLoading}
+          >
+            <span className="mr-3">🦊</span>
+            MetaMask
+            <Badge variant="secondary" className="ml-auto bg-green-500/20 text-green-400">
+              Popular
+            </Badge>
+            {isLoading && (
+              <Loader2 className="w-4 h-4 ml-auto animate-spin" />
+            )}
+          </Button>
 
-          {availableProviders.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-slate-400 mb-4">No wallet providers available</p>
-              <div className="space-y-2 text-sm text-slate-500">
-                <p>To connect your wallet, please install one of the following:</p>
-                <ul className="space-y-1">
-                  <li>• <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">MetaMask</a></li>
-                  <li>• <a href="https://wallet.coinbase.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Coinbase Wallet</a></li>
-                  <li>• <a href="https://walletconnect.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">WalletConnect</a></li>
-                </ul>
-              </div>
+          <div className="text-center py-4">
+            <p className="text-slate-400 mb-4">Other wallet options coming soon</p>
+            <div className="space-y-2 text-sm text-slate-500">
+              <p>To connect your wallet, please install one of the following:</p>
+              <ul className="space-y-1">
+                <li>• <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">MetaMask</a></li>
+                <li>• <a href="https://wallet.coinbase.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Coinbase Wallet</a></li>
+                <li>• <a href="https://walletconnect.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">WalletConnect</a></li>
+              </ul>
             </div>
-          )}
+          </div>
         </div>
 
         <div className="mt-6 pt-4 border-t border-slate-700">

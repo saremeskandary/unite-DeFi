@@ -99,7 +99,7 @@ export default function PortfolioPage() {
           </div>
 
           {/* Portfolio Overview */}
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">

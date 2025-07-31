@@ -17,7 +17,9 @@ const config: Config = {
   // Custom test patterns for our Bitcoin atomic swap tests
   testMatch: [
     '**/__tests__/**/*.ts',
-    '**/?(*.)+(spec|test).ts'
+    '**/__tests__/**/*.tsx',
+    '**/?(*.)+(spec|test).ts',
+    '**/?(*.)+(spec|test).tsx'
   ],
   // Coverage configuration
   collectCoverageFrom: [
