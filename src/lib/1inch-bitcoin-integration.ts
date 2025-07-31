@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { BitcoinNetworkOperations } from './blockchains/bitcoin/bitcoin-network-operations';
+import { getTestnetConfig, getChainId } from './testnet-config';
 
 export interface SwapQuote {
   fromToken: string;
@@ -30,19 +31,24 @@ export class OneInchBitcoinIntegration {
   private btcNetwork: BitcoinNetworkOperations;
   private ethPrivateKey: string;
   private ethRpcUrl: string;
+  private testnetConfig: any;
+  private chainId: number;
 
   constructor(
     inchApiKey: string,
     btcPrivateKeyWIF: string,
     ethPrivateKey: string,
     ethRpcUrl: string,
-    useTestnet: boolean = true
+    useTestnet: boolean = true,
+    network: 'sepolia' | 'goerli' = 'sepolia'
   ) {
     this.apiKey = inchApiKey;
     this.apiUrl = 'https://api.1inch.dev';
     this.btcNetwork = new BitcoinNetworkOperations(btcPrivateKeyWIF, useTestnet);
     this.ethPrivateKey = ethPrivateKey;
     this.ethRpcUrl = ethRpcUrl;
+    this.testnetConfig = getTestnetConfig(network);
+    this.chainId = getChainId(network);
   }
 
   /**
@@ -54,13 +60,16 @@ export class OneInchBitcoinIntegration {
     btcAddress: string // Bitcoin address to receive
   ): Promise<SwapQuote> {
     try {
+      // Use testnet WBTC address based on network
+      const wbtcAddress = this.testnetConfig.tokens.wbtc;
+
       // For Bitcoin integration, we need to use 1inch's cross-chain API
       const response = await axios.get(
-        `${this.apiUrl}/swap/v5.2/1/quote`,
+        `${this.apiUrl}/swap/v5.2/${this.chainId}/quote`,
         {
           params: {
             src: fromToken,
-            dst: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // WBTC address
+            dst: wbtcAddress, // Testnet WBTC address
             amount: amount,
             from: this.getEthereumAddress(),
             slippage: 1, // 1% slippage
