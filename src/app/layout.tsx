@@ -2,13 +2,16 @@ import type React from "react"
 import "@/app/globals.css"
 import { Inter } from "next/font/google"
 import type { Metadata } from "next"
+import { QueryProvider } from "@/components/providers/query-provider"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Unit Def",
+  title: "Unite DeFi",
   description:
-    "Senior Blockchain Developer with expertise in full-stack development, blockchain ecosystems, decentralized applications, and zero-knowledge technologies.",
+    "Cross-chain DeFi platform for seamless atomic swaps between Ethereum and Bitcoin networks.",
   generator: 'v0.dev',
   icons: {
     icon: "/Unite-Defi-favicon.png"
@@ -22,7 +25,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <ErrorBoundary>
+          <QueryProvider>
+            {children}
+            <Toaster />
+          </QueryProvider>
+        </ErrorBoundary>
+      </body>
     </html>
   )
 }
