@@ -105,4 +105,47 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { symbols } = body;
+
+    if (!symbols || !Array.isArray(symbols)) {
+      return NextResponse.json(
+        { error: 'Symbols array is required' },
+        { status: 400 }
+      );
+    }
+
+    const symbolList = symbols.map((s: string) => s.toUpperCase());
+    const prices: Record<string, any> = {};
+
+    symbolList.forEach(symbol => {
+      if (MOCK_PRICES[symbol as keyof typeof MOCK_PRICES]) {
+        prices[symbol] = MOCK_PRICES[symbol as keyof typeof MOCK_PRICES];
+      } else {
+        // Generate mock data for unknown symbols
+        prices[symbol] = {
+          price: 10 + Math.random() * 100,
+          change24h: -5 + Math.random() * 20,
+          volume24h: 100000000 + Math.random() * 1000000000,
+          marketCap: 1000000000 + Math.random() * 10000000000,
+        };
+      }
+    });
+
+    // Add a small delay to simulate API latency
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    return NextResponse.json(prices);
+
+  } catch (error) {
+    console.error('Error fetching prices:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch prices' },
+      { status: 500 }
+    );
+  }
 } 

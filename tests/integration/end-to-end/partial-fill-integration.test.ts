@@ -2,6 +2,7 @@ import { PartialFillManager } from "@/lib/blockchains/bitcoin/partial-fill-manag
 import { PartialFillLogic } from "@/lib/blockchains/bitcoin/partial-fill-logic";
 import { BitcoinRelayer } from "@/lib/blockchains/bitcoin/bitcoin-relayer";
 import { BitcoinResolver } from "@/lib/blockchains/bitcoin/bitcoin-resolver";
+import * as bitcoin from "bitcoinjs-lib";
 
 describe("Partial Fill Integration", () => {
   let partialFillManager: PartialFillManager;
@@ -13,12 +14,16 @@ describe("Partial Fill Integration", () => {
     partialFillManager = new PartialFillManager();
     partialFillLogic = new PartialFillLogic(partialFillManager);
     bitcoinRelayer = new BitcoinRelayer({
+      network: bitcoin.networks.testnet,
       rpcUrl: process.env.BITCOIN_RPC_URL || "http://localhost:18332",
       rpcUser: process.env.BITCOIN_RPC_USER || "test",
       rpcPass: process.env.BITCOIN_RPC_PASS || "test",
+      maxRetries: 3,
+      retryDelay: 1000,
+      confirmationBlocks: 1,
     });
     bitcoinResolver = new BitcoinResolver({
-      network: { bech32: "tb" },
+      network: bitcoin.networks.testnet,
       minProfitThreshold: 0.001,
       maxGasPrice: 100,
       timeoutSeconds: 3600,
@@ -56,10 +61,12 @@ describe("Partial Fill Integration", () => {
         resolverAssignments.map((assignment) =>
           bitcoinResolver.calculateProfitability({
             id: assignment.partialOrderId,
+            fromToken: orderParams.fromToken,
+            toToken: orderParams.toToken,
             amount: orderParams.partialAmounts[0],
-            fee: "0.001",
-            exchangeRate: 45000,
-            networkFee: "0.0001",
+            userAddress: orderParams.userAddress,
+            timelock: orderParams.timelock,
+            status: "pending",
           })
         )
       );
@@ -148,6 +155,7 @@ describe("Partial Fill Integration", () => {
       const bids = await Promise.all(
         successfulAssignments.map((assignment) =>
           partialFillLogic.submitResolverBid(assignment.partialOrderId, {
+            partialOrderId: assignment.partialOrderId,
             resolverId: assignment.resolverId,
             bidAmount: orderParams.partialAmounts[0],
             fee: "0.001",
@@ -207,6 +215,7 @@ describe("Partial Fill Integration", () => {
       const concurrentBids = await Promise.all(
         resolverAssignments.map((assignment) =>
           partialFillLogic.submitResolverBid(assignment.partialOrderId, {
+            partialOrderId: assignment.partialOrderId,
             resolverId: assignment.resolverId,
             bidAmount: orderParams.partialAmounts[0],
             fee: "0.001",

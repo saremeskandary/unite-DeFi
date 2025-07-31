@@ -13,20 +13,40 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@/components/BitcoinSwapInterface": ["./tests/integration/frontend-backend/mocks/BitcoinSwapInterface.tsx"],
-      "@/components/swap/swap-interface": ["./tests/integration/frontend-backend/mocks/swap-interface.tsx"],
-      "@/app/portfolio/page": ["./tests/integration/frontend-backend/mocks/portfolio-page.tsx"],
-      "@/app/orders/page": ["./tests/integration/frontend-backend/mocks/orders-page.tsx"],
-      "@/lib/enhanced-wallet": ["./tests/integration/frontend-backend/mocks/enhanced-wallet.ts"],
-      "@/hooks/use-blockchain-integration": ["./tests/integration/frontend-backend/mocks/use-blockchain-integration.ts"],
-      "@/hooks/useOrderStatus": ["./tests/integration/frontend-backend/mocks/useOrderStatus.ts"],
-      "@/hooks/useOrderStatusStream": ["./tests/integration/frontend-backend/mocks/useOrderStatusStream.ts"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/components/BitcoinSwapInterface": [
+        "./tests/integration/frontend-backend/mocks/BitcoinSwapInterface.tsx"
+      ],
+      "@/components/swap/swap-interface": [
+        "./tests/integration/frontend-backend/mocks/swap-interface.tsx"
+      ],
+      "@/app/portfolio/page": [
+        "./tests/integration/frontend-backend/mocks/portfolio-page.tsx"
+      ],
+      "@/app/orders/page": [
+        "./tests/integration/frontend-backend/mocks/orders-page.tsx"
+      ],
+      "@/lib/enhanced-wallet": [
+        "./tests/integration/frontend-backend/mocks/enhanced-wallet.ts"
+      ],
+      "@/hooks/use-blockchain-integration": [
+        "./tests/integration/frontend-backend/mocks/use-blockchain-integration.ts"
+      ],
+      "@/hooks/useOrderStatus": [
+        "./tests/integration/frontend-backend/mocks/useOrderStatus.ts"
+      ],
+      "@/hooks/useOrderStatusStream": [
+        "./tests/integration/frontend-backend/mocks/useOrderStatusStream.ts"
+      ]
     }
   },
   "include": [
     "tests/integration/frontend-backend/**/*.ts",
-    "tests/integration/frontend-backend/**/*.tsx"
+    "tests/integration/frontend-backend/**/*.tsx",
+    "tests/integration/end-to-end/**/*.ts",
+    "tests/integration/end-to-end/**/*.tsx"
   ],
   "exclude": [
     "node_modules"

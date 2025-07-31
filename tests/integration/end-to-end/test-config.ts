@@ -1,5 +1,5 @@
 import { setupServer } from 'msw/node'
-import { rest } from 'msw'
+import { http } from 'msw'
 
 // Test environment variables
 export const TEST_CONFIG = {
@@ -92,24 +92,26 @@ export const generateMockOrders = (count: number = 50) => {
 // API response handlers
 export const createApiHandlers = () => [
   // Portfolio API
-  rest.get(`${TEST_CONFIG.API_BASE_URL}/api/portfolio`, (req, res, ctx) => {
-    const walletAddress = req.url.searchParams.get('walletAddress')
+  http.get(`${TEST_CONFIG.API_BASE_URL}/api/portfolio`, ({ request }) => {
+    const url = new URL(request.url)
+    const walletAddress = url.searchParams.get('walletAddress')
     if (!walletAddress) {
-      return res(ctx.status(400), ctx.json({ error: 'Wallet address is required' }))
+      return Response.json({ error: 'Wallet address is required' }, { status: 400 })
     }
 
-    return res(ctx.json(generateMockPortfolio('medium')))
+    return Response.json(generateMockPortfolio('medium'))
   }),
 
   // Swap quote API
-  rest.post(`${TEST_CONFIG.API_BASE_URL}/api/swap/quote`, (req, res, ctx) => {
-    const { fromToken, toToken, fromAmount } = req.body as any
+  http.post(`${TEST_CONFIG.API_BASE_URL}/api/swap/quote`, async ({ request }) => {
+    const body = await request.json() as any
+    const { fromToken, toToken, fromAmount } = body
 
     if (!fromToken || !toToken || !fromAmount) {
-      return res(ctx.status(400), ctx.json({ error: 'Missing required parameters' }))
+      return Response.json({ error: 'Missing required parameters' }, { status: 400 })
     }
 
-    return res(ctx.json({
+    return Response.json({
       fromToken,
       toToken,
       fromAmount,
@@ -119,18 +121,19 @@ export const createApiHandlers = () => [
       gasPrice: '20000000000',
       totalFee: '0.003',
       validUntil: new Date(Date.now() + 30000).toISOString()
-    }))
+    })
   }),
 
   // Swap execution API
-  rest.post(`${TEST_CONFIG.API_BASE_URL}/api/swap/execute`, (req, res, ctx) => {
-    const { fromToken, toToken, fromAmount, toAddress } = req.body as any
+  http.post(`${TEST_CONFIG.API_BASE_URL}/api/swap/execute`, async ({ request }) => {
+    const body = await request.json() as any
+    const { fromToken, toToken, fromAmount, toAddress } = body
 
     if (!fromToken || !toToken || !fromAmount || !toAddress) {
-      return res(ctx.status(400), ctx.json({ error: 'Missing required parameters' }))
+      return Response.json({ error: 'Missing required parameters' }, { status: 400 })
     }
 
-    return res(ctx.json({
+    return Response.json({
       success: true,
       order: {
         id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -143,27 +146,29 @@ export const createApiHandlers = () => [
         transactionHash: `0x${Math.random().toString(36).substr(2, 64)}`,
         createdAt: new Date().toISOString()
       }
-    }))
+    })
   }),
 
   // Orders API
-  rest.get(`${TEST_CONFIG.API_BASE_URL}/api/orders`, (req, res, ctx) => {
-    const walletAddress = req.url.searchParams.get('walletAddress')
+  http.get(`${TEST_CONFIG.API_BASE_URL}/api/orders`, ({ request }) => {
+    const url = new URL(request.url)
+    const walletAddress = url.searchParams.get('walletAddress')
     if (!walletAddress) {
-      return res(ctx.status(400), ctx.json({ error: 'Wallet address is required' }))
+      return Response.json({ error: 'Wallet address is required' }, { status: 400 })
     }
 
-    return res(ctx.json(generateMockOrders(50)))
+    return Response.json(generateMockOrders(50))
   }),
 
   // Bitcoin balance API
-  rest.get(`${TEST_CONFIG.API_BASE_URL}/api/bitcoin/balance`, (req, res, ctx) => {
-    const address = req.url.searchParams.get('address')
+  http.get(`${TEST_CONFIG.API_BASE_URL}/api/bitcoin/balance`, ({ request }) => {
+    const url = new URL(request.url)
+    const address = url.searchParams.get('address')
     if (!address) {
-      return res(ctx.status(400), ctx.json({ error: 'Bitcoin address is required' }))
+      return Response.json({ error: 'Bitcoin address is required' }, { status: 400 })
     }
 
-    return res(ctx.json({
+    return Response.json({
       address,
       balance: '0.25',
       utxos: [
@@ -175,7 +180,7 @@ export const createApiHandlers = () => [
         }
       ],
       lastUpdated: new Date().toISOString()
-    }))
+    })
   })
 ]
 

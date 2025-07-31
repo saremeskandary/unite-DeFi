@@ -31,8 +31,8 @@ describe('Cross-Chain Secret Coordination', () => {
     it('should handle secret revelation failures', async () => {
         // Mock secret revelation failure
         server.use(
-            rest.post('/api/swap/:swapId/reveal-secret', (req: any, res: any, ctx: any) => {
-                return res(ctx.status(500), ctx.json({ error: 'Secret revelation failed' }))
+            http.post('/api/swap/:swapId/reveal-secret', ({ request }) => {
+                return Response.json({ error: 'Secret revelation failed' }, { status: 500 })
             })
         )
 
@@ -68,8 +68,8 @@ describe('Cross-Chain Secret Coordination', () => {
     it('should handle missing secret parameter', async () => {
         // Mock missing secret error
         server.use(
-            rest.post('/api/swap/:swapId/reveal-secret', (req: any, res: any, ctx: any) => {
-                return res(ctx.status(400), ctx.json({ error: 'Secret is required' }))
+            http.post('/api/swap/:swapId/reveal-secret', ({ request }) => {
+                return Response.json({ error: 'Secret is required' }, { status: 400 })
             })
         )
 
@@ -88,8 +88,8 @@ describe('Cross-Chain Secret Coordination', () => {
     it('should handle network errors during secret revelation', async () => {
         // Mock network error
         server.use(
-            rest.post('/api/swap/:swapId/reveal-secret', (req: any, res: any, ctx: any) => {
-                return res(ctx.status(503), ctx.json({ error: 'Service unavailable' }))
+            http.post('/api/swap/:swapId/reveal-secret', ({ request }) => {
+                return Response.json({ error: 'Service unavailable' }, { status: 503 })
             })
         )
 
@@ -108,19 +108,19 @@ describe('Cross-Chain Secret Coordination', () => {
     it('should handle successful secret revelation with retry', async () => {
         let attemptCount = 0
         server.use(
-            rest.post('/api/swap/:swapId/reveal-secret', (req: any, res: any, ctx: any) => {
+            http.post('/api/swap/:swapId/reveal-secret', ({ request }) => {
                 attemptCount++
                 if (attemptCount === 1) {
-                    return res(ctx.status(500), ctx.json({ error: 'Temporary failure' }))
+                    return Response.json({ error: 'Temporary failure' }, { status: 500 })
                 }
-                return res(ctx.json({
+                return Response.json({
                     success: true,
                     swapId: 'swap_123',
                     secretRevealed: true,
                     ethereumClaimTx: '0xabcdef1234567890',
                     bitcoinClaimTx: 'def456abc123',
                     status: 'completed'
-                }))
+                })
             })
         )
 
@@ -153,23 +153,23 @@ describe('Cross-Chain Secret Coordination', () => {
     it('should handle concurrent secret revelation attempts', async () => {
         let concurrentAttempts = 0
         server.use(
-            rest.post('/api/swap/:swapId/reveal-secret', async (req: any, res: any, ctx: any) => {
+            http.post('/api/swap/:swapId/reveal-secret', async ({ request }) => {
                 concurrentAttempts++
                 // Simulate processing delay
                 await new Promise(resolve => setTimeout(resolve, 100))
 
                 if (concurrentAttempts > 1) {
-                    return res(ctx.status(409), ctx.json({ error: 'Secret already revealed' }))
+                    return Response.json({ error: 'Secret already revealed' }, { status: 409 })
                 }
 
-                return res(ctx.json({
+                return Response.json({
                     success: true,
                     swapId: 'swap_123',
                     secretRevealed: true,
                     ethereumClaimTx: '0xabcdef1234567890',
                     bitcoinClaimTx: 'def456abc123',
                     status: 'completed'
-                }))
+                })
             })
         )
 

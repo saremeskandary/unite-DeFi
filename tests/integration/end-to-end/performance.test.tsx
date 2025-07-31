@@ -1,12 +1,13 @@
+import '@testing-library/jest-dom'
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
-import PortfolioPage from '@/app/portfolio/page'
-import { SwapInterface } from '@/components/swap/swap-interface'
-import OrdersPage from '@/app/orders/page'
-import { enhancedWallet } from '@/lib/enhanced-wallet'
+import PortfolioPage from '../../../src/app/portfolio/page'
+import { SwapInterface } from '../../../src/components/swap/swap-interface'
+import OrdersPage from '../../../src/app/orders/page'
+import { enhancedWallet } from '../../../src/lib/enhanced-wallet'
 import { toast } from 'sonner'
 import { performance } from 'perf_hooks'
 
@@ -228,7 +229,7 @@ describe('Performance Tests', () => {
             topTokens: veryLargeTopTokens,
             recentActivity: [],
             lastUpdated: new Date().toISOString()
-          }))
+          })
         })
       )
 
@@ -272,14 +273,14 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      render(<SwapInterface onOrderCreated={ jest.fn() } />)
+      render(<SwapInterface onOrderCreated={jest.fn()} />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
       })
 
       // Simulate multiple concurrent quote requests
-      const quotePromises = []
+      const quotePromises: Promise<Response>[] = []
       const startTime = performance.now()
 
       for (let i = 0; i < 5; i++) {
@@ -322,7 +323,7 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      render(<SwapInterface onOrderCreated={ jest.fn() } />)
+      render(<SwapInterface onOrderCreated={jest.fn()} />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
@@ -388,14 +389,14 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      render(<SwapInterface onOrderCreated={ jest.fn() } />)
+      render(<SwapInterface onOrderCreated={jest.fn()} />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
       })
 
       // Start multiple swaps
-      const swapPromises = []
+      const swapPromises: Promise<Response>[] = []
 
       for (let i = 0; i < 3; i++) {
         const amountInput = screen.getByPlaceholderText(/enter amount/i)
@@ -482,7 +483,7 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      render(<SwapInterface onOrderCreated={ jest.fn() } />)
+      render(<SwapInterface onOrderCreated={jest.fn()} />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
@@ -564,7 +565,7 @@ describe('Performance Tests', () => {
       mockIsConnected.mockReturnValue(true)
       mockGetCurrentAddress.mockReturnValue('0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6')
 
-      const { unmount } = render(<SwapInterface onOrderCreated={ jest.fn() } />)
+      const { unmount } = render(<SwapInterface onOrderCreated={jest.fn()} />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
@@ -631,7 +632,7 @@ describe('Performance Tests', () => {
 
       const renderCount = jest.fn()
 
-      render(<SwapInterface onOrderCreated={ jest.fn() } />)
+      render(<SwapInterface onOrderCreated={jest.fn()} />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
@@ -716,7 +717,7 @@ describe('Performance Tests', () => {
         })
       )
 
-      render(<SwapInterface onOrderCreated={ jest.fn() } />)
+      render(<SwapInterface onOrderCreated={jest.fn()} />)
 
       await waitFor(() => {
         expect(screen.getByText('USDC')).toBeInTheDocument()
