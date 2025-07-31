@@ -1,11 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, Search } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Search, ChevronDown } from "lucide-react"
 import { TokenIcon } from "@web3icons/react"
 
 interface Token {
@@ -21,26 +27,20 @@ interface TokenSelectorProps {
   type: "from" | "to"
 }
 
-const TOKENS = [
-  { symbol: "USDC", name: "USD Coin", balance: "1,250.00" },
-  { symbol: "USDT", name: "Tether USD", balance: "500.00" },
-  { symbol: "DAI", name: "Dai Stablecoin", balance: "750.00" },
-  { symbol: "WETH", name: "Wrapped Ether", balance: "2.45" },
-  { symbol: "BTC", name: "Bitcoin", balance: "0.00" },
-  { symbol: "ETH", name: "Ethereum", balance: "1.25" },
-  { symbol: "MATIC", name: "Polygon", balance: "1500.00" },
-  { symbol: "UNI", name: "Uniswap", balance: "25.50" },
-  { symbol: "LINK", name: "Chainlink", balance: "45.20" },
-  { symbol: "AAVE", name: "Aave", balance: "12.30" },
+const TOKENS: Token[] = [
+  { symbol: "USDC", name: "USD Coin", balance: "1,234.56" },
+  { symbol: "USDT", name: "Tether USD", balance: "2,345.67" },
+  { symbol: "WETH", name: "Wrapped Ethereum", balance: "3.45" },
+  { symbol: "WBTC", name: "Wrapped Bitcoin", balance: "0.12" },
+  { symbol: "DAI", name: "Dai Stablecoin", balance: "567.89" },
+  { symbol: "UNI", name: "Uniswap", balance: "45.67" },
+  { symbol: "LINK", name: "Chainlink", balance: "123.45" },
+  { symbol: "AAVE", name: "Aave", balance: "8.90" },
 ]
 
 export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
-  const [search, setSearch] = useState("")
   const [isOpen, setIsOpen] = useState(false)
-
-  const filteredTokens = TOKENS.filter(
-    (t) => t.symbol.toLowerCase().includes(search.toLowerCase()) || t.name.toLowerCase().includes(search.toLowerCase()),
-  )
+  const [search, setSearch] = useState("")
 
   const handleSelect = (selectedToken: Token) => {
     onSelect(selectedToken)
@@ -49,50 +49,56 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
   }
 
   const renderTokenIcon = (symbol: string, size: number = 24) => {
-    try {
-      return (
-        <TokenIcon
-          symbol={symbol.toLowerCase()}
-          size={size}
-          variant="branded"
-          className="rounded-full"
-        />
-      )
-    } catch (error) {
-      // Fallback for tokens not in the library
-      return (
-        <div className={`w-${size / 4} h-${size / 4} bg-gradient-to-r from-primary to-primary/80 rounded-full flex items-center justify-center text-xs font-bold text-primary-foreground`}>
-          {symbol.slice(0, 2)}
-        </div>
-      )
+    const iconMap: { [key: string]: string } = {
+      USDC: "usdc",
+      USDT: "usdt",
+      WETH: "weth",
+      WBTC: "wbtc",
+      DAI: "dai",
+      UNI: "uni",
+      LINK: "link",
+      AAVE: "aave",
+      ETH: "eth",
+      BTC: "btc",
     }
+
+    const iconName = iconMap[symbol.toUpperCase()]
+    if (iconName) {
+      return <TokenIcon symbol={iconName} size={size} variant="branded" />
+    }
+
+    return (
+      <div
+        className="rounded-full bg-muted flex items-center justify-center"
+        style={{ width: size, height: size }}
+      >
+        <span className="text-xs font-medium">{symbol.slice(0, 2)}</span>
+      </div>
+    )
   }
+
+  const filteredTokens = useMemo(() => {
+    if (!search) return TOKENS
+    return TOKENS.filter(
+      (token) =>
+        token.symbol.toLowerCase().includes(search.toLowerCase()) ||
+        token.name.toLowerCase().includes(search.toLowerCase())
+    )
+  }, [search])
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-<<<<<<< HEAD
         <Button variant="ghost" className="bg-muted/50 hover:bg-accent text-foreground border-0 h-10 sm:h-12 px-2 sm:px-3">
           <div className="flex items-center space-x-1 sm:space-x-2">
             {renderTokenIcon(token.symbol, 24)}
             <span className="font-medium text-xs sm:text-sm">{token.symbol}</span>
             <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-=======
-        <Button variant="ghost" className="bg-muted/50 hover:bg-accent text-foreground border-0 h-12 px-3">
-          <div className="flex items-center space-x-2">
-            {renderTokenIcon(token.symbol, 60)}
-            <span className="font-medium">{token.symbol}</span>
-            <ChevronDown className="w-4 h-4" />
->>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
           </div>
         </Button>
       </DialogTrigger>
 
-<<<<<<< HEAD
       <DialogContent className="bg-card border-border text-foreground w-[90vw] max-w-sm max-h-[85vh] overflow-hidden mx-auto">
-=======
-      <DialogContent className="bg-card border-border text-foreground">
->>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl">Select Token</DialogTitle>
         </DialogHeader>
@@ -105,11 +111,7 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
               placeholder="Search tokens..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-<<<<<<< HEAD
               className="pl-10 bg-muted border-border text-foreground h-10"
-=======
-              className="pl-10 bg-muted border-border text-foreground"
->>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
             />
           </div>
 
@@ -121,22 +123,14 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
                 <Badge
                   key={symbol}
                   variant="secondary"
-<<<<<<< HEAD
                   className="bg-muted hover:bg-accent cursor-pointer text-xs"
-=======
-                  className="bg-muted hover:bg-accent cursor-pointer"
->>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
                   onClick={() => {
                     const tokenData = TOKENS.find((t) => t.symbol === symbol)
                     if (tokenData) handleSelect(tokenData)
                   }}
                 >
                   <div className="flex items-center space-x-1">
-<<<<<<< HEAD
                     {renderTokenIcon(symbol, 16)}
-=======
-                    {renderTokenIcon(symbol, 60)}
->>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
                     <span>{symbol}</span>
                   </div>
                 </Badge>
@@ -150,7 +144,6 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
               <Button
                 key={tokenOption.symbol}
                 variant="ghost"
-<<<<<<< HEAD
                 className="w-full justify-between p-2 sm:p-3 h-auto hover:bg-accent"
                 onClick={() => handleSelect(tokenOption)}
               >
@@ -163,21 +156,6 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
                 </div>
                 <div className="text-right">
                   <div className="text-xs sm:text-sm">{tokenOption.balance}</div>
-=======
-                className="w-full justify-between p-3 h-auto hover:bg-accent"
-                onClick={() => handleSelect(tokenOption)}
-              >
-                <div className="flex items-center space-x-3">
-                  {renderTokenIcon(tokenOption.symbol, 60)}
-                  <div className="text-left">
-                    <div className="font-medium">{tokenOption.symbol}</div>
-                    <div className="text-sm text-muted-foreground">{tokenOption.name}</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm">{tokenOption.balance}</div>
->>>>>>> 46507ad95ca0b0a85f9918bcae27f78d5942a671
-                  <div className="text-xs text-muted-foreground">{tokenOption.symbol}</div>
                 </div>
               </Button>
             ))}

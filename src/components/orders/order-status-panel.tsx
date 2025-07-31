@@ -6,58 +6,31 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Clock, CheckCircle, AlertCircle, ExternalLink, Copy, RefreshCw } from "lucide-react"
+import { useRealTimeOrderStatus } from "@/hooks/useOrderStatus"
+import { OrderStatus } from "@/lib/services/order-monitor"
 
 interface OrderStatusPanelProps {
   orderId: string | null
 }
 
-interface OrderStatus {
-  id: string
-  status: "pending" | "funding" | "executing" | "completed" | "failed"
-  progress: number
-  fromToken: string
-  toToken: string
-  fromAmount: string
-  toAmount: string
-  bitcoinAddress: string
-  createdAt: string
-  estimatedCompletion: string
-  txHashes: {
-    ethereum?: string
-    bitcoin?: string
-  }
-}
-
-const MOCK_ORDER: OrderStatus = {
-  id: "order_1234567890",
-  status: "executing",
-  progress: 65,
-  fromToken: "USDC",
-  toToken: "BTC",
-  fromAmount: "1000.00",
-  toAmount: "0.02314",
-  bitcoinAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-  createdAt: "2024-01-15T10:30:00Z",
-  estimatedCompletion: "2024-01-15T11:00:00Z",
-  txHashes: {
-    ethereum: "0x742d35cc6634c0532925a3b8d4c9db96590b5b8c742d35cc6634c0532925a3b8",
-    bitcoin: undefined,
-  },
-}
-
 export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
-  const [order, setOrder] = useState<OrderStatus | null>(null)
   const [timeRemaining, setTimeRemaining] = useState("")
 
-  useEffect(() => {
-    if (orderId) {
-      // Simulate loading order data
-      setTimeout(() => {
-        setOrder({ ...MOCK_ORDER, id: orderId })
-      }, 1000)
-    }
-  }, [orderId])
+  // Use real-time order status monitoring
+  const {
+    orderStatus: order,
+    isLoading,
+    error,
+    isMonitoring,
+    startMonitoring,
+    stopMonitoring,
+    refreshStatus,
+  } = useRealTimeOrderStatus(orderId, {
+    autoStart: true,
+    network: 'testnet',
+  })
 
+  // Update timer based on real order data
   useEffect(() => {
     if (order) {
       const updateTimer = () => {
@@ -132,12 +105,35 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
     )
   }
 
-  if (!order) {
+  if (isLoading || !order) {
     return (
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-8 text-center">
           <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-400">Loading order details...</p>
+          {isMonitoring && (
+            <div className="mt-2 text-xs text-blue-400">
+              Real-time monitoring active
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardContent className="p-8 text-center">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">Error Loading Order</h3>
+          <p className="text-slate-400 mb-4">{error.message}</p>
+          <Button onClick={refreshStatus} variant="outline" size="sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
         </CardContent>
       </Card>
     )
@@ -148,10 +144,15 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-white text-lg">Order Status</CardTitle>
-          <Badge variant="secondary" className={getStatusColor(order.status)}>
-            {getStatusIcon(order.status)}
-            <span className="ml-1 capitalize">{order.status}</span>
-          </Badge>
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary" className={getStatusColor(order.status)}>
+              {getStatusIcon(order.status)}
+              <span className="ml-1 capitalize">{order.status}</span>
+            </Badge>
+            {isMonitoring && (
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            )}
+          </div>
         </div>
       </CardHeader>
 
@@ -163,7 +164,9 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
             <span className="text-white">{order.progress}%</span>
           </div>
           <Progress value={order.progress} className="h-2" />
-          <div className="text-center text-sm text-slate-400">Estimated completion: {timeRemaining}</div>
+          <div className="text-center text-sm text-slate-400">
+            Estimated completion: {timeRemaining}
+          </div>
         </div>
 
         {/* Order Details */}
@@ -261,11 +264,11 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
 
           <div className="space-y-2">
             {[
-              { phase: "Order Created", completed: true },
-              { phase: "Ethereum HTLC Funded", completed: true },
-              { phase: "Bitcoin HTLC Created", completed: order.progress >= 50 },
-              { phase: "Bitcoin HTLC Funded", completed: order.progress >= 75 },
-              { phase: "Swap Completed", completed: order.progress >= 100 },
+              { phase: "Order Created", completed: order.phases.orderCreated },
+              { phase: "Ethereum HTLC Funded", completed: order.phases.ethereumHtlcFunded },
+              { phase: "Bitcoin HTLC Created", completed: order.phases.bitcoinHtlcCreated },
+              { phase: "Bitcoin HTLC Funded", completed: order.phases.bitcoinHtlcFunded },
+              { phase: "Swap Completed", completed: order.phases.swapCompleted },
             ].map((step, index) => (
               <div key={index} className="flex items-center space-x-3">
                 <div className={`w-2 h-2 rounded-full ${step.completed ? "bg-green-400" : "bg-slate-600"}`} />
@@ -273,6 +276,41 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
                 {step.completed && <CheckCircle className="w-4 h-4 text-green-400" />}
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Monitoring Controls */}
+        <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+          <div className="text-sm text-slate-400">
+            {isMonitoring ? "Real-time monitoring active" : "Monitoring paused"}
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              onClick={refreshStatus}
+              variant="outline"
+              size="sm"
+              disabled={isLoading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            {isMonitoring ? (
+              <Button
+                onClick={stopMonitoring}
+                variant="outline"
+                size="sm"
+              >
+                Pause
+              </Button>
+            ) : (
+              <Button
+                onClick={startMonitoring}
+                variant="outline"
+                size="sm"
+              >
+                Resume
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
