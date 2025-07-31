@@ -26,9 +26,12 @@ export class PriceOracleService {
   private coingeckoBaseUrl = 'https://api.coingecko.com/api/v3';
   private inchBaseUrl = 'https://api.1inch.dev/swap/v6.0';
   private inchApiKey: string;
+  private etherscanApiKey: string;
+  private fallbackApiUrl = 'https://api.coinbase.com/v2';
 
   constructor() {
-    this.inchApiKey = process.env.INCH_API_KEY || '';
+    this.inchApiKey = process.env.INCH_API_KEY || process.env.NEXT_PUBLIC_INCH_API_KEY || '';
+    this.etherscanApiKey = process.env.ETHERSCAN_API_KEY || '';
   }
 
   /**
@@ -200,28 +203,132 @@ export class PriceOracleService {
    */
   async getGasPrice(chainId: number = 1): Promise<{ fast: number; standard: number; slow: number } | null> {
     try {
-      const response = await axios.get('https://api.etherscan.io/api', {
-        params: {
-          module: 'gastracker',
-          action: 'gasoracle',
-          apikey: process.env.ETHERSCAN_API_KEY || ''
-        },
-        timeout: 5000
-      });
+      if (chainId === 1 && this.etherscanApiKey) {
+        // Ethereum mainnet - use Etherscan API
+        const response = await axios.get('https://api.etherscan.io/api', {
+          params: {
+            module: 'gastracker',
+            action: 'gasoracle',
+            apikey: this.etherscanApiKey
+          },
+          timeout: 5000
+        });
 
-      if (response.data.status === '1') {
-        const result = response.data.result;
-        return {
-          fast: parseInt(result.FastGasPrice),
-          standard: parseInt(result.ProposeGasPrice),
-          slow: parseInt(result.SafeGasPrice)
-        };
+        if (response.data.status === '1') {
+          const result = response.data.result;
+          return {
+            fast: parseInt(result.FastGasPrice),
+            standard: parseInt(result.ProposeGasPrice),
+            slow: parseInt(result.SafeGasPrice)
+          };
+        }
       }
+
+      // For testnets or when Etherscan is not available, use RPC
+      try {
+        const rpcUrl = chainId === 11155111 ?
+          'https://eth-sepolia.public.blastapi.io' :
+          'https://eth-mainnet.public.blastapi.io';
+
+        const response = await axios.post(rpcUrl, {
+          jsonrpc: '2.0',
+          method: 'eth_gasPrice',
+          params: [],
+          id: 1
+        }, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 5000
+        });
+
+        if (response.data.result) {
+          const gasPrice = parseInt(response.data.result, 16);
+          const gwei = gasPrice / 1e9;
+
+          return {
+            fast: Math.round(gwei * 1.2),
+            standard: Math.round(gwei),
+            slow: Math.round(gwei * 0.8)
+          };
+        }
+      } catch (rpcError) {
+        console.warn('RPC gas price fetch failed:', rpcError);
+      }
+
+      // Fallback: use 1inch gas price API
+      if (this.inchApiKey) {
+        const response = await axios.get(`${this.inchBaseUrl}/${chainId}/gas`, {
+          headers: {
+            'Authorization': `Bearer ${this.inchApiKey}`
+          },
+          timeout: 5000
+        });
+
+        if (response.data) {
+          return {
+            fast: response.data.fast || 20,
+            standard: response.data.standard || 15,
+            slow: response.data.slow || 10
+          };
+        }
+      }
+
+      // Final fallback: return reasonable defaults
+      return {
+        fast: 25,
+        standard: 20,
+        slow: 15
+      };
     } catch (error) {
       console.error('Error fetching gas price:', error);
+      return {
+        fast: 25,
+        standard: 20,
+        slow: 15
+      };
+    }
+  }
+
+  /**
+   * Calculate dynamic fees based on network conditions
+   */
+  async calculateDynamicFees(
+    chainId: number = 1,
+    gasLimit: number = 21000,
+    priority: 'fast' | 'standard' | 'slow' = 'standard'
+  ): Promise<{
+    gasPrice: number;
+    gasLimit: number;
+    totalFee: number;
+    estimatedTime: string;
+  }> {
+    const gasPrices = await this.getGasPrice(chainId);
+    if (!gasPrices) {
+      throw new Error('Unable to fetch gas prices');
     }
 
-    return null;
+    const gasPrice = gasPrices[priority];
+    const totalFee = (gasPrice * gasLimit) / 1e9; // Convert to ETH
+    const estimatedTime = this.getEstimatedTime(priority);
+
+    return {
+      gasPrice,
+      gasLimit,
+      totalFee,
+      estimatedTime
+    };
+  }
+
+  private getEstimatedTime(priority: 'fast' | 'standard' | 'slow'): string {
+    switch (priority) {
+      case 'fast':
+        return '~30 seconds';
+      case 'standard':
+        return '~2-5 minutes';
+      case 'slow':
+        return '~10-15 minutes';
+      default:
+        return '~2-5 minutes';
+    }
   }
 
   private getCoinGeckoId(symbol: string): string | null {

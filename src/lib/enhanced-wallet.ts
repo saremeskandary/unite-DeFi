@@ -83,6 +83,30 @@ export class EnhancedWalletService {
     }
   };
 
+  // Sepolia testnet token addresses
+  private sepoliaTokens = {
+    'USDC': {
+      address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+      decimals: 6,
+      name: 'USD Coin (Sepolia)'
+    },
+    'USDT': {
+      address: '0x7169D38820dfd117C3FA1f22a697dBA58d90BA06',
+      decimals: 6,
+      name: 'Tether USD (Sepolia)'
+    },
+    'WETH': {
+      address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
+      decimals: 18,
+      name: 'Wrapped Ethereum (Sepolia)'
+    },
+    'DAI': {
+      address: '0x68194a729C2450ad26072b3D33ADaCbcef39D574',
+      decimals: 18,
+      name: 'Dai Stablecoin (Sepolia)'
+    }
+  };
+
   constructor() {
     this.initializeProvider();
   }
@@ -183,8 +207,12 @@ export class EnhancedWalletService {
     const tokenBalances: TokenBalance[] = [];
     const tokenSymbols: string[] = [];
 
-    // Check balances for all common tokens
-    for (const [symbol, tokenInfo] of Object.entries(this.commonTokens)) {
+    // Determine which token list to use based on network
+    const isTestnet = this.currentChainId === 11155111; // Sepolia
+    const tokensToCheck = isTestnet ? this.sepoliaTokens : this.commonTokens;
+
+    // Check balances for all tokens in the appropriate network
+    for (const [symbol, tokenInfo] of Object.entries(tokensToCheck)) {
       try {
         const contract = new ethers.Contract(
           tokenInfo.address,
@@ -210,6 +238,25 @@ export class EnhancedWalletService {
       } catch (error) {
         console.warn(`Error fetching balance for ${symbol}:`, error);
       }
+    }
+
+    // Add native ETH balance if it exists
+    const nativeBalance = await this.provider.getBalance(this.currentAddress);
+    if (nativeBalance > 0) {
+      const ethPrice = await priceOracle.getTokenPrice('ETH');
+      const ethBalance = ethers.formatEther(nativeBalance);
+      tokenBalances.push({
+        symbol: 'ETH',
+        name: 'Ethereum',
+        balance: ethBalance,
+        balanceRaw: nativeBalance.toString(),
+        decimals: 18,
+        network: this.getNetworkName(this.currentChainId!),
+        price: ethPrice?.price,
+        change24h: ethPrice?.change24h,
+        value: ethPrice ? parseFloat(ethBalance) * ethPrice.price : 0
+      });
+      tokenSymbols.push('ETH');
     }
 
     // Get prices for tokens with balances
@@ -313,6 +360,14 @@ export class EnhancedWalletService {
     };
 
     return networks[chainId] || 'unknown';
+  }
+
+  /**
+   * Get current network name
+   */
+  getCurrentNetworkName(): string {
+    if (!this.currentChainId) return 'unknown';
+    return this.getNetworkName(this.currentChainId);
   }
 
   /**

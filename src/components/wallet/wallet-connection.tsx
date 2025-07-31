@@ -70,9 +70,24 @@ export function WalletConnection() {
   }
 
   const openExplorer = () => {
-    if (!address) return
+    if (!address || !chainId) return
 
-    const explorerUrl = `https://etherscan.io/address/${address}`
+    // Get the appropriate explorer URL based on the network
+    const getExplorerUrl = (chainId: number, address: string) => {
+      const explorers: { [key: number]: string } = {
+        1: `https://etherscan.io/address/${address}`, // Ethereum Mainnet
+        5: `https://goerli.etherscan.io/address/${address}`, // Goerli
+        11155111: `https://sepolia.etherscan.io/address/${address}`, // Sepolia
+        137: `https://polygonscan.com/address/${address}`, // Polygon
+        42161: `https://arbiscan.io/address/${address}`, // Arbitrum
+        10: `https://optimistic.etherscan.io/address/${address}`, // Optimism
+        56: `https://bscscan.com/address/${address}`, // BSC
+        43114: `https://snowtrace.io/address/${address}`, // Avalanche
+      }
+      return explorers[chainId] || `https://etherscan.io/address/${address}`
+    }
+
+    const explorerUrl = getExplorerUrl(chainId, address)
     window.open(explorerUrl, '_blank')
   }
 

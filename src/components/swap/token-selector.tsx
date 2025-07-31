@@ -47,9 +47,24 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
   const [tokens, setTokens] = useState<Token[]>(TOKENS)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Load real token data when component mounts
+  // Load real token data when component mounts and when wallet changes
   useEffect(() => {
     loadTokenData()
+  }, [])
+
+  // Refresh token data when wallet connection changes
+  useEffect(() => {
+    const handleWalletChange = () => {
+      loadTokenData()
+    }
+
+    // Listen for wallet changes
+    enhancedWallet.onAccountChange(handleWalletChange)
+    enhancedWallet.onChainChange(handleWalletChange)
+
+    return () => {
+      // Cleanup listeners (if the enhanced wallet supports it)
+    }
   }, [])
 
   const loadTokenData = async () => {
@@ -62,6 +77,26 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
         return
       }
 
+      // Try to get real token balances from the enhanced wallet
+      if (enhancedWallet.isConnected()) {
+        try {
+          const walletInfo = await enhancedWallet.getWalletInfo()
+          if (walletInfo && walletInfo.tokens.length > 0) {
+            const realTokens = walletInfo.tokens.map((t: any) => ({
+              symbol: t.symbol,
+              name: t.name,
+              balance: t.balance || '0.00',
+              value: t.value || 0
+            }))
+            setTokens(realTokens)
+            return
+          }
+        } catch (walletError) {
+          console.warn('Failed to get wallet info, falling back to API:', walletError)
+        }
+      }
+
+      // Fallback to API
       const response = await fetch(`/api/tokens?address=${walletAddress}&includePrices=true`)
       if (response.ok) {
         const data = await response.json()
@@ -70,6 +105,8 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
           name: t.name,
           balance: t.balance || '0.00'
         })))
+      } else {
+        setTokens(TOKENS)
       }
     } catch (error) {
       console.error('Error loading token data:', error)
@@ -202,3 +239,4 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
     </Dialog>
   )
 }
+

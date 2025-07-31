@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BitcoinNetworkOperations } from '@/lib/blockchains/bitcoin/bitcoin-network-operations';
+import { priceOracle } from '@/lib/price-oracle';
+import { enhancedWallet } from '@/lib/enhanced-wallet';
 
 interface Order {
   id: string;
@@ -271,5 +273,96 @@ async function fetchEthereumTransactions(address: string, network: string): Prom
   } catch (error) {
     console.error('Error fetching Ethereum transactions:', error);
     return [];
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const {
+      fromToken,
+      toToken,
+      fromAmount,
+      toAmount,
+      walletAddress,
+      slippage = 0.5,
+      gasPriority = 'standard'
+    } = body;
+
+    // Validate required fields
+    if (!fromToken || !toToken || !fromAmount || !walletAddress) {
+      return NextResponse.json(
+        { error: 'Missing required fields: fromToken, toToken, fromAmount, walletAddress' },
+        { status: 400 }
+      );
+    }
+
+    // Get current network
+    const chainId = enhancedWallet.getCurrentChainId() || 1;
+    const network = enhancedWallet.getCurrentAddress() === walletAddress ?
+      enhancedWallet.getCurrentNetworkName() : 'ethereum';
+
+    // Calculate dynamic fees
+    const gasLimit = 150000; // Estimate for token swaps
+    const fees = await priceOracle.calculateDynamicFees(chainId, gasLimit, gasPriority);
+
+    // Get current prices for value calculation
+    const [fromPrice, toPrice] = await Promise.all([
+      priceOracle.getTokenPrice(fromToken),
+      priceOracle.getTokenPrice(toToken)
+    ]);
+
+    const fromValue = fromPrice ? parseFloat(fromAmount) * fromPrice.price : 0;
+    const toValue = toPrice ? parseFloat(toAmount) * toPrice.price : 0;
+
+    // Create order object
+    const order: Order = {
+      id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'swap',
+      status: 'pending',
+      fromAsset: fromToken,
+      toAsset: toToken,
+      fromAmount: parseFloat(fromAmount),
+      toAmount: parseFloat(toAmount),
+      fromAmountFormatted: `${fromAmount} ${fromToken}`,
+      toAmountFormatted: `${toAmount} ${toToken}`,
+      price: toPrice?.price || 0,
+      value: fromValue,
+      timestamp: new Date().toISOString(),
+      network,
+      fee: fees.totalFee,
+      slippage
+    };
+
+    // In a real implementation, you would:
+    // 1. Create the actual blockchain transaction
+    // 2. Submit it to the network
+    // 3. Return the transaction hash
+    // 4. Monitor the transaction status
+
+    // For now, we'll simulate the transaction creation
+    const transactionHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+    order.transactionHash = transactionHash;
+
+    // Simulate transaction processing
+    setTimeout(() => {
+      // In a real implementation, you would update the order status
+      // based on blockchain confirmation
+      console.log(`Order ${order.id} transaction submitted: ${transactionHash}`);
+    }, 1000);
+
+    return NextResponse.json({
+      success: true,
+      order,
+      fees,
+      estimatedTime: fees.estimatedTime
+    });
+
+  } catch (error) {
+    console.error('Error creating order:', error);
+    return NextResponse.json(
+      { error: 'Failed to create order' },
+      { status: 500 }
+    );
   }
 } 
