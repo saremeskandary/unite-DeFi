@@ -339,13 +339,13 @@ This checklist identifies all mock data, hardcoded values, and simulated functio
   - [ ] Test swap execution API
   - [x] Test WebSocket connections
 
-- [ ] **Wallet Integration Tests**
+- [x] **Wallet Integration Tests**
 
-  - [ ] Test wallet connection flows
-  - [ ] Test balance fetching
-  - [ ] Test transaction signing
-  - [ ] Test multi-chain support
-  - [ ] Test error handling for wallet failures
+  - [x] Test wallet connection flows
+  - [x] Test balance fetching
+  - [x] Test transaction signing
+  - [x] Test multi-chain support
+  - [x] Test error handling for wallet failures
 
 - [ ] **Swap Logic Tests**
 
