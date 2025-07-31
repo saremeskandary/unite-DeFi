@@ -4,6 +4,68 @@ import { config } from 'dotenv'
 // Load environment variables for testing
 config({ path: '.env.test' })
 
+// Polyfill for Request and Response objects in test environment
+if (typeof global.Request === 'undefined') {
+  // Simple Request polyfill for testing
+  global.Request = class Request {
+    url: string;
+    method: string;
+    headers: any;
+    body: any;
+
+    constructor(input: string | Request, init?: any) {
+      if (typeof input === 'string') {
+        this.url = input;
+      } else {
+        this.url = input.url;
+      }
+      this.method = init?.method || 'GET';
+      this.headers = init?.headers || {};
+      this.body = init?.body || null;
+    }
+
+    async json() {
+      return typeof this.body === 'string' ? JSON.parse(this.body) : this.body;
+    }
+  } as any;
+}
+
+if (typeof global.Response === 'undefined') {
+  // Simple Response polyfill for testing
+  global.Response = class Response {
+    status: number;
+    statusText: string;
+    headers: any;
+    body: any;
+
+    constructor(body?: any, init?: any) {
+      this.status = init?.status || 200;
+      this.statusText = init?.statusText || 'OK';
+      this.headers = init?.headers || {};
+      this.body = body;
+    }
+
+    async json() {
+      return typeof this.body === 'string' ? JSON.parse(this.body) : this.body;
+    }
+  } as any;
+}
+
+// Mock NextResponse for testing
+if (typeof global.NextResponse === 'undefined') {
+  global.NextResponse = {
+    json: (data: any, init?: any) => {
+      return new global.Response(JSON.stringify(data), {
+        status: init?.status || 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...init?.headers
+        }
+      });
+    }
+  } as any;
+}
+
 // Global test configuration
 beforeAll(() => {
   // Set up Bitcoin testnet configuration
