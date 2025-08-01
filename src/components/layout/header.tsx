@@ -45,34 +45,6 @@ export function Header() {
 
           {/* Wallet Connection */}
           <div className="flex items-center space-x-4">
-            {/* Network Selector */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-slate-600 bg-slate-800 text-white hover:bg-slate-700"
-                >
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
-                  Ethereum
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-slate-800 border-slate-700">
-                <DropdownMenuItem className="text-white hover:bg-slate-700">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
-                  Ethereum
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-slate-400 hover:bg-slate-700">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full mr-2" />
-                  Polygon
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-slate-400 hover:bg-slate-700">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-2" />
-                  Arbitrum
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
             <WalletConnection />
           </div>
         </div>

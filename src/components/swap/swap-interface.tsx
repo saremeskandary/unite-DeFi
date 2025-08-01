@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Slider } from "@/components/ui/slider"
 import { TokenSelector } from "./token-selector"
 import { BitcoinAddressInput } from "./bitcoin-address-input"
+import { BitcoinSwapFlowUI } from "./bitcoin-swap-flow-ui"
 import { OrderSummary } from "./order-summary"
 import { ArrowUpDown, Settings, Info } from "lucide-react"
 import { enhancedWallet } from "@/lib/enhanced-wallet"
@@ -63,6 +64,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
   const [selectedFeePriority, setSelectedFeePriority] = useState<'slow' | 'standard' | 'fast'>('standard')
   const [walletConnected, setWalletConnected] = useState(false)
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
+  const [showBitcoinFlow, setShowBitcoinFlow] = useState(false)
 
   // Initialize wallet connection and load token balances
   useEffect(() => {
@@ -236,6 +238,9 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
 
   const isValidSwap = fromAmount && toAmount && (bitcoinAddress || walletAddress) &&
     Number.parseFloat(fromAmount) > 0 && walletConnected && currentQuote
+
+  // Check if this is a Bitcoin swap
+  const isBitcoinSwap = fromToken.symbol === "BTC" || toToken.symbol === "BTC"
 
   return (
     <Card className="bg-card/50 border-border backdrop-blur-sm w-full max-w-md mx-auto">
@@ -419,7 +424,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
 
         {/* Swap Button */}
         <Button
-          onClick={handleCreateOrder}
+          onClick={isBitcoinSwap ? () => setShowBitcoinFlow(true) : handleCreateOrder}
           disabled={!isValidSwap || isLoading}
           className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm sm:text-base"
         >
@@ -430,6 +435,8 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
             </div>
           ) : !walletConnected ? (
             "Connect Wallet to Swap"
+          ) : isBitcoinSwap ? (
+            "Start Bitcoin Swap"
           ) : (
             "Create Swap Order"
           )}
@@ -444,6 +451,29 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
           </p>
         </div>
       </CardContent>
+
+      {/* Bitcoin Swap Flow Dialog */}
+      <Dialog open={showBitcoinFlow} onOpenChange={setShowBitcoinFlow}>
+        <DialogContent className="bg-card border-border w-[95vw] max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Bitcoin Cross-Chain Swap</DialogTitle>
+          </DialogHeader>
+          <BitcoinSwapFlowUI
+            fromToken={fromToken.symbol}
+            toToken={toToken.symbol}
+            fromAmount={fromAmount}
+            toAmount={toAmount}
+            userEthereumAddress={walletAddress || ''}
+            onSwapComplete={(result) => {
+              if (result.success && result.orderHash) {
+                onOrderCreated(result.orderHash)
+                setShowBitcoinFlow(false)
+                toast.success("Bitcoin swap order created successfully!")
+              }
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

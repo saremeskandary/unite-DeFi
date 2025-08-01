@@ -107,6 +107,29 @@ export class EnhancedWalletService {
     }
   };
 
+  private anvilTokens = {
+    'USDC': {
+      address: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+      decimals: 6,
+      name: 'USD Coin (Anvil)'
+    },
+    'USDT': {
+      address: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
+      decimals: 6,
+      name: 'Tether USD (Anvil)'
+    },
+    'WETH': {
+      address: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
+      decimals: 18,
+      name: 'Wrapped Ethereum (Anvil)'
+    },
+    'DAI': {
+      address: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
+      decimals: 18,
+      name: 'Dai Stablecoin (Anvil)'
+    }
+  };
+
   constructor() {
     this.initializeProvider();
   }
@@ -140,9 +163,9 @@ export class EnhancedWalletService {
       this.currentChainId = Number(network.chainId);
 
       // Check if the current network is supported
-      const supportedNetworks = [1, 5, 11155111]; // Mainnet, Goerli, Sepolia
+      const supportedNetworks = [1, 5, 11155111, 31337]; // Mainnet, Goerli, Sepolia, Anvil
       if (!supportedNetworks.includes(this.currentChainId)) {
-        throw new Error(`Unsupported network. Please switch to Ethereum Mainnet, Goerli, or Sepolia. Current chain ID: ${this.currentChainId}`);
+        throw new Error(`Unsupported network. Please switch to Ethereum Mainnet, Goerli, Sepolia, or Anvil. Current chain ID: ${this.currentChainId}`);
       }
 
       return await this.getWalletInfo();
@@ -152,7 +175,7 @@ export class EnhancedWalletService {
       // Provide more specific error messages
       if (error instanceof Error) {
         if (error.message.includes('Failed to fetch') || error.message.includes('localhost:8545')) {
-          throw new Error('Please switch to a supported network (Ethereum Mainnet, Goerli, or Sepolia) in MetaMask');
+          throw new Error('Please switch to a supported network (Ethereum Mainnet, Goerli, Sepolia, or Anvil) in MetaMask');
         }
         throw error;
       }
@@ -208,8 +231,14 @@ export class EnhancedWalletService {
     const tokenSymbols: string[] = [];
 
     // Determine which token list to use based on network
-    const isTestnet = this.currentChainId === 11155111; // Sepolia
-    const tokensToCheck = isTestnet ? this.sepoliaTokens : this.commonTokens;
+    let tokensToCheck;
+    if (this.currentChainId === 11155111) { // Sepolia
+      tokensToCheck = this.sepoliaTokens;
+    } else if (this.currentChainId === 31337) { // Anvil
+      tokensToCheck = this.anvilTokens;
+    } else {
+      tokensToCheck = this.commonTokens;
+    }
 
     // Check balances for all tokens in the appropriate network
     for (const [symbol, tokenInfo] of Object.entries(tokensToCheck)) {
@@ -352,6 +381,7 @@ export class EnhancedWalletService {
       1: 'ethereum',
       5: 'goerli',
       11155111: 'sepolia',
+      31337: 'anvil',
       137: 'polygon',
       42161: 'arbitrum',
       10: 'optimism',
@@ -424,6 +454,43 @@ export class EnhancedWalletService {
       }
     } catch (error) {
       console.error('Error switching network:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Switch to Anvil network (for local development)
+   */
+  async switchToAnvil(): Promise<boolean> {
+    try {
+      if (!this.provider) {
+        throw new Error('No provider available');
+      }
+
+      // Try to switch to Anvil
+      try {
+        await this.provider.send('wallet_switchEthereumChain', [{ chainId: '0x7a69' }]); // Anvil (31337)
+        return true;
+      } catch (switchError) {
+        // If Anvil is not added, add it
+        if ((switchError as any).code === 4902) {
+          await this.provider.send('wallet_addEthereumChain', [{
+            chainId: '0x7a69',
+            chainName: 'Anvil',
+            nativeCurrency: {
+              name: 'Ether',
+              symbol: 'ETH',
+              decimals: 18
+            },
+            rpcUrls: ['http://127.0.0.1:8545'],
+            blockExplorerUrls: []
+          }]);
+          return true;
+        }
+        throw switchError;
+      }
+    } catch (error) {
+      console.error('Error switching to Anvil:', error);
       return false;
     }
   }

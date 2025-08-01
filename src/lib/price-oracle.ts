@@ -29,16 +29,76 @@ export class PriceOracleService {
   private etherscanApiKey: string;
   private fallbackApiUrl = 'https://api.coinbase.com/v2';
 
+  // Rate limiting
+  private requestCount = 0;
+  private lastRequestTime = 0;
+  private readonly RATE_LIMIT = 50; // requests per minute
+  private readonly RATE_LIMIT_WINDOW = 60000; // 1 minute in ms
+
+  // Cache for prices
+  private priceCache = new Map<string, { price: TokenPrice; timestamp: number }>();
+  private readonly CACHE_DURATION = 30000; // 30 seconds
+
   constructor() {
     this.inchApiKey = process.env.INCH_API_KEY || process.env.NEXT_PUBLIC_INCH_API_KEY || '';
     this.etherscanApiKey = process.env.ETHERSCAN_API_KEY || '';
   }
 
   /**
-   * Get token price from CoinGecko
+   * Rate limiting helper
+   */
+  private async checkRateLimit(): Promise<void> {
+    const now = Date.now();
+
+    // Reset counter if window has passed
+    if (now - this.lastRequestTime > this.RATE_LIMIT_WINDOW) {
+      this.requestCount = 0;
+      this.lastRequestTime = now;
+    }
+
+    // Check if we're at the limit
+    if (this.requestCount >= this.RATE_LIMIT) {
+      const waitTime = this.RATE_LIMIT_WINDOW - (now - this.lastRequestTime);
+      console.warn(`Rate limit reached, waiting ${waitTime}ms`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      this.requestCount = 0;
+      this.lastRequestTime = Date.now();
+    }
+
+    this.requestCount++;
+  }
+
+  /**
+   * Get cached price if available and not expired
+   */
+  private getCachedPrice(symbol: string): TokenPrice | null {
+    const cached = this.priceCache.get(symbol);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      return cached.price;
+    }
+    return null;
+  }
+
+  /**
+   * Cache a price
+   */
+  private cachePrice(symbol: string, price: TokenPrice): void {
+    this.priceCache.set(symbol, { price, timestamp: Date.now() });
+  }
+
+  /**
+   * Get token price from CoinGecko with rate limiting and fallback
    */
   async getTokenPrice(symbol: string, currency: string = 'usd'): Promise<TokenPrice | null> {
+    // Check cache first
+    const cached = this.getCachedPrice(symbol);
+    if (cached) {
+      return cached;
+    }
+
     try {
+      await this.checkRateLimit();
+
       const coinId = this.getCoinGeckoId(symbol);
       if (!coinId) {
         console.warn(`No CoinGecko ID found for symbol: ${symbol}`);
@@ -63,7 +123,7 @@ export class PriceOracleService {
       const data = response.data[coinId];
       if (!data) return null;
 
-      return {
+      const priceData: TokenPrice = {
         symbol: symbol.toUpperCase(),
         price: data[currency],
         change24h: data[`${currency}_24h_change`] || 0,
@@ -72,10 +132,176 @@ export class PriceOracleService {
         lastUpdated: new Date(data.last_updated_at * 1000).toISOString(),
         source: 'coingecko'
       };
-    } catch (error) {
+
+      // Cache the result
+      this.cachePrice(symbol, priceData);
+      return priceData;
+
+    } catch (error: any) {
       console.error(`Error fetching price for ${symbol}:`, error);
+
+      // If it's a rate limit error, try fallback
+      if (error.response?.status === 429) {
+        console.log(`Rate limited for ${symbol}, trying fallback...`);
+        return this.getFallbackPrice(symbol, currency);
+      }
+
       return null;
     }
+  }
+
+  /**
+   * Fallback price fetching from Coinbase API
+   */
+  private async getFallbackPrice(symbol: string, currency: string = 'usd'): Promise<TokenPrice | null> {
+    try {
+      const coinbaseSymbol = this.getCoinbaseSymbol(symbol);
+      if (!coinbaseSymbol) return null;
+
+      const response = await axios.get(
+        `${this.fallbackApiUrl}/prices/${coinbaseSymbol}-${currency.toUpperCase()}/spot`,
+        { timeout: 5000 }
+      );
+
+      if (response.data?.data) {
+        const priceData: TokenPrice = {
+          symbol: symbol.toUpperCase(),
+          price: parseFloat(response.data.data.amount),
+          change24h: 0, // Coinbase doesn't provide 24h change in this endpoint
+          lastUpdated: new Date().toISOString(),
+          source: 'coinbase'
+        };
+
+        this.cachePrice(symbol, priceData);
+        return priceData;
+      }
+    } catch (error) {
+      console.error(`Fallback price fetch failed for ${symbol}:`, error);
+    }
+
+    return null;
+  }
+
+  /**
+   * Get multiple token prices with batching and rate limiting
+   */
+  async getMultipleTokenPrices(symbols: string[]): Promise<Map<string, TokenPrice>> {
+    const prices = new Map<string, TokenPrice>();
+
+    // Check cache first for all symbols
+    const uncachedSymbols: string[] = [];
+    for (const symbol of symbols) {
+      const cached = this.getCachedPrice(symbol);
+      if (cached) {
+        prices.set(symbol, cached);
+      } else {
+        uncachedSymbols.push(symbol);
+      }
+    }
+
+    // If all prices are cached, return immediately
+    if (uncachedSymbols.length === 0) {
+      return prices;
+    }
+
+    // Batch request for CoinGecko (max 50 symbols per request)
+    const batches = this.chunkArray(uncachedSymbols, 50);
+
+    for (const batch of batches) {
+      try {
+        await this.checkRateLimit();
+
+        const coinIds = batch.map(s => this.getCoinGeckoId(s)).filter(Boolean);
+
+        if (coinIds.length === 0) continue;
+
+        const response = await axios.get(
+          `${this.coingeckoBaseUrl}/simple/price`,
+          {
+            params: {
+              ids: coinIds.join(','),
+              vs_currencies: 'usd',
+              include_24hr_change: true,
+              include_market_cap: true
+            },
+            timeout: 5000
+          }
+        );
+
+        for (const [coinId, data] of Object.entries(response.data)) {
+          const symbol = this.getSymbolFromCoinGeckoId(coinId);
+          if (symbol && data && typeof data === 'object' && 'usd' in data) {
+            const priceData = data as { usd: number; usd_24h_change?: number; usd_market_cap?: number };
+            const tokenPrice: TokenPrice = {
+              symbol: symbol.toUpperCase(),
+              price: priceData.usd,
+              change24h: priceData.usd_24h_change || 0,
+              marketCap: priceData.usd_market_cap,
+              lastUpdated: new Date().toISOString(),
+              source: 'coingecko'
+            };
+
+            prices.set(symbol, tokenPrice);
+            this.cachePrice(symbol, tokenPrice);
+          }
+        }
+      } catch (error: any) {
+        console.error('Error fetching batch of token prices:', error);
+
+        // If rate limited, try individual fallback requests
+        if (error.response?.status === 429) {
+          for (const symbol of batch) {
+            const fallbackPrice = await this.getFallbackPrice(symbol);
+            if (fallbackPrice) {
+              prices.set(symbol, fallbackPrice);
+            }
+          }
+        }
+      }
+    }
+
+    return prices;
+  }
+
+  /**
+   * Helper to chunk array into smaller arrays
+   */
+  private chunkArray<T>(array: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  /**
+   * Get Coinbase symbol mapping
+   */
+  private getCoinbaseSymbol(symbol: string): string | null {
+    const coinbaseMap: { [key: string]: string } = {
+      'BTC': 'BTC',
+      'ETH': 'ETH',
+      'USDC': 'USDC',
+      'USDT': 'USDT',
+      'WETH': 'WETH',
+      'WBTC': 'WBTC',
+      'DAI': 'DAI',
+      'UNI': 'UNI',
+      'LINK': 'LINK',
+      'AAVE': 'AAVE',
+      'MATIC': 'MATIC',
+      'SOL': 'SOL',
+      'ADA': 'ADA',
+      'DOT': 'DOT',
+      'AVAX': 'AVAX',
+      'ATOM': 'ATOM',
+      'FTM': 'FTM',
+      'NEAR': 'NEAR',
+      'ALGO': 'ALGO',
+      'XRP': 'XRP'
+    };
+
+    return coinbaseMap[symbol.toUpperCase()] || null;
   }
 
   /**
@@ -131,52 +357,6 @@ export class PriceOracleService {
       console.error('Error fetching swap quote:', error);
       return null;
     }
-  }
-
-  /**
-   * Get multiple token prices
-   */
-  async getMultipleTokenPrices(symbols: string[]): Promise<Map<string, TokenPrice>> {
-    const prices = new Map<string, TokenPrice>();
-
-    // Batch request for CoinGecko
-    const coinIds = symbols.map(s => this.getCoinGeckoId(s)).filter(Boolean);
-
-    if (coinIds.length > 0) {
-      try {
-        const response = await axios.get(
-          `${this.coingeckoBaseUrl}/simple/price`,
-          {
-            params: {
-              ids: coinIds.join(','),
-              vs_currencies: 'usd',
-              include_24hr_change: true,
-              include_market_cap: true
-            },
-            timeout: 5000
-          }
-        );
-
-        for (const [coinId, data] of Object.entries(response.data)) {
-          const symbol = this.getSymbolFromCoinGeckoId(coinId);
-          if (symbol && data && typeof data === 'object' && 'usd' in data) {
-            const priceData = data as { usd: number; usd_24h_change?: number; usd_market_cap?: number };
-            prices.set(symbol, {
-              symbol: symbol.toUpperCase(),
-              price: priceData.usd,
-              change24h: priceData.usd_24h_change || 0,
-              marketCap: priceData.usd_market_cap,
-              lastUpdated: new Date().toISOString(),
-              source: 'coingecko'
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching multiple token prices:', error);
-      }
-    }
-
-    return prices;
   }
 
   /**

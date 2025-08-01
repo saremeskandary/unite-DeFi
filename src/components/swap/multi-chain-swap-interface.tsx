@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TokenSelector } from "./token-selector"
+import { ChainTokenSelector } from "./chain-token-selector"
 import { ChainAddressInput } from "./chain-address-input"
 import { OrderSummary } from "./order-summary"
 import { ArrowUpDown, Settings, Info, AlertCircle } from "lucide-react"
@@ -28,6 +28,17 @@ interface Token {
     price?: number
     value?: number
     chain?: string
+    networks?: string[]
+    networkCount?: number
+    isFavorite?: boolean
+}
+
+interface Network {
+    id: string
+    name: string
+    icon: string
+    chainId: number
+    type: 'simple' | 'smart_contract'
 }
 
 interface SwapQuote {
@@ -121,6 +132,8 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
     const [toChain, setToChain] = useState('ETH')
     const [fromToken, setFromToken] = useState<Token>({ symbol: "BTC", name: "Bitcoin", balance: "0.00" })
     const [toToken, setToToken] = useState<Token>({ symbol: "ETH", name: "Ethereum", balance: "0.00" })
+    const [fromNetwork, setFromNetwork] = useState<Network>({ id: 'bitcoin', name: 'Bitcoin', icon: 'btc', chainId: 0, type: 'simple' })
+    const [toNetwork, setToNetwork] = useState<Network>({ id: 'ethereum', name: 'Ethereum', icon: 'eth', chainId: 1, type: 'smart_contract' })
     const [fromAmount, setFromAmount] = useState("")
     const [toAmount, setToAmount] = useState("")
     const [toAddress, setToAddress] = useState("")
@@ -162,28 +175,6 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
         }
     }, [activeTab])
 
-    // Initialize wallet connection
-    useEffect(() => {
-        const initializeWallet = async () => {
-            if (enhancedWallet.isConnected()) {
-                setWalletConnected(true)
-                setWalletAddress(enhancedWallet.getCurrentAddress())
-                await loadTokenBalances()
-            }
-        }
-
-        initializeWallet()
-
-        enhancedWallet.onAccountChange((address) => {
-            setWalletAddress(address)
-            loadTokenBalances()
-        })
-
-        enhancedWallet.onChainChange((chainId) => {
-            loadTokenBalances()
-        })
-    }, [])
-
     // Load token balances
     const loadTokenBalances = useCallback(async () => {
         if (!enhancedWallet.isConnected()) return
@@ -222,6 +213,36 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
         }
     }, [fromChain, toChain, fromToken.symbol, toToken.symbol])
 
+    // Initialize wallet connection
+    useEffect(() => {
+        const initializeWallet = async () => {
+            if (enhancedWallet.isConnected()) {
+                setWalletConnected(true)
+                setWalletAddress(enhancedWallet.getCurrentAddress())
+                await loadTokenBalances()
+            }
+        }
+
+        initializeWallet()
+
+        const handleAccountChange = (address: string) => {
+            setWalletAddress(address)
+            loadTokenBalances()
+        }
+
+        const handleChainChange = (chainId: number) => {
+            loadTokenBalances()
+        }
+
+        enhancedWallet.onAccountChange(handleAccountChange)
+        enhancedWallet.onChainChange(handleChainChange)
+
+        // Cleanup listeners
+        return () => {
+            // Note: enhancedWallet should have cleanup methods, but for now we'll rely on the component unmounting
+        }
+    }, [loadTokenBalances])
+
     // Get swap quote
     const getSwapQuote = useCallback(async (amount: string) => {
         if (!amount || parseFloat(amount) <= 0 || !walletAddress) {
@@ -233,7 +254,7 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
         setIsQuoteLoading(true)
         try {
             const response = await fetch(
-                `/api/swap/quote?fromChain=${fromChain}&toChain=${toChain}&fromToken=${fromToken.symbol}&toToken=${toToken.symbol}&amount=${amount}&fromAddress=${walletAddress}`
+                `/api/swap/quote?fromChain=${fromNetwork.id}&toChain=${toNetwork.id}&fromToken=${fromToken.symbol}&toToken=${toToken.symbol}&amount=${amount}&fromAddress=${walletAddress}`
             )
 
             if (response.ok) {
@@ -298,8 +319,8 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    fromChain,
-                    toChain,
+                    fromChain: fromNetwork.id,
+                    toChain: toNetwork.id,
                     fromToken: fromToken.symbol,
                     toToken: toToken.symbol,
                     fromAmount: fromAmount,
@@ -325,27 +346,8 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
         }
     }
 
-    // Get available tokens for a chain
-    const getAvailableTokens = (chain: string, type: 'from' | 'to') => {
-        const chainConfig = CHAIN_CONFIG[chain as keyof typeof CHAIN_CONFIG]
-        if (!chainConfig) return []
-
-        const tokens = CHAIN_TOKENS[chain as keyof typeof CHAIN_TOKENS] || []
-
-        // For simple chains, only show native token
-        if (chainConfig.type === CHAIN_TYPES.SIMPLE) {
-            return tokens.filter(token => token.symbol === chainConfig.nativeToken)
-        }
-
-        // For smart contract chains, show all tokens
-        return tokens
-    }
-
     const isValidSwap = fromAmount && toAmount && (toAddress || walletAddress) &&
         Number.parseFloat(fromAmount) > 0 && walletConnected && currentQuote
-
-    const fromChainConfig = CHAIN_CONFIG[fromChain as keyof typeof CHAIN_CONFIG]
-    const toChainConfig = CHAIN_CONFIG[toChain as keyof typeof CHAIN_CONFIG]
 
     return (
         <Card className="bg-card/50 border-border backdrop-blur-sm w-full max-w-md mx-auto">
@@ -446,20 +448,18 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
                 </Tabs>
 
                 {/* Chain Type Info */}
-                {fromChainConfig && toChainConfig && (
-                    <div className="flex items-center space-x-2 text-xs text-muted-foreground bg-muted/20 rounded-lg p-2">
-                        <AlertCircle className="w-3 h-3" />
-                        <span>
-                            {fromChainConfig.type === CHAIN_TYPES.SIMPLE ? 'Native token only' : 'Multiple tokens available'}
-                            {' → '}
-                            {toChainConfig.type === CHAIN_TYPES.SIMPLE ? 'Native token only' : 'Multiple tokens available'}
-                        </span>
-                    </div>
-                )}
+                <div className="flex items-center space-x-2 text-xs text-muted-foreground bg-muted/20 rounded-lg p-2">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>
+                        {fromNetwork.type === 'simple' ? 'Native token only' : 'Multiple tokens available'}
+                        {' → '}
+                        {toNetwork.type === 'simple' ? 'Native token only' : 'Multiple tokens available'}
+                    </span>
+                </div>
 
                 {/* From Token */}
                 <div className="space-y-2">
-                    <Label className="text-muted-foreground text-sm">From ({fromChain})</Label>
+                    <Label className="text-muted-foreground text-sm">From ({fromNetwork.name})</Label>
                     <div className="relative">
                         <Input
                             type="number"
@@ -469,12 +469,14 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
                             className="bg-muted/50 border-border text-foreground text-lg sm:text-xl h-14 sm:h-16 pr-28 sm:pr-32"
                         />
                         <div className="absolute right-2 top-2">
-                            <TokenSelector
-                                token={fromToken}
-                                onSelect={setFromToken}
+                            <ChainTokenSelector
+                                selectedToken={fromToken}
+                                selectedNetwork={fromNetwork}
+                                onSelect={(token, network) => {
+                                    setFromToken(token)
+                                    setFromNetwork(network)
+                                }}
                                 type="from"
-                                availableTokens={getAvailableTokens(fromChain, 'from')}
-                                chainType={fromChainConfig?.type}
                             />
                         </div>
                     </div>
@@ -507,7 +509,7 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
 
                 {/* To Token */}
                 <div className="space-y-2">
-                    <Label className="text-muted-foreground text-sm">To ({toChain})</Label>
+                    <Label className="text-muted-foreground text-sm">To ({toNetwork.name})</Label>
                     <div className="relative">
                         <Input
                             type="number"
@@ -517,12 +519,14 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
                             className="bg-muted/50 border-border text-foreground text-lg sm:text-xl h-14 sm:h-16 pr-28 sm:pr-32"
                         />
                         <div className="absolute right-2 top-2">
-                            <TokenSelector
-                                token={toToken}
-                                onSelect={setToToken}
+                            <ChainTokenSelector
+                                selectedToken={toToken}
+                                selectedNetwork={toNetwork}
+                                onSelect={(token, network) => {
+                                    setToToken(token)
+                                    setToNetwork(network)
+                                }}
                                 type="to"
-                                availableTokens={getAvailableTokens(toChain, 'to')}
-                                chainType={toChainConfig?.type}
                             />
                         </div>
                     </div>
@@ -533,10 +537,10 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
 
                 {/* Chain Address Input */}
                 <ChainAddressInput
-                    chain={toChain}
+                    chain={toNetwork.id}
                     value={toAddress}
                     onChange={setToAddress}
-                    placeholder={`Enter ${toChain} address`}
+                    placeholder={`Enter ${toNetwork.name} address`}
                 />
 
                 {/* Price Info */}

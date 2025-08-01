@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { WebSocketMessage, PriceUpdate, OrderUpdate, PortfolioUpdate, SwapQuote } from '@/hooks/useWebSocket';
+import { WebSocketMessage, PriceUpdate, OrderUpdate, PortfolioUpdate, SwapQuote } from '@/types/websocket';
 
 interface WebSocketContextType {
     isConnected: boolean;
