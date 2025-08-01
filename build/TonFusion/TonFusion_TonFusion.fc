@@ -101,17 +101,29 @@ tuple $Order$_load_opt(cell cl) inline;
 ;; $CreateOrder$_load_not_mut
 (((int, slice, slice, int, int, int, int, cell, int, int), cell, cell)) $CreateOrder$_load_not_mut(slice sc_0) inline;
 
+;; $CreateEVMToTONOrder$_store
+builder $CreateEVMToTONOrder$_store(builder build_0, ((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell) v) inline;
+
+;; $CreateEVMToTONOrder$_store_cell
+cell $CreateEVMToTONOrder$_store_cell(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell) v, builder b) inline;
+
 ;; $CreateEVMToTONOrder$_load
-(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), slice, cell))) $CreateEVMToTONOrder$_load(slice sc_0) impure inline;
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell))) $CreateEVMToTONOrder$_load(slice sc_0) impure inline;
 
 ;; $CreateEVMToTONOrder$_load_not_mut
-(((int, slice, slice, slice, int, int, int, int, cell, int, int), slice, cell)) $CreateEVMToTONOrder$_load_not_mut(slice sc_0) inline;
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell)) $CreateEVMToTONOrder$_load_not_mut(slice sc_0) inline;
+
+;; $CreateTONToEVMOrder$_store
+builder $CreateTONToEVMOrder$_store(builder build_0, ((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell) v) inline;
+
+;; $CreateTONToEVMOrder$_store_cell
+cell $CreateTONToEVMOrder$_store_cell(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell) v, builder b) inline;
 
 ;; $CreateTONToEVMOrder$_load
-(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), int, cell))) $CreateTONToEVMOrder$_load(slice sc_0) impure inline;
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell))) $CreateTONToEVMOrder$_load(slice sc_0) impure inline;
 
 ;; $CreateTONToEVMOrder$_load_not_mut
-(((int, slice, slice, slice, int, int, int, int, cell, int, int), int, cell)) $CreateTONToEVMOrder$_load_not_mut(slice sc_0) inline;
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell)) $CreateTONToEVMOrder$_load_not_mut(slice sc_0) inline;
 
 ;; $EVMCrossChainMessage$_store
 builder $EVMCrossChainMessage$_store(builder build_0, (int, cell, int, cell, int, int, cell) v) inline;
@@ -1012,19 +1024,31 @@ tuple $Order$_load_opt(cell cl) inline {
 ;;
 ;; Type: CreateEVMToTONOrder
 ;; Header: 0x8b341822
-;; TLB: create_evm_to_ton_order#8b341822 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} evmContractAddress:address customPayload:Maybe ^cell = CreateEVMToTONOrder
+;; TLB: create_evm_to_ton_order#8b341822 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} evmContractAddress:^cell customPayload:Maybe ^cell = CreateEVMToTONOrder
 ;;
 
-(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), slice, cell))) $CreateEVMToTONOrder$_load(slice sc_0) impure inline {
+builder $CreateEVMToTONOrder$_store(builder build_0, ((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell) v) inline {
+    var ((v'orderConfig'id, v'orderConfig'srcJettonAddress, v'orderConfig'senderPubKey, v'orderConfig'receiverPubKey, v'orderConfig'hashlock, v'orderConfig'timelock, v'orderConfig'amount, v'orderConfig'finalized, v'orderConfig'partialFills, v'orderConfig'totalFilled, v'orderConfig'direction), v'evmContractAddress, v'customPayload) = v;
+    build_0 = store_uint(build_0, 2335447074, 32);
+    build_0 = $OrderConfig$_store(build_0, (v'orderConfig'id, v'orderConfig'srcJettonAddress, v'orderConfig'senderPubKey, v'orderConfig'receiverPubKey, v'orderConfig'hashlock, v'orderConfig'timelock, v'orderConfig'amount, v'orderConfig'finalized, v'orderConfig'partialFills, v'orderConfig'totalFilled, v'orderConfig'direction));
+    build_0 = build_0.store_ref(v'evmContractAddress);
+    build_0 = build_0.store_maybe_ref(v'customPayload);
+    return build_0;
+}
+
+cell $CreateEVMToTONOrder$_store_cell(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell) v, builder b) inline {
+    return $CreateEVMToTONOrder$_store(b, v).end_cell();
+}
+
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell))) $CreateEVMToTONOrder$_load(slice sc_0) impure inline {
     throw_unless(129, sc_0~load_uint(32) == 2335447074);
     var v'orderConfig = sc_0~$OrderConfig$_load();
-    slice sc_1 = sc_0~load_ref().begin_parse();
-    var v'evmContractAddress = sc_1~load_msg_addr();
-    var v'customPayload = sc_1~load_maybe_ref();
+    var v'evmContractAddress = sc_0~load_ref();
+    var v'customPayload = sc_0~load_maybe_ref();
     return (sc_0, (v'orderConfig, v'evmContractAddress, v'customPayload));
 }
 
-(((int, slice, slice, slice, int, int, int, int, cell, int, int), slice, cell)) $CreateEVMToTONOrder$_load_not_mut(slice sc_0) inline {
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell)) $CreateEVMToTONOrder$_load_not_mut(slice sc_0) inline {
     var r = sc_0~$CreateEVMToTONOrder$_load();
     sc_0.end_parse();
     return r;
@@ -1033,18 +1057,31 @@ tuple $Order$_load_opt(cell cl) inline {
 ;;
 ;; Type: CreateTONToEVMOrder
 ;; Header: 0x62239978
-;; TLB: create_ton_to_evm_order#62239978 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} targetChainId:uint32 customPayload:Maybe ^cell = CreateTONToEVMOrder
+;; TLB: create_ton_to_evm_order#62239978 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} evmContractAddress:^cell customPayload:Maybe ^cell = CreateTONToEVMOrder
 ;;
 
-(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), int, cell))) $CreateTONToEVMOrder$_load(slice sc_0) impure inline {
-    throw_unless(129, sc_0~load_uint(32) == 1646500216);
-    var v'orderConfig = sc_0~$OrderConfig$_load();
-    var v'targetChainId = sc_0~load_uint(32);
-    var v'customPayload = sc_0~load_maybe_ref();
-    return (sc_0, (v'orderConfig, v'targetChainId, v'customPayload));
+builder $CreateTONToEVMOrder$_store(builder build_0, ((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell) v) inline {
+    var ((v'orderConfig'id, v'orderConfig'srcJettonAddress, v'orderConfig'senderPubKey, v'orderConfig'receiverPubKey, v'orderConfig'hashlock, v'orderConfig'timelock, v'orderConfig'amount, v'orderConfig'finalized, v'orderConfig'partialFills, v'orderConfig'totalFilled, v'orderConfig'direction), v'evmContractAddress, v'customPayload) = v;
+    build_0 = store_uint(build_0, 1646500216, 32);
+    build_0 = $OrderConfig$_store(build_0, (v'orderConfig'id, v'orderConfig'srcJettonAddress, v'orderConfig'senderPubKey, v'orderConfig'receiverPubKey, v'orderConfig'hashlock, v'orderConfig'timelock, v'orderConfig'amount, v'orderConfig'finalized, v'orderConfig'partialFills, v'orderConfig'totalFilled, v'orderConfig'direction));
+    build_0 = build_0.store_ref(v'evmContractAddress);
+    build_0 = build_0.store_maybe_ref(v'customPayload);
+    return build_0;
 }
 
-(((int, slice, slice, slice, int, int, int, int, cell, int, int), int, cell)) $CreateTONToEVMOrder$_load_not_mut(slice sc_0) inline {
+cell $CreateTONToEVMOrder$_store_cell(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell) v, builder b) inline {
+    return $CreateTONToEVMOrder$_store(b, v).end_cell();
+}
+
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell))) $CreateTONToEVMOrder$_load(slice sc_0) impure inline {
+    throw_unless(129, sc_0~load_uint(32) == 1646500216);
+    var v'orderConfig = sc_0~$OrderConfig$_load();
+    var v'evmContractAddress = sc_0~load_ref();
+    var v'customPayload = sc_0~load_maybe_ref();
+    return (sc_0, (v'orderConfig, v'evmContractAddress, v'customPayload));
+}
+
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell)) $CreateTONToEVMOrder$_load_not_mut(slice sc_0) inline {
     var r = sc_0~$CreateTONToEVMOrder$_load();
     sc_0.end_parse();
     return r;
@@ -1788,7 +1825,7 @@ int $global_validateEVMMessageFormat(cell $message) impure inline_ref {
 
 ((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int, cell, cell, cell, cell, int, int), ()) $TonFusion$_fun_createTONToEVMOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int, cell, cell, cell, cell, int, int) $self, cell $payload) impure inline_ref {
     var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees)) = $self;
-    var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'targetChainId, $msg'customPayload) = $CreateTONToEVMOrder$_load_not_mut($payload.begin_parse());
+    var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'evmContractAddress, $msg'customPayload) = $CreateTONToEVMOrder$_load_not_mut($payload.begin_parse());
     throw_if(87, __tact_int_eq_nullable_left(__tact_dict_get_slice_int($self'whiteLists, 267, __tact_context_get_sender(), 1), true));
     throw_if(75, ($global_now() >= $msg'orderConfig'timelock));
     throw_if(90, (~ null?($OrderConfig$_load_opt(__tact_dict_get_uint_cell($self'escrowLock, 256, $msg'orderConfig'hashlock)))));
@@ -2193,7 +2230,7 @@ int $global_validateEVMMessageFormat(cell $message) impure inline_ref {
             var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'evmContractAddress, $msg'customPayload) = $CreateEVMToTONOrder$_load_not_mut($action'actionPayload.begin_parse());
             ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees)~$TonFusion$_fun_createEVMToTONOrder($action'actionPayload);
         } elseif (($action'actionOpcode == 0x62239978)) {
-            var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'targetChainId, $msg'customPayload) = $CreateTONToEVMOrder$_load_not_mut($action'actionPayload.begin_parse());
+            var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'evmContractAddress, $msg'customPayload) = $CreateTONToEVMOrder$_load_not_mut($action'actionPayload.begin_parse());
             ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees)~$TonFusion$_fun_createTONToEVMOrder($action'actionPayload);
         } else {
             $global_cashback(__tact_context_get_sender());
@@ -2332,6 +2369,26 @@ int $global_validateEVMMessageFormat(cell $message) impure inline_ref {
         var $action'success = in_msg~load_int(1);
         var $action'customPayload = in_msg~load_maybe_ref();
         ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees)~$TonFusion$_fun_updateRelayerStats($UpdateRelayerStats$_tensor_cast(($action'relayer, $action'success, $action'customPayload)));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees));
+        return ();
+    }
+    
+    ;; Receive CreateEVMToTONOrder message
+    if (op == 0x8b341822) {
+        var ($action'orderConfig'id, $action'orderConfig'srcJettonAddress, $action'orderConfig'senderPubKey, $action'orderConfig'receiverPubKey, $action'orderConfig'hashlock, $action'orderConfig'timelock, $action'orderConfig'amount, $action'orderConfig'finalized, $action'orderConfig'partialFills, $action'orderConfig'totalFilled, $action'orderConfig'direction) = in_msg~$OrderConfig$_load();
+        var $action'evmContractAddress = in_msg~load_ref();
+        var $action'customPayload = in_msg~load_maybe_ref();
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees)~$TonFusion$_fun_createEVMToTONOrder($CreateEVMToTONOrder$_store_cell((($action'orderConfig'id, $action'orderConfig'srcJettonAddress, $action'orderConfig'senderPubKey, $action'orderConfig'receiverPubKey, $action'orderConfig'hashlock, $action'orderConfig'timelock, $action'orderConfig'amount, $action'orderConfig'finalized, $action'orderConfig'partialFills, $action'orderConfig'totalFilled, $action'orderConfig'direction), $action'evmContractAddress, $action'customPayload), begin_cell()));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees));
+        return ();
+    }
+    
+    ;; Receive CreateTONToEVMOrder message
+    if (op == 0x62239978) {
+        var ($action'orderConfig'id, $action'orderConfig'srcJettonAddress, $action'orderConfig'senderPubKey, $action'orderConfig'receiverPubKey, $action'orderConfig'hashlock, $action'orderConfig'timelock, $action'orderConfig'amount, $action'orderConfig'finalized, $action'orderConfig'partialFills, $action'orderConfig'totalFilled, $action'orderConfig'direction) = in_msg~$OrderConfig$_load();
+        var $action'evmContractAddress = in_msg~load_ref();
+        var $action'customPayload = in_msg~load_maybe_ref();
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees)~$TonFusion$_fun_createTONToEVMOrder($CreateTONToEVMOrder$_store_cell((($action'orderConfig'id, $action'orderConfig'srcJettonAddress, $action'orderConfig'senderPubKey, $action'orderConfig'receiverPubKey, $action'orderConfig'hashlock, $action'orderConfig'timelock, $action'orderConfig'amount, $action'orderConfig'finalized, $action'orderConfig'partialFills, $action'orderConfig'totalFilled, $action'orderConfig'direction), $action'evmContractAddress, $action'customPayload), begin_cell()));
         $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees));
         return ();
     }

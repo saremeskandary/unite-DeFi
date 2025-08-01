@@ -57,7 +57,7 @@ message(0x7362d09c) CreateOrder {
  */
 message(0x8b341822) CreateEVMToTONOrder {
     orderConfig: OrderConfig;
-    evmContractAddress: Address;
+    evmContractAddress: Cell;
     customPayload: Cell?;
 }
 
@@ -71,7 +71,7 @@ message(0x8b341822) CreateEVMToTONOrder {
  */
 message(0x62239978) CreateTONToEVMOrder {
     orderConfig: OrderConfig;
-    targetChainId: Int as uint32;
+    evmContractAddress: Cell;
     customPayload: Cell?;
 }
 
@@ -335,6 +335,8 @@ message(0x2fcb26a2) GetWalletAddress {
     owner: Address;
 }
 
+
+
 // Commented out messages for future use or reference
 
 // message(0x595f07bc) TokenBurn {
@@ -381,3 +383,113 @@ message(0x2fcb26a2) GetWalletAddress {
 //     user: Address;
 //     amount: Int as coins;
 // }
+
+/**
+ * @notice Register a new EVM bridge
+ * @dev Only callable by contract owner
+ * @param bridgeId Unique bridge identifier
+ * @param sourceChainId Source chain ID
+ * @param targetChainId Target chain ID
+ * @param bridgeContract Bridge contract address
+ * @param bridgeFee Bridge fee for transfers
+ * @param minTransferAmount Minimum transfer amount
+ * @param maxTransferAmount Maximum transfer amount
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x8a9b0c1d
+ */
+message(0x8a9b0c1d) RegisterEVMBridge {
+    bridgeId: Int as uint32;
+    sourceChainId: Int as uint32;
+    targetChainId: Int as uint32;
+    bridgeContract: Address;
+    bridgeFee: Int as uint64;
+    minTransferAmount: Int as uint64;
+    maxTransferAmount: Int as uint64;
+    customPayload: Cell?;
+}
+
+/**
+ * @notice Update EVM bridge configuration
+ * @dev Only callable by contract owner
+ * @param bridgeId Bridge identifier to update
+ * @param bridgeFee New bridge fee
+ * @param minTransferAmount New minimum transfer amount
+ * @param maxTransferAmount New maximum transfer amount
+ * @param isActive Whether the bridge should be active
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x9b0c1d2e
+ */
+message(0x9b0c1d2e) UpdateEVMBridge {
+    bridgeId: Int as uint32;
+    bridgeFee: Int as uint64;
+    minTransferAmount: Int as uint64;
+    maxTransferAmount: Int as uint64;
+    isActive: Bool;
+    customPayload: Cell?;
+}
+
+/**
+ * @notice Register a new EVM oracle
+ * @dev Only callable by contract owner
+ * @param oracleId Unique oracle identifier
+ * @param chainId EVM chain ID where oracle operates
+ * @param oracleContract Oracle contract address
+ * @param tokenAddress Token address for price feed
+ * @param priceDecimals Number of decimal places for price
+ * @param heartbeatInterval Heartbeat interval for price updates
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x0c1d2e3f
+ */
+message(0x0c1d2e3f) RegisterEVMOracle {
+    oracleId: Int as uint32;
+    chainId: Int as uint32;
+    oracleContract: Address;
+    tokenAddress: Address;
+    priceDecimals: Int as uint8;
+    heartbeatInterval: Int as uint32;
+    customPayload: Cell?;
+}
+
+/**
+ * @notice Update EVM oracle configuration
+ * @dev Only callable by contract owner
+ * @param oracleId Oracle identifier to update
+ * @param heartbeatInterval New heartbeat interval
+ * @param isActive Whether the oracle should be active
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x1d2e3f4a
+ */
+message(0x1d2e3f4a) UpdateEVMOracle {
+    oracleId: Int as uint32;
+    heartbeatInterval: Int as uint32;
+    isActive: Bool;
+    customPayload: Cell?;
+}
+
+/**
+ * @notice Process EVM bridge timeout
+ * @dev Handles timeout scenarios for bridge operations
+ * @param bridgeId Bridge identifier
+ * @param transactionNonce Transaction nonce that timed out
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x2e3f4a5b
+ */
+message(0x2e3f4a5b) EVMBridgeTimeout {
+    bridgeId: Int as uint32;
+    transactionNonce: Int as uint64;
+    customPayload: Cell?;
+}
+
+/**
+ * @notice Retry failed EVM transaction
+ * @dev Retries a failed cross-chain transaction
+ * @param transactionNonce Transaction nonce to retry
+ * @param newGasPrice New gas price for retry
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x3f4a5b6c
+ */
+message(0x3f4a5b6c) RetryEVMTransaction {
+    transactionNonce: Int as uint64;
+    newGasPrice: Int as uint64;
+    customPayload: Cell?;
+}

@@ -31,8 +31,12 @@ PROGRAM{
   DECLPROC $Order$_load_opt
   DECLPROC $CreateOrder$_load
   DECLPROC $CreateOrder$_load_not_mut
+  DECLPROC $CreateEVMToTONOrder$_store
+  DECLPROC $CreateEVMToTONOrder$_store_cell
   DECLPROC $CreateEVMToTONOrder$_load
   DECLPROC $CreateEVMToTONOrder$_load_not_mut
+  DECLPROC $CreateTONToEVMOrder$_store
+  DECLPROC $CreateTONToEVMOrder$_store_cell
   DECLPROC $CreateTONToEVMOrder$_load
   DECLPROC $CreateTONToEVMOrder$_load_not_mut
   DECLPROC $EVMCrossChainMessage$_store
@@ -485,6 +489,20 @@ PROGRAM{
     ENDS
     11 ROLL
   }>
+  $CreateEVMToTONOrder$_store PROCINLINE:<{
+    2335447074 PUSHINT
+    s0 s14 XCHG2
+    32 STU
+    11 2 BLKSWAP
+    $OrderConfig$_store INLINECALLDICT
+    STREF
+    STOPTREF
+  }>
+  $CreateEVMToTONOrder$_store_cell PROCINLINE:<{
+    13 -ROLL
+    $CreateEVMToTONOrder$_store INLINECALLDICT
+    ENDC
+  }>
   $CreateEVMToTONOrder$_load PROCINLINE:<{
     32 LDU
     SWAP
@@ -494,18 +512,28 @@ PROGRAM{
     $OrderConfig$_load INLINECALLDICT
     s0 s11 XCHG
     LDREF
-    SWAP
-    CTOS
-    LDMSGADDR
     LDOPTREF
-    DROP
-    s2 s13 XCHG
+    s13 s13 s13 XCHG3
   }>
   $CreateEVMToTONOrder$_load_not_mut PROCINLINE:<{
     $CreateEVMToTONOrder$_load INLINECALLDICT
     s0 s13 XCHG
     ENDS
     12 ROLL
+  }>
+  $CreateTONToEVMOrder$_store PROCINLINE:<{
+    1646500216 PUSHINT
+    s0 s14 XCHG2
+    32 STU
+    11 2 BLKSWAP
+    $OrderConfig$_store INLINECALLDICT
+    STREF
+    STOPTREF
+  }>
+  $CreateTONToEVMOrder$_store_cell PROCINLINE:<{
+    13 -ROLL
+    $CreateTONToEVMOrder$_store INLINECALLDICT
+    ENDC
   }>
   $CreateTONToEVMOrder$_load PROCINLINE:<{
     32 LDU
@@ -515,7 +543,7 @@ PROGRAM{
     129 THROWIFNOT
     $OrderConfig$_load INLINECALLDICT
     s0 s11 XCHG
-    32 LDU
+    LDREF
     LDOPTREF
     s13 s13 s13 XCHG3
   }>
@@ -3533,6 +3561,86 @@ PROGRAM{
       s4 s6 XCHG
       s3 s5 XCHG
       $TonFusion$_fun_updateRelayerStats INLINECALLDICT
+      $TonFusion$_contract_store INLINECALLDICT
+    }>
+    OVER
+    2335447074 PUSHINT
+    EQUAL
+    IFJMP:<{
+      2DROP
+      s0 16 s() XCHG
+      $OrderConfig$_load INLINECALLDICT
+      s0 s11 XCHG
+      LDREF
+      LDOPTREF
+      DROP
+      s11 s12 XCHG
+      s10 s11 XCHG
+      s9 s10 XCHG
+      s8 s9 XCHG
+      s7 s8 XCHG
+      s6 s7 XCHG
+      s5 s6 XCHG
+      s4 s5 XCHG
+      s3 s4 XCHG
+      s2 s3 XCHG
+      NEWC
+      $CreateEVMToTONOrder$_store_cell INLINECALLDICT
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
+      s9 s11 XCHG
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      s4 s6 XCHG
+      s3 s5 XCHG
+      s4 s3 s0 XCHG3
+      $TonFusion$_fun_createEVMToTONOrder INLINECALLDICT
+      $TonFusion$_contract_store INLINECALLDICT
+    }>
+    OVER
+    1646500216 PUSHINT
+    EQUAL
+    IFJMP:<{
+      2DROP
+      s0 16 s() XCHG
+      $OrderConfig$_load INLINECALLDICT
+      s0 s11 XCHG
+      LDREF
+      LDOPTREF
+      DROP
+      s11 s12 XCHG
+      s10 s11 XCHG
+      s9 s10 XCHG
+      s8 s9 XCHG
+      s7 s8 XCHG
+      s6 s7 XCHG
+      s5 s6 XCHG
+      s4 s5 XCHG
+      s3 s4 XCHG
+      s2 s3 XCHG
+      NEWC
+      $CreateTONToEVMOrder$_store_cell INLINECALLDICT
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
+      s9 s11 XCHG
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      s4 s6 XCHG
+      s3 s5 XCHG
+      s4 s3 s0 XCHG3
+      $TonFusion$_fun_createTONToEVMOrder INLINECALLDICT
       $TonFusion$_contract_store INLINECALLDICT
     }>
     OVER

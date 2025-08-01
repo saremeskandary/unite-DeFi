@@ -84,4 +84,46 @@ const EVM_RETRY_DELAY_SECONDS: Int = 300; // 5 minutes
 const EVM_BRIDGE_FEE_BASE: Int = ton("0.01"); // Base bridge fee
 const EVM_GAS_PRICE_MULTIPLIER: Int = 110; // 110% of base gas price
 
+/**
+ * @notice Circuit breaker constants
+ * @dev Used for circuit breaker implementation
+ * @custom:internal Used for failure prevention
+ */
+const CIRCUIT_BREAKER_FAILURE_THRESHOLD: Int = 5;
+const CIRCUIT_BREAKER_RESET_TIMEOUT: Int = 3600; // 1 hour
+const CIRCUIT_BREAKER_HALF_OPEN_TIMEOUT: Int = 1800; // 30 minutes
+
+/**
+ * @notice Timeout handling constants
+ * @dev Used for timeout processing and escalation
+ * @custom:internal Used for timeout management
+ */
+const TIMEOUT_ESCALATION_LEVEL_1: Int = 1800; // 30 minutes
+const TIMEOUT_ESCALATION_LEVEL_2: Int = 3600; // 1 hour
+const TIMEOUT_ESCALATION_LEVEL_3: Int = 7200; // 2 hours
+
+/**
+ * @notice Gas estimation constants
+ * @dev Used for dynamic gas calculation
+ * @custom:internal Used for gas optimization
+ */
+const GAS_ESTIMATION_BUFFER: Int = 120; // 120% buffer
+const GAS_PRICE_PRIORITY_LOW: Int = 0;
+const GAS_PRICE_PRIORITY_MEDIUM: Int = 1;
+const GAS_PRICE_PRIORITY_HIGH: Int = 2;
+
+/**
+ * @notice Error codes for chain validation
+ * @dev Used for identifying specific validation failures
+ * @custom:security Error codes help identify validation issues
+ */
+// Note: These error codes are now defined in errors.tact
+// const INVALID_CHAIN_ID: Int = 1001;
+// const ESCROW_NOT_DEPLOYED: Int = 1002;
+// const CHAIN_NOT_ACTIVE: Int = 1003;
+// const CHAIN_NOT_CONNECTED: Int = 1004;
+// const INVALID_EVM_MESSAGE: Int = 1005;
+// const BRIDGE_FAILURE: Int = 1006;
+// const TIMEOUT_ERROR: Int = 1007;
+
 

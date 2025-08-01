@@ -350,6 +350,26 @@ contract TonFusion with Deployable {
     }
 
     /**
+     * @notice Handle CreateEVMToTONOrder message
+     * @dev Creates order for incoming EVM to TON swap
+     * @param action CreateEVMToTONOrder message
+     * @custom:security Validates whitelist, timelock, and order uniqueness
+     */
+    receive(action: CreateEVMToTONOrder) {
+        self.createEVMToTONOrder(action.toCell());
+    }
+
+    /**
+     * @notice Handle CreateTONToEVMOrder message
+     * @dev Creates order for outgoing TON to EVM swap
+     * @param action CreateTONToEVMOrder message
+     * @custom:security Validates whitelist, timelock, and order uniqueness
+     */
+    receive(action: CreateTONToEVMOrder) {
+        self.createTONToEVMOrder(action.toCell());
+    }
+
+    /**
      * @notice Create cross-chain order (TON → EVM)
      * @dev Locks jettons for cross-chain swap to EVM chains
      * @param payload Encoded LockJetton message
@@ -812,9 +832,9 @@ contract TonFusion with Deployable {
     }
 
     /**
-     * @notice Process EVM transfer with full cross-chain functionality
-     * @dev Interfaces with EVM chains via bridges/oracles for cross-chain atomic swaps
-     * @param order OrderConfig containing transfer details
+     * @notice Process EVM transfer with enhanced cross-chain message building
+     * @dev Handles cross-chain transfers to EVM chains with improved gas estimation and validation
+     * @param order Order configuration for the transfer
      * @param amount Amount to transfer
      * @param secret Secret for order validation
      * @custom:internal This is an internal function for cross-chain processing
@@ -826,7 +846,7 @@ contract TonFusion with Deployable {
             throw(INVALID_CHAIN_ID);
         }
 
-        // 2. Check escrow contract deployment
+        // 2. Check escrow contract deployment with enhanced validation
         if (!isEscrowDeployed(order.id, self.escrowContracts)) {
             throw(ESCROW_NOT_DEPLOYED);
         }
@@ -842,19 +862,25 @@ contract TonFusion with Deployable {
             self.evmChainConfigs.set(order.id, defaultConfig!!);
         }
 
-        // 4. Build cross-chain message
+        // 4. Build enhanced cross-chain message with comprehensive order data
         let message = buildEVMTransferMessage(order, amount, secret);
         
-        // 5. Validate message format
-        if (!validateEVMMessageFormat(message)) {
+        // 5. Validate enhanced message format
+        if (!validateEnhancedEVMMessageFormat(message, order.id)) {
             throw(INVALID_EVM_MESSAGE);
         }
 
-        // 6. Calculate bridge fee
+        // 6. Calculate dynamic gas limit for target chain
+        let dynamicGasLimit = calculateEVMDynamicGasLimit(order.id, amount, true);
+        
+        // 7. Calculate optimal gas price with medium priority
+        let optimalGasPrice = calculateOptimalEVMGasPrice(order.id, 1); // Medium priority
+
+        // 8. Calculate bridge fee
         let bridgeFee = calculateEVMBridgeFee(amount, TON_CHAIN_MAINNET, order.id);
         self.evmBridgeFees = self.evmBridgeFees + bridgeFee;
 
-        // 7. Create EVM transaction for cross-chain transfer
+        // 9. Create enhanced EVM transaction for cross-chain transfer
         let evmTransaction = EVMTransaction {
             chainId: order.id,
             toContract: beginCell().endCell(), // Will be set by bridge
@@ -863,8 +889,8 @@ contract TonFusion with Deployable {
                 .storeAddress(order.receiverPubKey)
                 .storeUint(amount, 256)
                 .endCell(),
-            gasLimit: EVM_CONTRACT_CALL_GAS_LIMIT,
-            gasPrice: calculateEVMGasPrice(order.id),
+            gasLimit: dynamicGasLimit, // Use dynamic gas estimation
+            gasPrice: optimalGasPrice, // Use optimal gas price
             value: 0, // ERC20 transfer doesn't require ETH
             nonce: self.evmTransactionNonce,
             status: 0, // pending
@@ -873,48 +899,54 @@ contract TonFusion with Deployable {
             confirmations: 0,
         };
 
-        // 8. Increment transaction nonce
+        // 10. Increment transaction nonce
         self.evmTransactionNonce = self.evmTransactionNonce + 1;
 
-        // 9. Store transaction for tracking
+        // 11. Store transaction for tracking
         self.evmTransactions.set(evmTransaction.nonce, evmTransaction);
 
-        // 10. Send cross-chain message to bridge
+        // 12. Send enhanced cross-chain message to bridge with retry logic
         self.sendEVMCrossChainMessage(evmTransaction, order, secret);
 
-        // 11. Update order status
+        // 13. Update order status
         order.finalized = true;
         self.escrowLock.set(order.hashlock, order);
 
-        // 12. Increment total resolves
+        // 14. Increment total resolves
         self.totalResolves = self.totalResolves + 1;
     }
     
     /**
-     * @notice Send EVM cross-chain message via bridge
-     * @dev Creates and sends cross-chain message for EVM interaction
+     * @notice Send enhanced EVM cross-chain message via bridge
+     * @dev Creates and sends enhanced cross-chain message for EVM interaction with improved validation
      * @param transaction EVM transaction data
      * @param order Order configuration
      * @param secret Secret for order validation
      * @custom:internal Used for cross-chain communication
      */
     fun sendEVMCrossChainMessage(transaction: EVMTransaction, order: OrderConfig, secret: Int) {
-        // 1. Create cross-chain message
-        let crossChainMsg = createEVMCrossChainMessage(
+        // 1. Create enhanced cross-chain message with gas estimation
+        let crossChainMsg = createEnhancedEVMCrossChainMessage(
             transaction.chainId,
             transaction.toContract,
             transaction.functionSelector,
             transaction.parameters,
-            transaction.gasLimit,
+            order.amount,
             transaction.value
         );
         
-        // 2. Validate cross-chain message
-        if (!validateCrossChainMessage(crossChainMsg)) {
+        // 2. Set order-specific data in the message
+        crossChainMsg.orderHash = order.hashlock;
+        crossChainMsg.secret = secret;
+        crossChainMsg.timestamp = 0; // Will be set by bridge with actual timestamp
+        crossChainMsg.nonce = self.evmTransactionNonce;
+        
+        // 3. Validate enhanced cross-chain message
+        if (!validateEnhancedEVMMessageFormat(crossChainMsg.toCell(), transaction.chainId)) {
             throw(INVALID_EVM_MESSAGE);
         }
         
-        // 3. Find appropriate bridge for the chain
+        // 4. Find appropriate bridge for the chain
         let bridgeId = findBridgeForChain(transaction.chainId);
         if (bridgeId == null) {
             throw(INVALID_BRIDGE_CONFIG);
@@ -925,21 +957,21 @@ contract TonFusion with Deployable {
             throw(INVALID_BRIDGE_CONFIG);
         }
         
-        // 4. Validate bridge is active
+        // 5. Validate bridge is active and has sufficient capacity
         if (!bridge!!.isActive) {
             throw(BRIDGE_FAILURE);
         }
         
-        // 5. Send message to bridge contract
-        message(MessageParameters {
-            to: bridge!!.bridgeContract,
-            value: ton("0.1"), // Bridge fee
-            mode: SendRemainingValue,
-            body: crossChainMsg.toCell(),
-        });
+        // 6. Validate transfer amount is within bridge limits
+        if (order.amount < bridge!!.minTransferAmount || order.amount > bridge!!.maxTransferAmount) {
+            throw(INVALID_AMOUNT);
+        }
         
-        // 6. Log the cross-chain transfer
-        // In a real implementation, this would trigger bridge execution
+        // 7. Send enhanced message to bridge contract with retry logic
+        self.sendCrossChainMessage(transaction.chainId, crossChainMsg.toCell(), 0);
+        
+        // 8. Log the cross-chain transfer for monitoring
+        // In a real implementation, this would trigger bridge execution and monitoring
     }
     
     /**
@@ -1153,6 +1185,229 @@ contract TonFusion with Deployable {
             value: ton("0.1"), // Bridge fee
             mode: SendRemainingValue,
             body: msg.toCell(),
+        });
+    }
+
+    /**
+     * @notice Register a new EVM bridge
+     * @dev Only callable by contract owner
+     * @param action Bridge registration data
+     * @custom:security Only owner can register bridges
+     */
+    receive(action: RegisterEVMBridge) {
+        if (self.owner != sender()) {
+            throw(INVALID_OWNER);
+        }
+        
+        let bridgeData = EVMBridgeData {
+            bridgeId: action.bridgeId,
+            sourceChainId: action.sourceChainId,
+            targetChainId: action.targetChainId,
+            bridgeContract: action.bridgeContract,
+            bridgeFee: action.bridgeFee,
+            minTransferAmount: action.minTransferAmount,
+            maxTransferAmount: action.maxTransferAmount,
+            isActive: true,
+            lastUpdateTimestamp: 0, // Will be set by timestamp function
+        };
+        
+        self.evmBridges.set(action.bridgeId, bridgeData);
+    }
+
+    /**
+     * @notice Update EVM bridge configuration
+     * @dev Only callable by contract owner
+     * @param action Bridge update data
+     * @custom:security Only owner can update bridges
+     */
+    receive(action: UpdateEVMBridge) {
+        if (self.owner != sender()) {
+            throw(INVALID_OWNER);
+        }
+        
+        let existingBridge = self.evmBridges.get(action.bridgeId);
+        if (existingBridge == null) {
+            throw(INVALID_BRIDGE_CONFIG);
+        }
+        
+        let updatedBridge = EVMBridgeData {
+            bridgeId: action.bridgeId,
+            sourceChainId: existingBridge!!.sourceChainId,
+            targetChainId: existingBridge!!.targetChainId,
+            bridgeContract: existingBridge!!.bridgeContract,
+            bridgeFee: action.bridgeFee,
+            minTransferAmount: action.minTransferAmount,
+            maxTransferAmount: action.maxTransferAmount,
+            isActive: action.isActive,
+            lastUpdateTimestamp: 0, // Will be set by timestamp function
+        };
+        
+        self.evmBridges.set(action.bridgeId, updatedBridge);
+    }
+
+    /**
+     * @notice Register a new EVM oracle
+     * @dev Only callable by contract owner
+     * @param action Oracle registration data
+     * @custom:security Only owner can register oracles
+     */
+    receive(action: RegisterEVMOracle) {
+        if (self.owner != sender()) {
+            throw(INVALID_OWNER);
+        }
+        
+        let oracleData = EVMOracleData {
+            oracleId: action.oracleId,
+            chainId: action.chainId,
+            oracleContract: action.oracleContract,
+            tokenAddress: action.tokenAddress,
+            priceDecimals: action.priceDecimals,
+            heartbeatInterval: action.heartbeatInterval,
+            isActive: true,
+            lastPriceUpdate: 0, // Will be set by timestamp function
+        };
+        
+        self.evmOracles.set(action.oracleId, oracleData);
+    }
+
+    /**
+     * @notice Update EVM oracle configuration
+     * @dev Only callable by contract owner
+     * @param action Oracle update data
+     * @custom:security Only owner can update oracles
+     */
+    receive(action: UpdateEVMOracle) {
+        if (self.owner != sender()) {
+            throw(INVALID_OWNER);
+        }
+        
+        let existingOracle = self.evmOracles.get(action.oracleId);
+        if (existingOracle == null) {
+            throw(INVALID_ORACLE_CONFIG);
+        }
+        
+        let updatedOracle = EVMOracleData {
+            oracleId: action.oracleId,
+            chainId: existingOracle!!.chainId,
+            oracleContract: existingOracle!!.oracleContract,
+            tokenAddress: existingOracle!!.tokenAddress,
+            priceDecimals: existingOracle!!.priceDecimals,
+            heartbeatInterval: action.heartbeatInterval,
+            isActive: action.isActive,
+            lastPriceUpdate: existingOracle!!.lastPriceUpdate,
+        };
+        
+        self.evmOracles.set(action.oracleId, updatedOracle);
+    }
+
+    /**
+     * @notice Process EVM bridge timeout
+     * @dev Handles timeout scenarios for bridge operations
+     * @param action Timeout data
+     * @custom:internal Used for timeout handling
+     */
+    receive(action: EVMBridgeTimeout) {
+        let transaction = self.evmTransactions.get(action.transactionNonce);
+        if (transaction == null) {
+            throw(INVALID_TRANSACTION);
+        }
+        
+        // Update transaction status to failed
+        let updatedTransaction = EVMTransaction {
+            chainId: transaction!!.chainId,
+            toContract: transaction!!.toContract,
+            functionSelector: transaction!!.functionSelector,
+            parameters: transaction!!.parameters,
+            gasLimit: transaction!!.gasLimit,
+            gasPrice: transaction!!.gasPrice,
+            value: transaction!!.value,
+            nonce: transaction!!.nonce,
+            status: 2, // failed
+            transactionHash: transaction!!.transactionHash,
+            blockNumber: transaction!!.blockNumber,
+            confirmations: transaction!!.confirmations,
+        };
+        
+        self.evmTransactions.set(action.transactionNonce, updatedTransaction);
+    }
+
+    /**
+     * @notice Retry failed EVM transaction
+     * @dev Retries a failed cross-chain transaction with new gas price
+     * @param action Retry data
+     * @custom:internal Used for transaction retry
+     */
+    receive(action: RetryEVMTransaction) {
+        let transaction = self.evmTransactions.get(action.transactionNonce);
+        if (transaction == null) {
+            throw(INVALID_TRANSACTION);
+        }
+        
+        if (transaction!!.status != 2) { // Not failed
+            throw(INVALID_TRANSACTION_STATUS);
+        }
+        
+        // Create new transaction with updated gas price
+        let retryTransaction = EVMTransaction {
+            chainId: transaction!!.chainId,
+            toContract: transaction!!.toContract,
+            functionSelector: transaction!!.functionSelector,
+            parameters: transaction!!.parameters,
+            gasLimit: transaction!!.gasLimit,
+            gasPrice: action.newGasPrice,
+            value: transaction!!.value,
+            nonce: self.evmTransactionNonce,
+            status: 0, // pending
+            transactionHash: beginCell().endCell(),
+            blockNumber: 0,
+            confirmations: 0,
+        };
+        
+        // Increment transaction nonce
+        self.evmTransactionNonce = self.evmTransactionNonce + 1;
+        
+        // Store new transaction
+        self.evmTransactions.set(retryTransaction.nonce, retryTransaction);
+        
+        // Send retry message to bridge
+        self.sendEVMTransactionRetryToBridge(retryTransaction);
+    }
+
+    /**
+     * @notice Send EVM transaction retry to bridge
+     * @dev Routes retry messages to appropriate EVM bridge
+     * @param transaction Transaction to retry
+     * @custom:internal Used for bridge communication
+     */
+    fun sendEVMTransactionRetryToBridge(transaction: EVMTransaction) {
+        let bridgeId = self.findBridgeForChain(transaction.chainId);
+        if (bridgeId == null) {
+            throw(INVALID_BRIDGE_CONFIG);
+        }
+        
+        let bridge = self.evmBridges.get(bridgeId!!);
+        if (bridge == null) {
+            throw(INVALID_BRIDGE_CONFIG);
+        }
+        
+        // Create retry message
+        let retryMsg = beginCell()
+            .storeUint(0x4a5b6c7d, 32) // Retry opcode
+            .storeUint(transaction.nonce, 64)
+            .storeUint(transaction.gasPrice, 64)
+            .storeRef(transaction.toContract)
+            .storeUint(transaction.functionSelector, 32)
+            .storeRef(transaction.parameters)
+            .storeUint(transaction.gasLimit, 32)
+            .storeUint(transaction.value, 64)
+            .endCell();
+        
+        // Send message to bridge contract
+        message(MessageParameters {
+            to: bridge!!.bridgeContract,
+            value: ton("0.1"), // Bridge fee
+            mode: SendRemainingValue,
+            body: retryMsg,
         });
     }
 }

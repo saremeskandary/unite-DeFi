@@ -299,4 +299,244 @@ struct CrossChainMessage {
     nonce: Int as uint64;
 }
 
+/**
+ * @notice Comprehensive chain validation result
+ * @dev Contains detailed validation status for chain operations
+ * @param isValid Whether the chain validation passed
+ * @param errorCode Error code if validation failed
+ * @param errorMessage Human-readable error message
+ * @param chainId Target chain ID that was validated
+ * @param isEscrowDeployed Whether escrow contract is deployed
+ * @param isChainConnected Whether chain connectivity is valid
+ * @custom:security Validation results must be checked before proceeding
+ */
+struct ValidationResult {
+    isValid: Bool;
+    errorCode: Int as uint32;
+    errorMessage: Cell;
+    chainId: Int as uint32;
+    isEscrowDeployed: Bool;
+    isChainConnected: Bool;
+}
+
+/**
+ * @notice Escrow deployment validation result
+ * @dev Contains detailed escrow validation status
+ * @param isDeployed Whether escrow contract is deployed
+ * @param contractAddress Escrow contract address
+ * @param totalOrders Total number of orders processed by escrow
+ * @param isActive Whether escrow contract is active
+ * @param errorCode Error code if validation failed
+ * @param errorMessage Human-readable error message
+ * @custom:security Escrow validation is critical for cross-chain security
+ */
+struct EscrowValidationResult {
+    isDeployed: Bool;
+    contractAddress: Cell;
+    totalOrders: Int as uint32;
+    isActive: Bool;
+    errorCode: Int as uint32;
+    errorMessage: Cell;
+}
+
+/**
+ * @notice Chain connectivity status
+ * @dev Contains connectivity information for a specific chain
+ * @param chainId Target chain ID
+ * @param isConnected Whether chain is connected
+ * @param lastPingTimestamp Last successful ping timestamp
+ * @param responseTime Average response time in milliseconds
+ * @param errorCount Number of consecutive connection errors
+ * @param isActive Whether chain is considered active
+ * @custom:internal Used for monitoring chain health
+ */
+struct ChainConnectivityStatus {
+    chainId: Int as uint32;
+    isConnected: Bool;
+    lastPingTimestamp: Int as uint32;
+    responseTime: Int as uint32; // in milliseconds
+    errorCount: Int as uint32;
+    isActive: Bool;
+}
+
+// ============================================================================
+// ERROR HANDLING DATA STRUCTURES
+// ============================================================================
+
+/**
+ * @notice Bridge status information
+ * @dev Contains bridge operational status and health metrics
+ * @param isActive Whether bridge is currently active
+ * @param lastHeartbeat Last heartbeat timestamp
+ * @param failureCount Number of consecutive failures
+ * @param totalTransactions Total transactions processed
+ * @param successRate Success rate percentage
+ * @custom:internal Used for bridge health monitoring
+ */
+struct BridgeStatus {
+    isActive: Bool;
+    lastHeartbeat: Int as uint32;
+    failureCount: Int as uint32;
+    totalTransactions: Int as uint32;
+    successRate: Int as uint8; // Percentage (0-100)
+}
+
+/**
+ * @notice Retry result for bridge operations
+ * @dev Contains retry decision and timing information
+ * @param shouldRetry Whether retry should be attempted
+ * @param delaySeconds Delay before next retry attempt
+ * @param errorCode Last error code encountered
+ * @param reason Human-readable reason for retry decision
+ * @custom:internal Used for retry logic implementation
+ */
+struct RetryResult {
+    shouldRetry: Bool;
+    delaySeconds: Int as uint32;
+    errorCode: Int as uint32;
+    reason: String;
+}
+
+/**
+ * @notice Timeout analysis result
+ * @dev Contains comprehensive timeout analysis and recommended actions
+ * @param hasTimeout Whether a timeout condition exists
+ * @param timeoutType Type of timeout (ORDER_EXPIRED, BRIDGE_TIMEOUT, etc.)
+ * @param severity Severity level (CRITICAL, HIGH, MEDIUM, LOW)
+ * @param actions Array of recommended actions
+ * @param timeRemaining Time remaining before timeout (0 if expired)
+ * @custom:internal Used for timeout handling
+ */
+struct TimeoutResult {
+    hasTimeout: Bool;
+    timeoutType: String;
+    severity: String;
+    actions: Cell; // Encoded as array of strings
+    timeRemaining: Int as uint32;
+}
+
+/**
+ * @notice Circuit breaker state
+ * @dev Contains circuit breaker status and failure tracking
+ * @param state Circuit breaker state (OPEN, CLOSED, HALF_OPEN)
+ * @param failureCount Current failure count
+ * @param lastFailureTime Timestamp of last failure
+ * @param resetTime Timestamp when circuit breaker will reset
+ * @custom:internal Used for circuit breaker implementation
+ */
+struct CircuitBreakerResult {
+    state: String;
+    failureCount: Int as uint32;
+    lastFailureTime: Int as uint32;
+    resetTime: Int as uint32;
+}
+
+/**
+ * @notice EVM transaction error analysis
+ * @dev Contains detailed EVM transaction error information and recovery actions
+ * @param errorCode Error code from transaction
+ * @param category Error category (GAS_ERROR, BALANCE_ERROR, etc.)
+ * @param gasUsageRatio Gas usage as percentage of limit
+ * @param recoveryActions Array of recommended recovery actions
+ * @param isRetryable Whether error is retryable
+ * @param estimatedCost Estimated cost of retry attempt
+ * @custom:internal Used for EVM error handling
+ */
+struct EVMErrorResult {
+    errorCode: Int as uint32;
+    category: String;
+    gasUsageRatio: Int as uint8; // Percentage (0-100)
+    recoveryActions: Cell; // Encoded as array of strings
+    isRetryable: Bool;
+    estimatedCost: Int as uint64;
+}
+
+/**
+ * @notice Comprehensive error report
+ * @dev Contains detailed error information for debugging and monitoring
+ * @param errorCode Error code
+ * @param category Error category
+ * @param severity Error severity level
+ * @param timestamp Error timestamp
+ * @param transactionId Transaction identifier
+ * @param context Error context information
+ * @param recommendedActions Array of recommended actions
+ * @param isRetryable Whether error is retryable
+ * @custom:internal Used for error reporting and monitoring
+ */
+struct ErrorReport {
+    errorCode: Int as uint32;
+    category: String;
+    severity: String;
+    timestamp: Int as uint32;
+    transactionId: Int as uint32;
+    context: Cell;
+    recommendedActions: Cell; // Encoded as array of strings
+    isRetryable: Bool;
+}
+
+/**
+ * @notice Bridge failure tracking
+ * @dev Contains bridge failure statistics and recovery information
+ * @param bridgeId Bridge identifier
+ * @param failureCount Total failure count
+ * @param lastFailureTime Timestamp of last failure
+ * @param lastFailureCode Error code of last failure
+ * @param recoveryAttempts Number of recovery attempts
+ * @param isInRecovery Whether bridge is currently in recovery mode
+ * @param circuitBreakerState Current circuit breaker state
+ * @custom:internal Used for bridge failure tracking
+ */
+struct BridgeFailureTracking {
+    bridgeId: Int as uint32;
+    failureCount: Int as uint32;
+    lastFailureTime: Int as uint32;
+    lastFailureCode: Int as uint32;
+    recoveryAttempts: Int as uint32;
+    isInRecovery: Bool;
+    circuitBreakerState: String;
+}
+
+/**
+ * @notice Order timeout tracking
+ * @dev Contains order timeout monitoring information
+ * @param orderId Order identifier
+ * @param timelock Order timelock
+ * @param bridgeTimeout Bridge timeout threshold
+ * @param lastCheckTime Last timeout check timestamp
+ * @param timeoutStatus Current timeout status
+ * @param escalationLevel Escalation level for timeout handling
+ * @param notifiedParties Parties notified about timeout
+ * @custom:internal Used for order timeout monitoring
+ */
+struct OrderTimeoutTracking {
+    orderId: Int as uint32;
+    timelock: Int as uint32;
+    bridgeTimeout: Int as uint32;
+    lastCheckTime: Int as uint32;
+    timeoutStatus: String;
+    escalationLevel: Int as uint8;
+    notifiedParties: Cell; // Encoded as array of addresses
+}
+
+/**
+ * @notice Retry configuration
+ * @dev Contains retry strategy configuration
+ * @param maxRetries Maximum number of retry attempts
+ * @param baseDelay Base delay between retries in seconds
+ * @param maxDelay Maximum delay between retries in seconds
+ * @param backoffMultiplier Exponential backoff multiplier
+ * @param jitterPercentage Jitter percentage for delay randomization
+ * @param retryableErrors Array of retryable error codes
+ * @custom:internal Used for retry strategy configuration
+ */
+struct RetryConfig {
+    maxRetries: Int as uint8;
+    baseDelay: Int as uint32;
+    maxDelay: Int as uint32;
+    backoffMultiplier: Int as uint8;
+    jitterPercentage: Int as uint8;
+    retryableErrors: Cell; // Encoded as array of error codes
+}
+
 

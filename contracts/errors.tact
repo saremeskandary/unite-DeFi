@@ -212,6 +212,50 @@ const PARTIAL_FILL_EXCEEDS_ORDER: Int = 103;
 const SECRET_ALREADY_USED: Int = 104;
 
 // ============================================================================
+// BRIDGE AND ORACLE ERRORS (110-119)
+// ============================================================================
+
+/// @notice Invalid bridge configuration error
+/// @dev Used when bridge configuration is invalid or missing
+const INVALID_BRIDGE_CONFIG: Int = 110;
+
+/// @notice Invalid oracle configuration error
+/// @dev Used when oracle configuration is invalid or missing
+const INVALID_ORACLE_CONFIG: Int = 111;
+
+/// @notice Invalid transaction error
+/// @dev Used when transaction is not found or invalid
+const INVALID_TRANSACTION: Int = 112;
+
+/// @notice Invalid transaction status error
+/// @dev Used when transaction status is not valid for operation
+const INVALID_TRANSACTION_STATUS: Int = 113;
+
+/// @notice Bridge timeout error
+/// @dev Used when bridge operation times out
+const BRIDGE_TIMEOUT: Int = 114;
+
+/// @notice Oracle timeout error
+/// @dev Used when oracle operation times out
+const ORACLE_TIMEOUT: Int = 115;
+
+/// @notice Invalid retry attempt error
+/// @dev Used when retry attempt is invalid
+const INVALID_RETRY_ATTEMPT: Int = 116;
+
+/// @notice Chain not active error
+/// @dev Used when EVM chain is not active
+const CHAIN_NOT_ACTIVE: Int = 117;
+
+/// @notice EVM gas limit exceeded error
+/// @dev Used when EVM gas limit is exceeded
+const EVM_GAS_LIMIT_EXCEEDED: Int = 118;
+
+/// @notice Invalid bridge fee error
+/// @dev Used when bridge fee is invalid
+const INVALID_BRIDGE_FEE: Int = 119;
+
+// ============================================================================
 // SYSTEM ERRORS
 // ============================================================================
 

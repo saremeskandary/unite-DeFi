@@ -30,3 +30,38 @@
 - Tests are in `tests/` directory
 - Build output goes to `build/` directory
 - Scripts are in `scripts/` directory
+
+## Terminal Management & Recovery
+
+### Prevention Strategies
+
+- Use `tmux` for long-running development sessions to isolate terminal state
+- Run TUI applications (like `k9s`, `htop`) in separate terminal tabs/windows
+- Keep at least one clean terminal tab available for recovery
+- Use `script debug.log` to record terminal sessions when debugging issues
+
+### Quick Recovery Commands
+
+- `tput cnorm` - Unhide cursor if it disappears
+- `reset` - Reset terminal state and clear screen
+- `clear` or `Ctrl+L` - Clear terminal screen
+- `tmux attach` - Reattach to tmux session if using tmux
+
+### Terminal Setup Recommendations
+
+- Install and use `tmux` for session management: `sudo apt install tmux`
+- Add terminal recovery aliases to shell config:
+  ```bash
+  alias fix='tput cnorm && reset && clear'
+  alias panic='tmux new-session -d -s recovery && tmux attach-session -t recovery'
+  ```
+- Use alternative terminal emulators like Alacritty or Kitty for better state management
+- Set `export TERM=xterm-256color` in shell configuration
+
+### When Terminal Gets Stuck
+
+1. Try `tput cnorm` first (unhide cursor)
+2. If that doesn't work, run `reset` (resets terminal state)
+3. Use `clear` or `Ctrl+L` to clean up the display
+4. If still stuck, switch away and back with `Alt+Tab`
+5. As last resort, open new terminal and use `tmux attach` if using tmux

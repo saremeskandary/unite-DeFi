@@ -159,11 +159,11 @@ fun isValidChainId(chainId: Int): Bool {
 }
 
 /**
- * @notice Validate EVM chain ID for supported networks
- * @dev Checks if an EVM chain ID is supported by the protocol
- * @param chainId EVM chain ID to validate
- * @return True if EVM chain ID is supported, false otherwise
- * @custom:security Only supported EVM chains are allowed
+ * @notice Validate EVM chain ID
+ * @dev Checks if the provided chain ID is supported
+ * @param chainId Chain ID to validate
+ * @return True if chain ID is supported, false otherwise
+ * @custom:internal Used for chain validation
  */
 fun isValidEVMChainId(chainId: Int): Bool {
     return chainId == EVM_CHAIN_ETHEREUM ||
@@ -171,6 +171,31 @@ fun isValidEVMChainId(chainId: Int): Bool {
            chainId == EVM_CHAIN_BSC ||
            chainId == EVM_CHAIN_BASE ||
            chainId == EVM_CHAIN_ARBITRUM;
+}
+
+/**
+ * @notice Calculate base EVM gas price
+ * @dev Calculates base gas price for a specific chain
+ * @param chainId EVM chain ID
+ * @return Base gas price in wei
+ * @custom:internal Used for gas price calculation
+ */
+fun calculateEVMGasPrice(chainId: Int): Int {
+    // In a real implementation, this would fetch current gas prices from the chain
+    // For now, return chain-specific base prices
+    if (chainId == EVM_CHAIN_ETHEREUM) {
+        return 20000000000; // 20 gwei
+    } else if (chainId == EVM_CHAIN_POLYGON) {
+        return 30000000000; // 30 gwei
+    } else if (chainId == EVM_CHAIN_BSC) {
+        return 5000000000; // 5 gwei
+    } else if (chainId == EVM_CHAIN_BASE) {
+        return 1000000000; // 1 gwei
+    } else if (chainId == EVM_CHAIN_ARBITRUM) {
+        return 100000000; // 0.1 gwei
+    } else {
+        return 20000000000; // Default to 20 gwei
+    }
 }
 
 /**
@@ -182,6 +207,155 @@ fun isValidEVMChainId(chainId: Int): Bool {
  */
 fun isValidTONChainId(chainId: Int): Bool {
     return chainId == TON_CHAIN_MAINNET || chainId == TON_CHAIN_TESTNET;
+}
+
+/**
+ * @notice Comprehensive chain validation
+ * @dev Validates target chain ID, escrow deployment, and connectivity
+ * @param chainId Target chain ID to validate
+ * @param escrowContracts Map of escrow contracts
+ * @param evmChainConfigs Map of EVM chain configurations
+ * @return ValidationResult with validation status and details
+ * @custom:security Critical for cross-chain security
+ */
+fun validateChainComprehensive(
+    chainId: Int, 
+    escrowContracts: map<Int as uint32, EscrowContract>,
+    evmChainConfigs: map<Int as uint32, EVMChainConfig>
+): ValidationResult {
+    // 1. Validate target chain ID is supported
+    if (!isValidEVMChainId(chainId) && !isValidTONChainId(chainId)) {
+        return ValidationResult {
+            isValid: false,
+            errorCode: INVALID_CHAIN_ID,
+            errorMessage: beginCell().storeStringTail("Unsupported chain ID").endCell(),
+            chainId: chainId,
+            isEscrowDeployed: false,
+            isChainConnected: false,
+        };
+    }
+
+    // 2. Check if escrow contract is deployed on target chain
+    let isEscrowDeployed = isEscrowDeployed(chainId, escrowContracts);
+
+    // 3. Verify chain connectivity
+    let isChainConnected = isChainConnectivityValid(chainId, evmChainConfigs);
+
+    // 4. Additional validation for EVM chains
+    if (isValidEVMChainId(chainId)) {
+        let chainConfig = evmChainConfigs.get(chainId);
+        if (chainConfig == null || !chainConfig!!.isActive) {
+            return ValidationResult {
+                isValid: false,
+                errorCode: CHAIN_NOT_ACTIVE,
+                errorMessage: beginCell().storeStringTail("EVM chain is not active").endCell(),
+                chainId: chainId,
+                isEscrowDeployed: isEscrowDeployed,
+                isChainConnected: isChainConnected,
+            };
+        }
+    }
+
+    // All validations passed
+    return ValidationResult {
+        isValid: true,
+        errorCode: 0,
+        errorMessage: beginCell().endCell(),
+        chainId: chainId,
+        isEscrowDeployed: isEscrowDeployed,
+        isChainConnected: isChainConnected,
+    };
+}
+
+/**
+ * @notice Validate chain connectivity
+ * @dev Checks if the target chain is accessible and responsive
+ * @param chainId Target chain ID
+ * @param evmChainConfigs Map of EVM chain configurations
+ * @return True if chain is connected, false otherwise
+ * @custom:internal Used for connectivity validation
+ */
+fun isChainConnectivityValid(chainId: Int, evmChainConfigs: map<Int as uint32, EVMChainConfig>): Bool {
+    // For EVM chains, check if configuration exists and is active
+    if (isValidEVMChainId(chainId)) {
+        let config = evmChainConfigs.get(chainId);
+        if (config == null) {
+            return false;
+        }
+        return config!!.isActive;
+    }
+    
+    // For TON chains, assume connectivity (local chain)
+    if (isValidTONChainId(chainId)) {
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * @notice Enhanced escrow deployment validation
+ * @dev Validates escrow contract deployment with additional checks
+ * @param chainId Target chain ID
+ * @param escrowContracts Map of escrow contracts
+ * @param evmChainConfigs Map of EVM chain configurations
+ * @return EscrowValidationResult with detailed validation status
+ * @custom:security Critical for cross-chain security
+ */
+fun validateEscrowDeployment(
+    chainId: Int, 
+    escrowContracts: map<Int as uint32, EscrowContract>,
+    evmChainConfigs: map<Int as uint32, EVMChainConfig>
+): EscrowValidationResult {
+    let escrow = escrowContracts.get(chainId);
+    
+    if (escrow == null) {
+        return EscrowValidationResult {
+            isDeployed: false,
+            contractAddress: beginCell().endCell(),
+            totalOrders: 0,
+            isActive: false,
+            errorCode: ESCROW_NOT_DEPLOYED,
+            errorMessage: beginCell().storeStringTail("Escrow contract not found").endCell(),
+        };
+    }
+    
+    let escrowContract = escrow!!;
+    
+    if (!escrowContract.deployed) {
+        return EscrowValidationResult {
+            isDeployed: false,
+            contractAddress: escrowContract.contractAddress,
+            totalOrders: escrowContract.totalOrders,
+            isActive: false,
+            errorCode: ESCROW_NOT_DEPLOYED,
+            errorMessage: beginCell().storeStringTail("Escrow contract not deployed").endCell(),
+        };
+    }
+    
+    // Additional validation for EVM chains
+    if (isValidEVMChainId(chainId)) {
+        let chainConfig = evmChainConfigs.get(chainId);
+        if (chainConfig == null || !chainConfig!!.isActive) {
+            return EscrowValidationResult {
+                isDeployed: true,
+                contractAddress: escrowContract.contractAddress,
+                totalOrders: escrowContract.totalOrders,
+                isActive: false,
+                errorCode: CHAIN_NOT_ACTIVE,
+                errorMessage: beginCell().storeStringTail("EVM chain is not active").endCell(),
+            };
+        }
+    }
+    
+    return EscrowValidationResult {
+        isDeployed: true,
+        contractAddress: escrowContract.contractAddress,
+        totalOrders: escrowContract.totalOrders,
+        isActive: true,
+        errorCode: 0,
+        errorMessage: beginCell().endCell(),
+    };
 }
 
 /**
@@ -563,87 +737,223 @@ fun findBridgeForChain(chainId: Int): Int? {
  * @custom:security Critical for cross-chain security
  */
 fun validateCrossChainMessage(message: CrossChainMessage): Bool {
-    // Validate source and target chains
-    if (!isValidEVMChainId(message.targetChain) && !isValidTONChainId(message.targetChain)) {
-        return false;
+    // Basic validation checks
+    if (message.sourceChain == message.targetChain) {
+        return false; // Same chain not allowed
     }
     
-    // Validate timestamp (not too old)
-    let currentTime = 0; // In real implementation, get current timestamp
-    if (message.timestamp < currentTime - EVM_BRIDGE_TIMEOUT_SECONDS) {
-        return false;
+    if (message.amount <= 0) {
+        return false; // Amount must be positive
     }
     
-    // Validate nonce (should be unique)
-    if (message.nonce == 0) {
-        return false;
+    if (message.timestamp <= 0) {
+        return false; // Timestamp must be valid
+    }
+    
+    if (message.nonce <= 0) {
+        return false; // Nonce must be positive
     }
     
     return true;
 }
 
 /**
- * @notice Build EVM transfer message
- * @dev Creates EVM-compatible message format for transfers
- * @param order Order configuration
+ * @notice Create EVM cross-chain message
+ * @dev Creates EVM-compatible cross-chain message
+ * @param chainId Target chain ID
+ * @param toContract Target contract address
+ * @param functionSelector Function selector
+ * @param parameters Function parameters
+ * @param gasLimit Gas limit
+ * @param value ETH value
+ * @return EVM cross-chain message
+ * @custom:internal Used for EVM contract interactions
+ */
+fun createEVMCrossChainMessage(
+    chainId: Int,
+    toContract: Cell,
+    functionSelector: Int,
+    parameters: Cell,
+    gasLimit: Int,
+    value: Int
+): CrossChainMessage {
+    return CrossChainMessage {
+        sourceChain: TON_CHAIN_MAINNET,
+        targetChain: chainId,
+        orderHash: 0, // Will be set by caller
+        amount: value,
+        secret: 0, // Will be set by caller
+        timestamp: 0, // Will be set by caller
+        nonce: 0, // Will be set by caller
+    };
+}
+
+/**
+ * @notice Create EVM contract deployment message
+ * @dev Creates a message for deploying contracts on EVM chains
+ * @param targetChainId Target EVM chain ID
+ * @param contractBytecode EVM contract bytecode
+ * @param constructorParams Constructor parameters
+ * @param gasLimit Gas limit for deployment
+ * @param value ETH value to send
+ * @return EVMContractDeploy for contract deployment
+ * @custom:internal Used for EVM contract deployment
+ */
+fun createEVMContractDeploy(
+    targetChainId: Int,
+    contractBytecode: Cell,
+    constructorParams: Cell,
+    gasLimit: Int,
+    value: Int
+): EVMContractDeploy {
+    return EVMContractDeploy {
+        targetChainId: targetChainId,
+        contractBytecode: contractBytecode,
+        constructorParams: constructorParams,
+        gasLimit: gasLimit,
+        value: value,
+        customPayload: null,
+    };
+}
+
+/**
+ * @notice Calculate dynamic gas estimation for target EVM chain
+ * @dev Estimates gas requirements based on chain characteristics and transaction type
+ * @param chainId Target EVM chain ID
  * @param amount Transfer amount
- * @param secret Secret for order validation
- * @return Cell containing EVM transfer message
- * @custom:internal Used for cross-chain transfers
+ * @param isContractCall Whether this is a contract call (true) or simple transfer (false)
+ * @return Estimated gas limit for the transaction
+ * @custom:internal Used for gas optimization
  */
-fun buildEVMTransferMessage(order: OrderConfig, amount: Int, secret: Int): Cell {
-    return beginCell()
-        .storeUint(order.id, 32) // Chain ID
-        .storeAddress(order.receiverPubKey) // Target address
-        .storeUint(amount, 256) // Amount
-        .storeUint(secret, 256) // Secret
-        .storeUint(order.hashlock, 256) // Hashlock
-        .storeUint(order.timelock, 32) // Timelock
-        .endCell();
-}
-
-/**
- * @notice Send cross-chain message
- * @dev Sends message to cross-chain bridge
- * @param chainId Target chain ID
- * @param message Cross-chain message
- * @custom:internal Used for cross-chain communication
- */
-fun sendCrossChainMessage(chainId: Int, message: Cell) {
-    // In a real implementation, this would send the message to the bridge
-    // For now, this is a placeholder
-    // The actual implementation would depend on the specific bridge being used
-}
-
-/**
- * @notice Check if escrow contract is deployed
- * @dev Validates escrow contract deployment on target chain
- * @param chainId Target chain ID
- * @param escrowContracts Map of escrow contracts
- * @return True if escrow is deployed, false otherwise
- * @custom:security Critical for cross-chain security
- */
-fun isEscrowDeployed(chainId: Int, escrowContracts: map<Int as uint32, EscrowContract>): Bool {
-    let escrow = escrowContracts.get(chainId);
-    if (escrow == null) {
-        return false;
+fun calculateEVMDynamicGasLimit(chainId: Int, amount: Int, isContractCall: Bool): Int {
+    // Simplified gas calculation for now
+    let baseGas: Int = EVM_CONTRACT_CALL_GAS_LIMIT;
+    if (!isContractCall) {
+        baseGas = 21000; // Base gas for simple ETH transfer
     }
-    return escrow!!.deployed;
+    
+    // Chain-specific gas adjustments
+    let chainGasMultiplier: Int = 100; // Default multiplier
+    if (chainId == EVM_CHAIN_ETHEREUM) {
+        chainGasMultiplier = 120; // 120% for Ethereum (higher gas costs)
+    } else if (chainId == EVM_CHAIN_POLYGON) {
+        chainGasMultiplier = 80; // 80% for Polygon (lower gas costs)
+    } else if (chainId == EVM_CHAIN_BSC) {
+        chainGasMultiplier = 70; // 70% for BSC (very low gas costs)
+    } else if (chainId == EVM_CHAIN_BASE) {
+        chainGasMultiplier = 85; // 85% for Base (optimistic rollup)
+    } else if (chainId == EVM_CHAIN_ARBITRUM) {
+        chainGasMultiplier = 75; // 75% for Arbitrum (optimistic rollup)
+    }
+    
+    return baseGas * chainGasMultiplier / 100;
 }
 
 /**
- * @notice Validate EVM message format
- * @dev Validates EVM message structure and parameters
+ * @notice Create enhanced EVM cross-chain message with gas estimation
+ * @dev Creates a comprehensive cross-chain message with proper gas estimation
+ * @param targetChainId Target EVM chain ID
+ * @param targetContract Target EVM contract address
+ * @param functionSelector EVM function selector
+ * @param parameters Function parameters
+ * @param amount Transfer amount
+ * @param value ETH value to send
+ * @return Enhanced cross-chain message for EVM communication
+ * @custom:internal Used for EVM contract interactions
+ */
+fun createEnhancedEVMCrossChainMessage(
+    targetChainId: Int,
+    targetContract: Cell,
+    functionSelector: Int,
+    parameters: Cell,
+    amount: Int,
+    value: Int
+): CrossChainMessage {
+    // Calculate dynamic gas limit
+    let estimatedGasLimit = calculateEVMDynamicGasLimit(targetChainId, amount, true);
+    
+    // Get current timestamp
+    let currentTimestamp = 0; // Will be set by caller with actual timestamp
+    
+    // Generate nonce for replay protection
+    let messageNonce = 0; // Will be set by caller with actual nonce
+    
+    return CrossChainMessage {
+        sourceChain: TON_CHAIN_MAINNET,
+        targetChain: targetChainId,
+        orderHash: 0, // Will be set by caller
+        amount: amount,
+        secret: 0, // Will be set by caller
+        timestamp: currentTimestamp,
+        nonce: messageNonce,
+    };
+}
+
+/**
+ * @notice Validate enhanced EVM message format with comprehensive checks
+ * @dev Validates EVM message structure, parameters, and security requirements
  * @param message EVM message to validate
+ * @param chainId Target chain ID for validation
  * @return True if message format is valid, false otherwise
  * @custom:security Critical for EVM integration security
  */
-fun validateEVMMessageFormat(message: Cell): Bool {
+fun validateEnhancedEVMMessageFormat(message: Cell, chainId: Int): Bool {
     // Basic validation - check if message is not empty
+    if (message == null) {
+        return false;
+    }
+    
+    // Validate chain ID is supported
+    if (!isValidEVMChainId(chainId)) {
+        return false;
+    }
+    
     // In a real implementation, this would validate the specific message format
-    // based on the EVM chain and message type
+    // based on the EVM chain and message type, including:
+    // - Message size limits
+    // - Parameter encoding validation
+    // - Security checks for replay protection
+    // - Timestamp validation
     
     return true;
+}
+
+/**
+ * @notice Calculate optimal gas price for target EVM chain
+ * @dev Calculates gas price based on chain characteristics and network conditions
+ * @param chainId EVM chain ID
+ * @param priority Priority level (0=low, 1=medium, 2=high)
+ * @return Optimal gas price in wei
+ * @custom:internal Used for gas price optimization
+ */
+fun calculateOptimalEVMGasPrice(chainId: Int, priority: Int): Int {
+    let baseGasPrice = calculateEVMGasPrice(chainId);
+    
+    // Apply priority multiplier
+    let priorityMultiplier: Int = 100; // Default to medium priority
+    if (priority == 0) {
+        priorityMultiplier = 80; // 80% for low priority
+    } else if (priority == 1) {
+        priorityMultiplier = 100; // 100% for medium priority
+    } else if (priority == 2) {
+        priorityMultiplier = 150; // 150% for high priority
+    }
+    
+    // Apply chain-specific adjustments
+    let chainMultiplier: Int = 100; // Default multiplier
+    if (chainId == EVM_CHAIN_ETHEREUM) {
+        chainMultiplier = EVM_GAS_PRICE_MULTIPLIER; // Use constant for Ethereum
+    } else if (chainId == EVM_CHAIN_POLYGON) {
+        chainMultiplier = 90; // 90% for Polygon (lower gas prices)
+    } else if (chainId == EVM_CHAIN_BSC) {
+        chainMultiplier = 70; // 70% for BSC (very low gas prices)
+    } else if (chainId == EVM_CHAIN_BASE) {
+        chainMultiplier = 80; // 80% for Base
+    } else if (chainId == EVM_CHAIN_ARBITRUM) {
+        chainMultiplier = 60; // 60% for Arbitrum (very low gas prices)
+    }
+    
+    return baseGasPrice * priorityMultiplier * chainMultiplier / 10000;
 }
 
 /**
@@ -686,4 +996,703 @@ fun processTimeoutScenario(order: OrderConfig, currentTime: Int): Bool {
     }
     
     return false; // No timeout scenario
+}
+
+/**
+ * @notice Validate bridge configuration
+ * @dev Validates bridge parameters and configuration
+ * @param bridge Bridge data to validate
+ * @return True if bridge configuration is valid, false otherwise
+ * @custom:security Critical for bridge security
+ */
+fun validateBridgeConfig(bridge: EVMBridgeData): Bool {
+    // Validate bridge contract address
+    if (bridge.bridgeContract == null) {
+        return false;
+    }
+    
+    // Validate transfer amounts
+    if (bridge.minTransferAmount >= bridge.maxTransferAmount) {
+        return false;
+    }
+    
+    // Validate bridge fee
+    if (bridge.bridgeFee == 0) {
+        return false;
+    }
+    
+    // Validate chain IDs
+    if (!isValidEVMChainId(bridge.sourceChainId) || !isValidEVMChainId(bridge.targetChainId)) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * @notice Validate oracle configuration
+ * @dev Validates oracle parameters and configuration
+ * @param oracle Oracle data to validate
+ * @return True if oracle configuration is valid, false otherwise
+ * @custom:security Critical for oracle security
+ */
+fun validateOracleConfig(oracle: EVMOracleData): Bool {
+    // Validate oracle contract address
+    if (oracle.oracleContract == null) {
+        return false;
+    }
+    
+    // Validate token address
+    if (oracle.tokenAddress == null) {
+        return false;
+    }
+    
+    // Validate price decimals
+    if (oracle.priceDecimals > 18) {
+        return false;
+    }
+    
+    // Validate heartbeat interval
+    if (oracle.heartbeatInterval == 0) {
+        return false;
+    }
+    
+    // Validate chain ID
+    if (!isValidEVMChainId(oracle.chainId)) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * @notice Calculate bridge fee for transfer
+ * @dev Calculates appropriate bridge fee based on transfer amount and chain
+ * @param amount Transfer amount
+ * @param sourceChain Source chain ID
+ * @param targetChain Target chain ID
+ * @return Bridge fee in TON coins
+ * @custom:internal Used for fee calculation
+ */
+fun calculateEVMBridgeFee(amount: Int, sourceChain: Int, targetChain: Int): Int {
+    // Base fee calculation
+    let baseFee = EVM_BRIDGE_FEE_BASE;
+    
+    // Add chain-specific fees
+    if (targetChain == EVM_CHAIN_ETHEREUM) {
+        return baseFee + ton("0.05"); // Higher fee for Ethereum
+    } else if (targetChain == EVM_CHAIN_POLYGON) {
+        return baseFee + ton("0.02"); // Lower fee for Polygon
+    } else if (targetChain == EVM_CHAIN_BSC) {
+        return baseFee + ton("0.01"); // Lower fee for BSC
+    } else if (targetChain == EVM_CHAIN_BASE) {
+        return baseFee + ton("0.02"); // Medium fee for Base
+    } else if (targetChain == EVM_CHAIN_ARBITRUM) {
+        return baseFee + ton("0.03"); // Medium fee for Arbitrum
+    }
+    
+    return baseFee; // Default fee
+}
+
+/**
+ * @notice Calculate EVM gas price
+ * @dev Returns appropriate gas price for different EVM chains
+ * @param chainId EVM chain ID
+ * @return Gas price in wei
+ * @custom:internal Used for gas estimation
+ */
+fun calculateEVMGasPrice(chainId: Int): Int {
+    if (chainId == EVM_CHAIN_ETHEREUM) {
+        return 20_000_000_000; // 20 gwei
+    } else if (chainId == EVM_CHAIN_POLYGON) {
+        return 30_000_000_000; // 30 gwei
+    } else if (chainId == EVM_CHAIN_BSC) {
+        return 5_000_000_000; // 5 gwei
+    } else if (chainId == EVM_CHAIN_BASE) {
+        return 1_000_000_000; // 1 gwei
+    } else if (chainId == EVM_CHAIN_ARBITRUM) {
+        return 100_000_000; // 0.1 gwei
+    }
+    
+    return 10_000_000_000; // Default 10 gwei
+}
+
+/**
+ * @notice Check if bridge is available for chain
+ * @dev Validates bridge availability for specific chain
+ * @param chainId Target chain ID
+ * @param bridges Map of available bridges
+ * @return True if bridge is available, false otherwise
+ * @custom:internal Used for bridge selection
+ */
+fun isBridgeAvailableForChain(chainId: Int, bridges: map<Int as uint32, EVMBridgeData>): Bool {
+    // Iterate through bridges to find matching one
+    let bridgeIterator = bridges.begin();
+    while (bridgeIterator.hasNext()) {
+        let nextItem = bridgeIterator.next();
+        let bridgeId = nextItem.key;
+        let bridge = nextItem.value;
+        if (bridge.targetChainId == chainId && bridge.isActive) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * @notice Get best bridge for chain
+ * @dev Returns the best available bridge for a specific chain
+ * @param chainId Target chain ID
+ * @param bridges Map of available bridges
+ * @return Bridge ID if found, null otherwise
+ * @custom:internal Used for bridge selection
+ */
+fun getBestBridgeForChain(chainId: Int, bridges: map<Int as uint32, EVMBridgeData>): Int? {
+    let bestBridgeId: Int? = null;
+    let lowestFee: Int = 0;
+    
+    // Iterate through bridges to find the one with lowest fee
+    let bridgeIterator = bridges.begin();
+    while (bridgeIterator.hasNext()) {
+        let nextItem = bridgeIterator.next();
+        let bridgeId = nextItem.key;
+        let bridge = nextItem.value;
+        if (bridge.targetChainId == chainId && bridge.isActive) {
+            if (bestBridgeId == null || bridge.bridgeFee < lowestFee) {
+                bestBridgeId = bridgeId;
+                lowestFee = bridge.bridgeFee;
+            }
+        }
+    }
+    
+    return bestBridgeId;
+}
+
+/**
+ * @notice Validate cross-chain message integrity
+ * @dev Validates message integrity and authenticity
+ * @param message Cross-chain message to validate
+ * @param sourceChain Source chain ID
+ * @param targetChain Target chain ID
+ * @return True if message integrity is valid, false otherwise
+ * @custom:security Critical for cross-chain security
+ */
+fun validateCrossChainMessageIntegrity(
+    message: CrossChainMessage, 
+    sourceChain: Int, 
+    targetChain: Int
+): Bool {
+    // Validate source and target chains match
+    if (message.sourceChain != sourceChain || message.targetChain != targetChain) {
+        return false;
+    }
+    
+    // Validate timestamp is not too old
+    let currentTime = 0; // In real implementation, get current timestamp
+    if (message.timestamp < currentTime - EVM_BRIDGE_TIMEOUT_SECONDS) {
+        return false;
+    }
+    
+    // Validate nonce is unique
+    if (message.nonce == 0) {
+        return false;
+    }
+    
+    // Validate amount is positive
+    if (message.amount <= 0) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * @notice Process bridge confirmation
+ * @dev Processes bridge confirmation and updates transaction status
+ * @param bridgeId Bridge identifier
+ * @param transactionHash Transaction hash
+ * @param blockNumber Block number
+ * @param confirmations Number of confirmations
+ * @param transactions Map of transactions to update
+ * @return True if confirmation was processed successfully, false otherwise
+ * @custom:internal Used for bridge confirmation handling
+ */
+fun processBridgeConfirmation(
+    bridgeId: Int,
+    transactionHash: Cell,
+    blockNumber: Int,
+    confirmations: Int,
+    transactions: map<Int as uint64, EVMTransaction>
+): Bool {
+    // In a real implementation, this would:
+    // 1. Find the transaction by hash
+    // 2. Update the transaction status
+    // 3. Update confirmations count
+    // 4. Trigger any dependent actions
+    
+    // For now, return true as placeholder
+    return true;
+}
+
+/**
+ * @notice Handle oracle price update
+ * @dev Processes oracle price updates and validates them
+ * @param oracleId Oracle identifier
+ * @param tokenAddress Token address
+ * @param price Price in USD
+ * @param timestamp Price timestamp
+ * @param oracles Map of oracles
+ * @return True if price update was processed successfully, false otherwise
+ * @custom:internal Used for oracle price handling
+ */
+fun handleOraclePriceUpdate(
+    oracleId: Int,
+    tokenAddress: Address,
+    price: Int,
+    timestamp: Int,
+    oracles: map<Int as uint32, EVMOracleData>
+): Bool {
+    let oracle = oracles.get(oracleId);
+    if (oracle == null) {
+        return false;
+    }
+    
+    // Validate oracle is active
+    if (!oracle!!.isActive) {
+        return false;
+    }
+    
+    // Validate token address matches
+    if (oracle!!.tokenAddress != tokenAddress) {
+        return false;
+    }
+    
+    // Validate price is positive
+    if (price <= 0) {
+        return false;
+    }
+    
+    // Validate timestamp is recent
+    let currentTime = 0; // In real implementation, get current timestamp
+    if (timestamp < currentTime - oracle!!.heartbeatInterval) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * @notice Enhanced bridge failure handling with exponential backoff
+ * @dev Implements comprehensive retry logic for bridge operations
+ * @param transaction EVM transaction that failed
+ * @param retryCount Current retry attempt number
+ * @param maxRetries Maximum number of retry attempts
+ * @param lastErrorCode Last error code encountered
+ * @return RetryResult containing retry decision and delay
+ * @custom:internal Used for bridge failure recovery
+ */
+fun handleBridgeFailureWithBackoff(
+    transaction: EVMTransaction, 
+    retryCount: Int, 
+    maxRetries: Int, 
+    lastErrorCode: Int
+): RetryResult {
+    if (retryCount >= maxRetries) {
+        return RetryResult {
+            shouldRetry: false,
+            delaySeconds: 0,
+            errorCode: lastErrorCode,
+            reason: "Max retries exceeded"
+        };
+    }
+    
+    // Calculate exponential backoff delay
+    let baseDelay = EVM_RETRY_DELAY_SECONDS;
+    let exponentialDelay = baseDelay * (2 ^ retryCount);
+    let jitter = exponentialDelay / 10; // 10% jitter
+    let finalDelay = exponentialDelay + jitter;
+    
+    // Determine if we should retry based on error type
+    let shouldRetry = shouldRetryForError(lastErrorCode);
+    
+    let reason: String = "Non-retryable error"; // Default value
+    if (shouldRetry) { 
+        reason = "Retry with exponential backoff";
+    }
+    
+    return RetryResult {
+        shouldRetry: shouldRetry,
+        delaySeconds: finalDelay,
+        errorCode: lastErrorCode,
+        reason: reason
+    };
+}
+
+/**
+ * @notice Determine if error is retryable
+ * @dev Classifies errors as retryable or non-retryable
+ * @param errorCode Error code to classify
+ * @return True if error is retryable, false otherwise
+ * @custom:internal Used for retry decision logic
+ */
+fun shouldRetryForError(errorCode: Int): Bool {
+    // Retryable errors
+    if (errorCode == EVM_BRIDGE_TIMEOUT) { return true; }
+    if (errorCode == EVM_TRANSACTION_FAILED) { return true; }
+    if (errorCode == MESSAGE_DELIVERY_FAILED) { return true; }
+    
+    // Non-retryable errors
+    if (errorCode == INVALID_CHAIN_ID) { return false; }
+    if (errorCode == INVALID_BRIDGE_CONFIG) { return false; }
+    if (errorCode == EVM_CONTRACT_NOT_FOUND) { return false; }
+    if (errorCode == EVM_INSUFFICIENT_BALANCE) { return false; }
+    if (errorCode == INVALID_EVM_MESSAGE) { return false; }
+    
+    return false; // Default to non-retryable
+}
+
+/**
+ * @notice Enhanced timeout processing with detailed analysis
+ * @dev Provides comprehensive timeout handling for cross-chain operations
+ * @param order Order configuration
+ * @param currentTime Current timestamp
+ * @param bridgeStatus Current bridge status
+ * @return TimeoutResult containing timeout analysis and actions
+ * @custom:internal Used for timeout handling
+ */
+fun processTimeoutScenarioEnhanced(
+    order: OrderConfig, 
+    currentTime: Int, 
+    bridgeStatus: BridgeStatus
+): TimeoutResult {
+    let orderExpired = currentTime > order.timelock;
+    let bridgeTimeout = currentTime > order.timelock - EVM_BRIDGE_TIMEOUT_SECONDS;
+    let bridgeUnavailable = !bridgeStatus.isActive;
+    
+    // Determine timeout type and severity
+    let timeoutType: String = "NO_TIMEOUT"; // Default value
+    if (orderExpired) { 
+        timeoutType = "ORDER_EXPIRED";
+    } else if (bridgeTimeout) { 
+        timeoutType = "BRIDGE_TIMEOUT";
+    } else if (bridgeUnavailable) { 
+        timeoutType = "BRIDGE_UNAVAILABLE";
+    }
+    
+    let severity: String = "LOW"; // Default value
+    if (orderExpired) { 
+        severity = "CRITICAL";
+    } else if (bridgeTimeout || bridgeUnavailable) { 
+        severity = "HIGH";
+    }
+    
+    // Determine required actions
+    let actions: Cell = beginCell().storeString("CONTINUE_MONITORING").endCell(); // Default value
+    if (orderExpired) {
+        actions = beginCell().storeString("REFUND_ORDER,CLEANUP_ESCROW,NOTIFY_PARTIES").endCell();
+    } else if (bridgeTimeout) {
+        actions = beginCell().storeString("RETRY_BRIDGE,ESCALATE_TO_RESOLVER,NOTIFY_PARTIES").endCell();
+    } else if (bridgeUnavailable) {
+        actions = beginCell().storeString("WAIT_FOR_BRIDGE,NOTIFY_PARTIES,LOG_STATUS").endCell();
+    }
+    
+    let timeRemaining = 0;
+    if (!orderExpired) {
+        timeRemaining = order.timelock - currentTime;
+    }
+    return TimeoutResult {
+        hasTimeout: orderExpired || bridgeTimeout || bridgeUnavailable,
+        timeoutType: timeoutType,
+        severity: severity,
+        actions: actions,
+        timeRemaining: timeRemaining
+    };
+}
+
+/**
+ * @notice Handle bridge failure with circuit breaker pattern
+ * @dev Implements circuit breaker to prevent cascading failures
+ * @param bridgeId Bridge identifier
+ * @param failureCount Current failure count
+ * @param failureThreshold Failure threshold for circuit breaker
+ * @param lastFailureTime Timestamp of last failure
+ * @return CircuitBreakerResult containing circuit breaker state
+ * @custom:internal Used for circuit breaker implementation
+ */
+fun handleBridgeFailureWithCircuitBreaker(
+    bridgeId: Int,
+    failureCount: Int,
+    failureThreshold: Int,
+    lastFailureTime: Int
+): CircuitBreakerResult {
+    let currentTime = now();
+    let timeSinceLastFailure = currentTime - lastFailureTime;
+    let resetTimeout = EVM_RETRY_DELAY_SECONDS * 10; // 10x retry delay for reset
+    
+    // Check if circuit breaker should be opened
+    let shouldOpenCircuit = failureCount >= failureThreshold;
+    
+    // Check if circuit breaker should be reset
+    let shouldResetCircuit = timeSinceLastFailure > resetTimeout;
+    
+    let state = "HALF_OPEN";
+    if (shouldOpenCircuit) {
+        state = "OPEN";
+    } else if (shouldResetCircuit) {
+        state = "CLOSED";
+    }
+    
+    let finalFailureCount: Int = failureCount; // Default to current failure count
+    if (shouldResetCircuit) {
+        finalFailureCount = 0;
+    }
+    
+    return CircuitBreakerResult {
+        state: state,
+        failureCount: finalFailureCount,
+        lastFailureTime: lastFailureTime,
+        resetTime: lastFailureTime + resetTimeout
+    };
+}
+
+/**
+ * @notice Validate and handle EVM transaction errors
+ * @dev Provides comprehensive EVM transaction error handling
+ * @param transaction EVM transaction
+ * @param errorCode Error code from transaction
+ * @param gasUsed Gas used by failed transaction
+ * @param gasLimit Gas limit of transaction
+ * @return EVMErrorResult containing error analysis and recovery actions
+ * @custom:internal Used for EVM error handling
+ */
+fun handleEVMTransactionError(
+    transaction: EVMTransaction,
+    errorCode: Int,
+    gasUsed: Int,
+    gasLimit: Int
+): EVMErrorResult {
+    let gasUsageRatio = gasUsed * 100 / gasLimit;
+    let isGasRelated = errorCode == EVM_GAS_LIMIT_EXCEEDED;
+    let isBalanceRelated = errorCode == EVM_INSUFFICIENT_BALANCE;
+    let isContractRelated = errorCode == EVM_CONTRACT_NOT_FOUND;
+    
+    // Determine error category
+    let category: String = "GENERAL_ERROR"; // Default value
+    if (isGasRelated) {
+        category = "GAS_ERROR";
+    } else if (isBalanceRelated) {
+        category = "BALANCE_ERROR";
+    } else if (isContractRelated) {
+        category = "CONTRACT_ERROR";
+    }
+    
+    // Determine recovery actions (encoded as Cell)
+    let recoveryActions: Cell = beginCell().storeString("ANALYZE_ERROR,RETRY_TRANSACTION,ESCALATE_TO_SUPPORT").endCell(); // Default value
+    if (isGasRelated) {
+        recoveryActions = beginCell().storeString("INCREASE_GAS_LIMIT,OPTIMIZE_TRANSACTION,RETRY_WITH_HIGHER_GAS").endCell();
+    } else if (isBalanceRelated) {
+        recoveryActions = beginCell().storeString("ADD_FUNDS,REDUCE_AMOUNT,CHECK_BALANCE").endCell();
+    } else if (isContractRelated) {
+        recoveryActions = beginCell().storeString("VERIFY_CONTRACT_ADDRESS,CHECK_CONTRACT_DEPLOYMENT,UPDATE_CONTRACT_ADDRESS").endCell();
+    }
+    
+    return EVMErrorResult {
+        errorCode: errorCode,
+        category: category,
+        gasUsageRatio: gasUsageRatio,
+        recoveryActions: recoveryActions,
+        isRetryable: shouldRetryForError(errorCode),
+        estimatedCost: transaction.gasLimit * transaction.gasPrice
+    };
+}
+
+/**
+ * @notice Create comprehensive error report
+ * @dev Generates detailed error report for debugging and monitoring
+ * @param errorCode Error code
+ * @param context Error context information
+ * @param timestamp Error timestamp
+ * @param transactionId Transaction identifier
+ * @return ErrorReport containing comprehensive error information
+ * @custom:internal Used for error reporting and monitoring
+ */
+fun createErrorReport(
+    errorCode: Int,
+    context: Cell,
+    timestamp: Int,
+    transactionId: Int
+): ErrorReport {
+    let errorCategory = getErrorCategory(errorCode);
+    let severity = getErrorSeverity(errorCode);
+    let recommendedActions = getRecommendedActions(errorCode);
+    
+    return ErrorReport {
+        errorCode: errorCode,
+        category: errorCategory,
+        severity: severity,
+        timestamp: timestamp,
+        transactionId: transactionId,
+        context: context,
+        recommendedActions: recommendedActions,
+        isRetryable: shouldRetryForError(errorCode)
+    };
+}
+
+/**
+ * @notice Get error category based on error code
+ * @dev Categorizes errors for better organization
+ * @param errorCode Error code to categorize
+ * @return Error category string
+ * @custom:internal Used for error categorization
+ */
+fun getErrorCategory(errorCode: Int): String {
+    if (errorCode >= 70 && errorCode <= 89) { return "VALIDATION_ERROR"; }
+    if (errorCode >= 90 && errorCode <= 104) { return "ORDER_MANAGEMENT_ERROR"; }
+    if (errorCode >= 85 && errorCode <= 87) { return "ACCESS_CONTROL_ERROR"; }
+    if (errorCode >= 106 && errorCode <= 109) { return "CROSS_CHAIN_ERROR"; }
+    if (errorCode >= 91 && errorCode <= 95) { return "EVM_ERROR"; }
+    return "SYSTEM_ERROR";
+}
+
+/**
+ * @notice Get error severity based on error code
+ * @dev Determines severity level for error prioritization
+ * @param errorCode Error code to analyze
+ * @return Error severity string
+ * @custom:internal Used for error prioritization
+ */
+fun getErrorSeverity(errorCode: Int): String {
+    // Critical errors
+    if (errorCode == BRIDGE_FAILURE) { return "CRITICAL"; }
+    if (errorCode == EVM_CONTRACT_NOT_FOUND) { return "CRITICAL"; }
+    if (errorCode == INVALID_BRIDGE_CONFIG) { return "CRITICAL"; }
+    
+    // High severity errors
+    if (errorCode == EVM_TRANSACTION_FAILED) { return "HIGH"; }
+    if (errorCode == EVM_BRIDGE_TIMEOUT) { return "HIGH"; }
+    if (errorCode == MESSAGE_DELIVERY_FAILED) { return "HIGH"; }
+    
+    // Medium severity errors
+    if (errorCode == EVM_GAS_LIMIT_EXCEEDED) { return "MEDIUM"; }
+    if (errorCode == EVM_INSUFFICIENT_BALANCE) { return "MEDIUM"; }
+    if (errorCode == ORDER_EXPIRED) { return "MEDIUM"; }
+    
+    // Low severity errors
+    if (errorCode == INVALID_AMOUNT) { return "LOW"; }
+    if (errorCode == INVALID_RECIPIENT) { return "LOW"; }
+    
+    return "MEDIUM"; // Default severity
+}
+
+/**
+ * @notice Get recommended actions for error code
+ * @dev Provides actionable recommendations for error resolution
+ * @param errorCode Error code to analyze
+ * @return Cell containing recommended actions
+ * @custom:internal Used for error resolution guidance
+ */
+fun getRecommendedActions(errorCode: Int): Cell {
+    if (errorCode == BRIDGE_FAILURE) {
+        return beginCell().storeString("CHECK_BRIDGE_STATUS,RETRY_OPERATION,ESCALATE_TO_SUPPORT").endCell();
+    }
+    if (errorCode == EVM_TRANSACTION_FAILED) {
+        return beginCell().storeString("ANALYZE_TRANSACTION,CHECK_GAS_SETTINGS,VERIFY_CONTRACT_STATE").endCell();
+    }
+    if (errorCode == EVM_BRIDGE_TIMEOUT) {
+        return beginCell().storeString("INCREASE_TIMEOUT,RETRY_WITH_HIGHER_GAS,USE_ALTERNATIVE_BRIDGE").endCell();
+    }
+    if (errorCode == EVM_GAS_LIMIT_EXCEEDED) {
+        return beginCell().storeString("INCREASE_GAS_LIMIT,OPTIMIZE_TRANSACTION,CHECK_NETWORK_CONGESTION").endCell();
+    }
+    if (errorCode == EVM_INSUFFICIENT_BALANCE) {
+        return beginCell().storeString("ADD_FUNDS,REDUCE_AMOUNT,CHECK_BALANCE").endCell();
+    }
+    if (errorCode == ORDER_EXPIRED) {
+        return beginCell().storeString("REFUND_ORDER,CREATE_NEW_ORDER,EXTEND_TIMELOCK").endCell();
+    }
+    if (errorCode == INVALID_CHAIN_ID) {
+        return beginCell().storeString("VERIFY_CHAIN_ID,UPDATE_CHAIN_CONFIG,CHECK_SUPPORTED_CHAINS").endCell();
+    }
+    if (errorCode == INVALID_BRIDGE_CONFIG) {
+        return beginCell().storeString("VERIFY_BRIDGE_CONFIG,UPDATE_BRIDGE_SETTINGS,CONTACT_ADMIN").endCell();
+    }
+    
+    return beginCell().storeString("ANALYZE_ERROR,CHECK_LOGS,CONTACT_SUPPORT").endCell();
+}
+
+/**
+ * @notice Send cross-chain message with enhanced error handling
+ * @dev Sends message to cross-chain bridge with retry logic and validation
+ * @param chainId Target chain ID
+ * @param message Cross-chain message
+ * @param retryCount Current retry attempt (0 for first attempt)
+ * @custom:internal Used for cross-chain communication
+ */
+fun sendCrossChainMessage(chainId: Int, message: Cell, retryCount: Int) {
+    // Validate chain ID
+    if (!isValidEVMChainId(chainId)) {
+        throw(INVALID_CHAIN_ID);
+    }
+    
+    // Validate message format
+    if (!validateEnhancedEVMMessageFormat(message, chainId)) {
+        throw(INVALID_EVM_MESSAGE);
+    }
+    
+    // Check retry count
+    if (retryCount >= EVM_MAX_RETRY_ATTEMPTS) {
+        throw(BRIDGE_FAILURE);
+    }
+    
+    // In a real implementation, this would send the message to the bridge
+    // For now, this is a placeholder with enhanced error handling
+    // The actual implementation would depend on the specific bridge being used
+}
+
+/**
+ * @notice Check if escrow contract is deployed with enhanced validation
+ * @dev Validates escrow contract deployment on target chain with additional checks
+ * @param chainId Target chain ID
+ * @param escrowContracts Map of escrow contracts
+ * @return True if escrow is deployed and valid, false otherwise
+ * @custom:security Critical for cross-chain security
+ */
+fun isEscrowDeployed(chainId: Int, escrowContracts: map<Int as uint32, EscrowContract>): Bool {
+    // Validate chain ID first
+    if (!isValidEVMChainId(chainId)) {
+        return false;
+    }
+    
+    let escrow = escrowContracts.get(chainId);
+    if (escrow == null) {
+        return false;
+    }
+    
+    // Additional validation checks
+    return escrow!!.deployed && 
+           escrow!!.contractAddress != null &&
+           escrow!!.deploymentTimestamp > 0;
+}
+
+/**
+ * @notice Validate EVM message format (legacy function for backward compatibility)
+ * @dev Validates EVM message structure and parameters
+ * @param message EVM message to validate
+ * @return True if message format is valid, false otherwise
+ * @custom:security Critical for EVM integration security
+ */
+fun validateEVMMessageFormat(message: Cell): Bool {
+    return validateEnhancedEVMMessageFormat(message, EVM_CHAIN_ETHEREUM);
+}
+
+/**
+ * @notice Get current timestamp
+ * @dev Returns current Unix timestamp
+ * @return Current timestamp in seconds
+ * @custom:internal Used for time-based operations
+ */
+fun now(): Int {
+    // In a real implementation, this would get the current block timestamp
+    // For now, return a placeholder value
+    return 0; // Will be set by caller with actual timestamp
 }

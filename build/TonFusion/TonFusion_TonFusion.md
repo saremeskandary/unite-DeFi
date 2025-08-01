@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: TonFusion
-BoC Size: 7643 bytes
+BoC Size: 7802 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 48
@@ -66,12 +66,12 @@ TL-B: `create_order#7362d09c orderConfig:Order{id:uint32,srcJettonAddress:addres
 Signature: `CreateOrder{orderConfig:Order{id:uint32,srcJettonAddress:address,senderPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8},jetton:^cell,customPayload:Maybe ^cell}`
 
 ### CreateEVMToTONOrder
-TL-B: `create_evm_to_ton_order#8b341822 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} evmContractAddress:address customPayload:Maybe ^cell = CreateEVMToTONOrder`
-Signature: `CreateEVMToTONOrder{orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8},evmContractAddress:address,customPayload:Maybe ^cell}`
+TL-B: `create_evm_to_ton_order#8b341822 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} evmContractAddress:^cell customPayload:Maybe ^cell = CreateEVMToTONOrder`
+Signature: `CreateEVMToTONOrder{orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8},evmContractAddress:^cell,customPayload:Maybe ^cell}`
 
 ### CreateTONToEVMOrder
-TL-B: `create_ton_to_evm_order#62239978 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} targetChainId:uint32 customPayload:Maybe ^cell = CreateTONToEVMOrder`
-Signature: `CreateTONToEVMOrder{orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8},targetChainId:uint32,customPayload:Maybe ^cell}`
+TL-B: `create_ton_to_evm_order#62239978 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} evmContractAddress:^cell customPayload:Maybe ^cell = CreateTONToEVMOrder`
+Signature: `CreateTONToEVMOrder{orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8},evmContractAddress:^cell,customPayload:Maybe ^cell}`
 
 ### PartialFill
 TL-B: `partial_fill#4ef5cb26 orderHash:uint256 secret:uint256 fillAmount:uint64 resolver:address customPayload:Maybe ^cell = PartialFill`
