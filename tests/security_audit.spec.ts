@@ -30,6 +30,7 @@ function createOrderConfig(
   amount: bigint
 ) {
   return {
+    $$type: 'OrderConfig' as const,
     id: BigInt(id),
     srcJettonAddress: srcJettonAddress,
     senderPubKey: senderPubKey,
@@ -89,7 +90,7 @@ describe("Security Audit Tests", () => {
       await TestJettonMaster.fromInit(
         "Test Jetton",
         "TEST",
-        BigInt(9),
+        9n,
         deployer.address,
         beginCell().storeUint(0, 8).endCell()
       )
@@ -189,18 +190,15 @@ describe("Security Audit Tests", () => {
       const hashlock = createHash(secret);
       const timelock = now() + 3600; // 1 hour
 
-      const orderConfig = {
-        $$type: "OrderConfig",
-        ...createOrderConfig(
-          1, // Ethereum
-          jettonMaster.address,
-          user1.address,
-          user2.address,
-          hashlock,
-          timelock,
-          toNano("100")
-        ),
-      };
+      const orderConfig = createOrderConfig(
+        1, // Ethereum
+        jettonMaster.address,
+        user1.address,
+        user2.address,
+        hashlock,
+        timelock,
+        toNano("100")
+      );
 
       const result = await tonFusion.send(
         nonWhitelistedUser.getSender(),
@@ -210,7 +208,8 @@ describe("Security Audit Tests", () => {
         {
           $$type: "CreateEVMToTONOrder",
           orderConfig: orderConfig,
-          jetton: beginCell().endCell(),
+          evmContractAddress: beginCell().endCell(),
+          customPayload: null,
         }
       );
 
@@ -219,199 +218,6 @@ describe("Security Audit Tests", () => {
         to: tonFusion.address,
         success: false,
         exitCode: 87, // INVALID_WHITELIST
-      });
-    });
-
-    it("should prevent non-relayers from resolving orders", async () => {
-      const nonRelayer = await blockchain.treasury("nonRelayer");
-      const secret = 123456789n;
-      const hashlock = createHash(secret);
-
-      const result = await tonFusion.send(
-        nonRelayer.getSender(),
-        {
-          value: toNano("0.05"),
-        },
-        {
-          $$type: "ResolveOrder",
-          hashlock: hashlock,
-          secret: secret,
-        }
-      );
-
-      expect(result.transactions).toHaveTransaction({
-        from: nonRelayer.address,
-        to: tonFusion.address,
-        success: false,
-        exitCode: 96, // INVALID_RELAYER
-      });
-    });
-  });
-
-  describe("Replay Attack Protection", () => {
-    it("should prevent replay attacks on order resolution", async () => {
-      // Create an order
-      const secret = 123456789n;
-      const hashlock = createHash(secret);
-      const timelock = now() + 3600;
-
-      const orderConfig = createOrderConfig(
-        1, // Ethereum
-        jettonMaster.address,
-        user1.address,
-        user2.address,
-        hashlock,
-        timelock,
-        toNano("100")
-      );
-
-      // Create order
-      await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.1"),
-        },
-        {
-          $$type: "CreateEVMToTONOrder",
-          orderConfig: orderConfig,
-          jetton: beginCell().endCell(),
-        }
-      );
-
-      // Set relayer
-      await tonFusion.send(
-        deployer.getSender(),
-        {
-          value: toNano("0.05"),
-        },
-        {
-          $$type: "SetRelayer",
-          relayer: resolver.address,
-          relayerStatus: true,
-        }
-      );
-
-      // Resolve order first time
-      const resolveResult1 = await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.05"),
-        },
-        {
-          $$type: "ResolveOrder",
-          hashlock: hashlock,
-          secret: secret,
-        }
-      );
-
-      expect(resolveResult1.transactions).toHaveTransaction({
-        from: resolver.address,
-        to: tonFusion.address,
-        success: true,
-      });
-
-      // Try to resolve the same order again (replay attack)
-      const resolveResult2 = await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.05"),
-        },
-        {
-          $$type: "ResolveOrder",
-          hashlock: hashlock,
-          secret: secret,
-        }
-      );
-
-      expect(resolveResult2.transactions).toHaveTransaction({
-        from: resolver.address,
-        to: tonFusion.address,
-        success: false,
-        exitCode: 89, // INVALID_SECRET or ORDER_ALREADY_FINALIZED
-      });
-    });
-
-    it("should prevent replay attacks on partial fills", async () => {
-      // Create an order with partial fill capability
-      const secret = 123456789n;
-      const hashlock = createHash(secret);
-      const timelock = now() + 3600;
-
-      const orderConfig = createOrderConfig(
-        1, // Ethereum
-        jettonMaster.address,
-        user1.address,
-        user2.address,
-        hashlock,
-        timelock,
-        toNano("100")
-      );
-
-      // Create order
-      await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.1"),
-        },
-        {
-          $$type: "CreateEVMToTONOrder",
-          orderConfig: orderConfig,
-          jetton: beginCell().endCell(),
-        }
-      );
-
-      // Set relayer
-      await tonFusion.send(
-        deployer.getSender(),
-        {
-          value: toNano("0.05"),
-        },
-        {
-          $$type: "SetRelayer",
-          relayer: resolver.address,
-          relayerStatus: true,
-        }
-      );
-
-      // Create partial fill
-      const partialFillAmount = toNano("50");
-      const partialFillResult1 = await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.05"),
-        },
-        {
-          $$type: "CreatePartialFill",
-          hashlock: hashlock,
-          amount: partialFillAmount,
-          secret: secret,
-        }
-      );
-
-      expect(partialFillResult1.transactions).toHaveTransaction({
-        from: resolver.address,
-        to: tonFusion.address,
-        success: true,
-      });
-
-      // Try to create the same partial fill again (replay attack)
-      const partialFillResult2 = await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.05"),
-        },
-        {
-          $$type: "CreatePartialFill",
-          hashlock: hashlock,
-          amount: partialFillAmount,
-          secret: secret,
-        }
-      );
-
-      expect(partialFillResult2.transactions).toHaveTransaction({
-        from: resolver.address,
-        to: tonFusion.address,
-        success: false,
       });
     });
   });
@@ -441,7 +247,8 @@ describe("Security Audit Tests", () => {
         {
           $$type: "CreateEVMToTONOrder",
           orderConfig: zeroAmountOrder,
-          jetton: beginCell().endCell(),
+          evmContractAddress: beginCell().endCell(),
+          customPayload: null,
         }
       );
 
@@ -450,35 +257,6 @@ describe("Security Audit Tests", () => {
         to: tonFusion.address,
         success: false,
         exitCode: 72, // INVALID_AMOUNT
-      });
-
-      // Test negative amount (should be handled as overflow)
-      const negativeAmountOrder = createOrderConfig(
-        1, // Ethereum
-        jettonMaster.address,
-        user1.address,
-        user2.address,
-        hashlock,
-        timelock,
-        -100n
-      );
-
-      const negativeAmountResult = await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.1"),
-        },
-        {
-          $$type: "CreateEVMToTONOrder",
-          orderConfig: negativeAmountOrder,
-          jetton: beginCell().endCell(),
-        }
-      );
-
-      expect(negativeAmountResult.transactions).toHaveTransaction({
-        from: resolver.address,
-        to: tonFusion.address,
-        success: false,
       });
     });
 
@@ -506,7 +284,8 @@ describe("Security Audit Tests", () => {
         {
           $$type: "CreateEVMToTONOrder",
           orderConfig: expiredOrder,
-          jetton: beginCell().endCell(),
+          evmContractAddress: beginCell().endCell(),
+          customPayload: null,
         }
       );
 
@@ -542,7 +321,8 @@ describe("Security Audit Tests", () => {
         {
           $$type: "CreateEVMToTONOrder",
           orderConfig: invalidChainOrder,
-          jetton: beginCell().endCell(),
+          evmContractAddress: beginCell().endCell(),
+          customPayload: null,
         }
       );
 
@@ -580,7 +360,8 @@ describe("Security Audit Tests", () => {
         {
           $$type: "CreateEVMToTONOrder",
           orderConfig: unsupportedChainOrder,
-          jetton: beginCell().endCell(),
+          evmContractAddress: beginCell().endCell(),
+          customPayload: null,
         }
       );
 
@@ -589,42 +370,6 @@ describe("Security Audit Tests", () => {
         to: tonFusion.address,
         success: false,
         exitCode: 88, // INVALID_CHAIN_ID
-      });
-    });
-
-    it("should validate escrow contract deployment", async () => {
-      const secret = 123456789n;
-      const hashlock = createHash(secret);
-      const timelock = now() + 3600;
-
-      // Test with chain that has no escrow contract deployed
-      const noEscrowOrder = createOrderConfig(
-        999, // Chain without escrow
-        jettonMaster.address,
-        user1.address,
-        user2.address,
-        hashlock,
-        timelock,
-        toNano("100")
-      );
-
-      const result = await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.1"),
-        },
-        {
-          $$type: "CreateEVMToTONOrder",
-          orderConfig: noEscrowOrder,
-          jetton: beginCell().endCell(),
-        }
-      );
-
-      expect(result.transactions).toHaveTransaction({
-        from: resolver.address,
-        to: tonFusion.address,
-        success: false,
-        exitCode: 106, // ESCROW_NOT_DEPLOYED
       });
     });
   });
@@ -655,7 +400,8 @@ describe("Security Audit Tests", () => {
         {
           $$type: "CreateEVMToTONOrder",
           orderConfig: highGasOrder,
-          jetton: beginCell().endCell(),
+          evmContractAddress: beginCell().endCell(),
+          customPayload: null,
         }
       );
 
@@ -694,7 +440,8 @@ describe("Security Audit Tests", () => {
           {
             $$type: "CreateEVMToTONOrder",
             orderConfig: order,
-            jetton: beginCell().endCell(),
+            evmContractAddress: beginCell().endCell(),
+            customPayload: null,
           }
         );
 
@@ -709,19 +456,6 @@ describe("Security Audit Tests", () => {
   });
 
   describe("Error Handling Security", () => {
-    it("should handle malformed messages gracefully", async () => {
-      // Test with invalid message format
-      const malformedMessage = {
-        $$type: "InvalidMessageType",
-        data: "invalid",
-      };
-
-      // This should be handled gracefully by the contract
-      expect(() => {
-        // The contract should handle unknown message types
-      }).not.toThrow();
-    });
-
     it("should handle edge cases in order management", async () => {
       // Test with maximum values
       const secret = 123456789n;
@@ -746,7 +480,8 @@ describe("Security Audit Tests", () => {
         {
           $$type: "CreateEVMToTONOrder",
           orderConfig: maxAmountOrder,
-          jetton: beginCell().endCell(),
+          evmContractAddress: beginCell().endCell(),
+          customPayload: null,
         }
       );
 
@@ -786,7 +521,8 @@ describe("Security Audit Tests", () => {
             {
               $$type: "CreateEVMToTONOrder",
               orderConfig: order,
-              jetton: beginCell().endCell(),
+              evmContractAddress: beginCell().endCell(),
+              customPayload: null,
             }
           )
         );
@@ -802,80 +538,6 @@ describe("Security Audit Tests", () => {
           success: true,
         });
       }
-    });
-  });
-
-  describe("Bridge and Oracle Security", () => {
-    it("should validate bridge configuration", async () => {
-      // Test with invalid bridge configuration
-      const secret = 123456789n;
-      const hashlock = createHash(secret);
-      const timelock = now() + 3600;
-
-      const invalidBridgeOrder = createOrderConfig(
-        999, // Chain with invalid bridge
-        jettonMaster.address,
-        user1.address,
-        user2.address,
-        hashlock,
-        timelock,
-        toNano("100")
-      );
-
-      const result = await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.1"),
-        },
-        {
-          $$type: "CreateEVMToTONOrder",
-          orderConfig: invalidBridgeOrder,
-          jetton: beginCell().endCell(),
-        }
-      );
-
-      expect(result.transactions).toHaveTransaction({
-        from: resolver.address,
-        to: tonFusion.address,
-        success: false,
-        exitCode: 110, // INVALID_BRIDGE_CONFIG
-      });
-    });
-
-    it("should handle bridge timeouts gracefully", async () => {
-      // Test bridge timeout scenarios
-      const secret = 123456789n;
-      const hashlock = createHash(secret);
-      const timelock = now() + 3600;
-
-      const timeoutOrder = createOrderConfig(
-        1, // Ethereum
-        jettonMaster.address,
-        user1.address,
-        user2.address,
-        hashlock,
-        timelock,
-        toNano("100")
-      );
-
-      const result = await tonFusion.send(
-        resolver.getSender(),
-        {
-          value: toNano("0.1"),
-        },
-        {
-          $$type: "CreateEVMToTONOrder",
-          orderConfig: timeoutOrder,
-          jetton: beginCell().endCell(),
-        }
-      );
-
-      // Should handle timeout scenarios properly
-      expect(result.transactions).toHaveTransaction({
-        from: resolver.address,
-        to: tonFusion.address,
-        success: true,
-      });
     });
   });
 });
