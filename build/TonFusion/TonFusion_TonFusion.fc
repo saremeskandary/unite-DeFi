@@ -23,6 +23,9 @@ slice __tact_context_get_sender() inline;
 ;; __tact_int_eq_nullable_left
 int __tact_int_eq_nullable_left(int a, int b) inline;
 
+;; __tact_cell_eq
+int __tact_cell_eq(cell a, cell b) inline;
+
 ;; __tact_dict_get_slice_slice
 slice __tact_dict_get_slice_slice(cell d, int kl, slice k) inline;
 
@@ -52,6 +55,9 @@ cell __tact_dict_get_uint_cell(cell d, int kl, int k) inline;
 
 ;; __tact_dict_set_uint_cell
 (cell, ()) __tact_dict_set_uint_cell(cell d, int kl, int k, cell v) inline;
+
+;; __tact_dict_get_int_int
+int __tact_dict_get_int_int(cell d, int kl, int k, int vl) inline;
 
 ;; $DeployOk$_store
 builder $DeployOk$_store(builder build_0, (int) v) inline;
@@ -392,6 +398,9 @@ slice $global_contractAddress((cell, cell) $s) impure inline;
 ;; $global_calculateJettonWalletAddress
 slice $global_calculateJettonWalletAddress(slice $ownerAddress, slice $jettonMasterAddress, cell $jettonWalletCode) impure inline_ref;
 
+;; $global_createZeroAddress
+slice $global_createZeroAddress() impure inline_ref;
+
 ;; $global_keccakBytes32
 int $global_keccakBytes32(int $secret) impure inline_ref;
 
@@ -445,6 +454,30 @@ int $global_isEscrowDeployed(int $chainId, cell $escrowContracts) impure inline_
 
 ;; $global_buildEVMTransferMessage
 cell $global_buildEVMTransferMessage((int, slice, slice, slice, int, int, int, int, cell, int, int) $order, int $amount, int $secret) impure inline_ref;
+
+;; $global_validateMessageAuthenticity
+int $global_validateMessageAuthenticity(cell $message, int $sourceChain) impure inline_ref;
+
+;; $global_validateMessageIntegrity
+int $global_validateMessageIntegrity(cell $message) impure inline_ref;
+
+;; $global_validateSourceChain
+int $global_validateSourceChain(int $sourceChain, int $targetChain) impure inline_ref;
+
+;; $global_validateBridgeOperator
+int $global_validateBridgeOperator(slice $bridgeOperator, int $sourceChain) impure inline_ref;
+
+;; $global_validateEnhancedMessage
+int $global_validateEnhancedMessage(cell $message, int $sourceChain, int $targetChain, slice $bridgeOperator) impure inline_ref;
+
+;; $global_validateReplayProtection
+int $global_validateReplayProtection(cell $message, int $nonce, int $timestamp, cell $processedNonces) impure inline_ref;
+
+;; $global_calculateSecureGasEstimation
+int $global_calculateSecureGasEstimation(int $chainId, int $amount, int $isContractCall) impure inline_ref;
+
+;; $global_handleGasPriceFluctuations
+int $global_handleGasPriceFluctuations(int $chainId, int $baseGasPrice, int $priority) impure inline_ref;
 
 ;; $TonFusion$_fun_create
 ((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int, cell, cell, cell, cell, int, int), ()) $TonFusion$_fun_create((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int, cell, cell, cell, cell, int, int) $self, cell $payload) impure inline_ref;
@@ -603,6 +636,10 @@ int __tact_int_eq_nullable_left(int a, int b) inline {
     return (null?(a)) ? (false) : (a == b);
 }
 
+int __tact_cell_eq(cell a, cell b) inline {
+    return (a.cell_hash() ==  b.cell_hash());
+}
+
 forall X0, X1, X2, X3 -> tuple __tact_tuple_create_4((X0, X1, X2, X3) v) asm """
     4 TUPLE
 """;
@@ -746,6 +783,15 @@ cell __tact_dict_get_uint_cell(cell d, int kl, int k) inline {
         return (r, ());
     } else {
         return (udict_set_ref(d, kl, k, v), ());
+    }
+}
+
+int __tact_dict_get_int_int(cell d, int kl, int k, int vl) inline {
+    var (r, ok) = idict_get?(d, kl, k);
+    if (ok) {
+        return r~load_int(vl);
+    } else {
+        return null();
     }
 }
 
@@ -1970,6 +2016,10 @@ slice $global_calculateJettonWalletAddress(slice $ownerAddress, slice $jettonMas
     return $global_contractAddress($StateInit$_constructor_code_data($jettonWalletCode, $JettonWalletData$_store_cell(($initData'balance, $initData'ownerAddress, $initData'jettonMasterAddress, $initData'jettonWalletCode), begin_cell())));
 }
 
+slice $global_createZeroAddress() impure inline_ref {
+    return $global_contractAddress($StateInit$_constructor_code_data($Builder$_fun_endCell($global_beginCell()), $Builder$_fun_endCell($global_beginCell())));
+}
+
 int $global_keccakBytes32(int $secret) impure inline_ref {
     cell $cell = $Builder$_fun_endCell(store_uint($global_beginCell(), $secret, 256));
     return $Cell$_fun_hash($cell);
@@ -2152,6 +2202,98 @@ cell $global_buildEVMTransferMessage((int, slice, slice, slice, int, int, int, i
     return $message;
 }
 
+int $global_validateMessageAuthenticity(cell $message, int $sourceChain) impure inline_ref {
+    ifnot ($global_isValidEVMChainId($sourceChain)) {
+        return false;
+    }
+    if (__tact_cell_eq($message, $Builder$_fun_endCell($global_beginCell()))) {
+        return false;
+    }
+    return true;
+}
+
+int $global_validateMessageIntegrity(cell $message) impure inline_ref {
+    if (__tact_cell_eq($message, $Builder$_fun_endCell($global_beginCell()))) {
+        return false;
+    }
+    return true;
+}
+
+int $global_validateSourceChain(int $sourceChain, int $targetChain) impure inline_ref {
+    ifnot ($global_isValidEVMChainId($sourceChain)) {
+        return false;
+    }
+    if (($sourceChain == $targetChain)) {
+        return false;
+    }
+    if (( (($sourceChain == 0)) ? (true) : (($targetChain == 0)) )) {
+        return false;
+    }
+    return true;
+}
+
+int $global_validateBridgeOperator(slice $bridgeOperator, int $sourceChain) impure inline_ref {
+    if (( equal_slices_bits($bridgeOperator, $global_createZeroAddress()) )) {
+        return false;
+    }
+    return true;
+}
+
+int $global_validateEnhancedMessage(cell $message, int $sourceChain, int $targetChain, slice $bridgeOperator) impure inline_ref {
+    ifnot ($global_validateMessageAuthenticity($message, $sourceChain)) {
+        return false;
+    }
+    ifnot ($global_validateMessageIntegrity($message)) {
+        return false;
+    }
+    ifnot ($global_validateSourceChain($sourceChain, $targetChain)) {
+        return false;
+    }
+    ifnot ($global_validateBridgeOperator($bridgeOperator, $sourceChain)) {
+        return false;
+    }
+    return true;
+}
+
+int $global_validateReplayProtection(cell $message, int $nonce, int $timestamp, cell $processedNonces) impure inline_ref {
+    if (($nonce <= 0)) {
+        return false;
+    }
+    int $currentTime = 0;
+    if (($timestamp > ($currentTime + 300))) {
+        return false;
+    }
+    if (($timestamp < ($currentTime - 3600))) {
+        return false;
+    }
+    if (__tact_int_eq_nullable_left(__tact_dict_get_int_int($processedNonces, 257, $nonce, 1), true)) {
+        return false;
+    }
+    return true;
+}
+
+int $global_calculateSecureGasEstimation(int $chainId, int $amount, int $isContractCall) impure inline_ref {
+    int $baseGas = $global_calculateEVMDynamicGasLimit($chainId, $amount, $isContractCall);
+    int $securityBuffer = (($baseGas * 110) / 100);
+    if (($securityBuffer < 21000)) {
+        $securityBuffer = 21000;
+    }
+    return $securityBuffer;
+}
+
+int $global_handleGasPriceFluctuations(int $chainId, int $baseGasPrice, int $priority) impure inline_ref {
+    int $optimalGasPrice = $global_calculateOptimalEVMGasPrice($chainId, $priority);
+    int $priorityMultiplier = 100;
+    if (($priority == 1)) {
+        $priorityMultiplier = 80;
+    } elseif (($priority == 2)) {
+        $priorityMultiplier = 100;
+    } elseif (($priority == 3)) {
+        $priorityMultiplier = 120;
+    }
+    return (($optimalGasPrice * $priorityMultiplier) / 100);
+}
+
 ((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int, cell, cell, cell, cell, int, int), ()) $TonFusion$_fun_create((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int, cell, cell, cell, cell, int, int) $self, cell $payload) impure inline_ref {
     var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees)) = $self;
     var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'jetton, $msg'customPayload) = $LockJetton$_load_not_mut($payload.begin_parse());
@@ -2281,8 +2423,10 @@ cell $global_buildEVMTransferMessage((int, slice, slice, slice, int, int, int, i
 ((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int, cell, cell, cell, cell, int, int), ()) $TonFusion$_fun_processEVMTransfer((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int, cell, cell, cell, cell, int, int) $self, (int, slice, slice, slice, int, int, int, int, cell, int, int) $order, int $amount, int $secret) impure inline_ref {
     var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees)) = $self;
     var (($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)) = $order;
+    throw_unless(109, $global_validateEnhancedMessage($global_buildEVMTransferMessage(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), $amount, $secret), -3, $order'id, $global_createZeroAddress()));
     throw_unless(88, $global_isValidEVMChainId($order'id));
     throw_unless(106, $global_isEscrowDeployed($order'id, $self'escrowContracts));
+    throw_unless(109, $global_validateReplayProtection($global_buildEVMTransferMessage(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), $amount, $secret), $self'evmTransactionNonce, 0, null()));
     tuple $chainConfig = $EVMChainConfig$_load_opt(__tact_dict_get_uint_cell($self'evmChainConfigs, 32, $order'id));
     if (null?($chainConfig)) {
         tuple $defaultConfig = $global_getEVMChainConfig($order'id);
@@ -2291,11 +2435,11 @@ cell $global_buildEVMTransferMessage((int, slice, slice, slice, int, int, int, i
     }
     cell $message = $global_buildEVMTransferMessage(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), $amount, $secret);
     throw_unless(109, $global_validateEnhancedEVMMessageFormat($message, $order'id));
-    int $dynamicGasLimit = $global_calculateEVMDynamicGasLimit($order'id, $amount, true);
-    int $optimalGasPrice = $global_calculateOptimalEVMGasPrice($order'id, 1);
+    int $secureGasLimit = $global_calculateSecureGasEstimation($order'id, $amount, true);
+    int $optimalGasPrice = $global_handleGasPriceFluctuations($order'id, $global_calculateOptimalEVMGasPrice($order'id, 2), 2);
     int $bridgeFee = $global_calculateEVMBridgeFee($amount, -3, $order'id);
     $self'evmBridgeFees = ($self'evmBridgeFees + $bridgeFee);
-    var ($evmTransaction'chainId, $evmTransaction'toContract, $evmTransaction'functionSelector, $evmTransaction'parameters, $evmTransaction'gasLimit, $evmTransaction'gasPrice, $evmTransaction'value, $evmTransaction'nonce, $evmTransaction'status, $evmTransaction'transactionHash, $evmTransaction'blockNumber, $evmTransaction'confirmations) = $EVMTransaction$_constructor_chainId_toContract_functionSelector_parameters_gasLimit_gasPrice_value_nonce_status_transactionHash_blockNumber_confirmations($order'id, $Builder$_fun_endCell($global_beginCell()), 2835717307, $Builder$_fun_endCell(store_uint($Builder$_fun_storeAddress($global_beginCell(), $order'receiverPubKey), $amount, 256)), $dynamicGasLimit, $optimalGasPrice, 0, $self'evmTransactionNonce, 0, $Builder$_fun_endCell($global_beginCell()), 0, 0);
+    var ($evmTransaction'chainId, $evmTransaction'toContract, $evmTransaction'functionSelector, $evmTransaction'parameters, $evmTransaction'gasLimit, $evmTransaction'gasPrice, $evmTransaction'value, $evmTransaction'nonce, $evmTransaction'status, $evmTransaction'transactionHash, $evmTransaction'blockNumber, $evmTransaction'confirmations) = $EVMTransaction$_constructor_chainId_toContract_functionSelector_parameters_gasLimit_gasPrice_value_nonce_status_transactionHash_blockNumber_confirmations($order'id, $Builder$_fun_endCell($global_beginCell()), 2835717307, $Builder$_fun_endCell(store_uint($Builder$_fun_storeAddress($global_beginCell(), $order'receiverPubKey), $amount, 256)), $secureGasLimit, $optimalGasPrice, 0, $self'evmTransactionNonce, 0, $Builder$_fun_endCell($global_beginCell()), 0, 0);
     $self'evmTransactionNonce = ($self'evmTransactionNonce + 1);
     $self'evmTransactions~__tact_dict_set_uint_cell(64, $evmTransaction'nonce, $EVMTransaction$_store_cell(($evmTransaction'chainId, $evmTransaction'toContract, $evmTransaction'functionSelector, $evmTransaction'parameters, $evmTransaction'gasLimit, $evmTransaction'gasPrice, $evmTransaction'value, $evmTransaction'nonce, $evmTransaction'status, $evmTransaction'transactionHash, $evmTransaction'blockNumber, $evmTransaction'confirmations), begin_cell()));
     ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves, $self'evmChainConfigs, $self'evmTransactions, $self'evmBridges, $self'evmOracles, $self'evmTransactionNonce, $self'evmBridgeFees)~$TonFusion$_fun_sendEVMCrossChainMessage(($evmTransaction'chainId, $evmTransaction'toContract, $evmTransaction'functionSelector, $evmTransaction'parameters, $evmTransaction'gasLimit, $evmTransaction'gasPrice, $evmTransaction'value, $evmTransaction'nonce, $evmTransaction'status, $evmTransaction'transactionHash, $evmTransaction'blockNumber, $evmTransaction'confirmations), ($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), $secret);

@@ -98,6 +98,29 @@ const CIRCUIT_BREAKER_HALF_OPEN_TIMEOUT: Int = 1800; // 30 minutes
  * @dev Used for timeout processing and escalation
  * @custom:internal Used for timeout management
  */
+const TIMEOUT_ESCALATION_THRESHOLD: Int = 1800; // 30 minutes
+const TIMEOUT_MAX_ESCALATION_LEVEL: Int = 3;
+
+/**
+ * @notice Gas optimization constants
+ * @dev Used for gas estimation and optimization
+ * @custom:internal Used for gas management
+ */
+const GAS_ESTIMATION_BUFFER: Int = 120; // 120% buffer for gas estimation
+const GAS_PRICE_LOW_PRIORITY: Int = 80; // 80% of base gas price
+const GAS_PRICE_MEDIUM_PRIORITY: Int = 100; // 100% of base gas price
+const GAS_PRICE_HIGH_PRIORITY: Int = 120; // 120% of base gas price
+
+/**
+ * @notice Security validation constants
+ * @dev Used for security checks and validation
+ * @custom:security Critical for cross-chain security
+ */
+const SECURITY_TIMESTAMP_FUTURE_TOLERANCE: Int = 300; // 5 minutes
+const SECURITY_TIMESTAMP_PAST_TOLERANCE: Int = 3600; // 1 hour
+const SECURITY_MIN_MESSAGE_SIZE: Int = 256; // Minimum message size in bits
+const SECURITY_MIN_GAS_LIMIT: Int = 21000; // Minimum gas limit
+const SECURITY_MAX_GAS_LIMIT: Int = 300000; // Maximum gas limit
 const TIMEOUT_ESCALATION_LEVEL_1: Int = 1800; // 30 minutes
 const TIMEOUT_ESCALATION_LEVEL_2: Int = 3600; // 1 hour
 const TIMEOUT_ESCALATION_LEVEL_3: Int = 7200; // 2 hours
@@ -107,7 +130,6 @@ const TIMEOUT_ESCALATION_LEVEL_3: Int = 7200; // 2 hours
  * @dev Used for dynamic gas calculation
  * @custom:internal Used for gas optimization
  */
-const GAS_ESTIMATION_BUFFER: Int = 120; // 120% buffer
 const GAS_PRICE_PRIORITY_LOW: Int = 0;
 const GAS_PRICE_PRIORITY_MEDIUM: Int = 1;
 const GAS_PRICE_PRIORITY_HIGH: Int = 2;

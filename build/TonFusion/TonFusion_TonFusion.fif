@@ -5,6 +5,7 @@ PROGRAM{
   DECLPROC __tact_context_get
   DECLPROC __tact_context_get_sender
   DECLPROC __tact_int_eq_nullable_left
+  DECLPROC __tact_cell_eq
   DECLPROC __tact_dict_get_slice_slice
   DECLPROC __tact_dict_set_slice_slice
   DECLPROC __tact_dict_get_slice_int
@@ -15,6 +16,7 @@ PROGRAM{
   DECLPROC __tact_dict_set_uint_uint
   DECLPROC __tact_dict_get_uint_cell
   DECLPROC __tact_dict_set_uint_cell
+  DECLPROC __tact_dict_get_int_int
   DECLPROC $DeployOk$_store
   DECLPROC $DeployOk$_store_cell
   DECLPROC $OrderConfig$_store
@@ -128,6 +130,7 @@ PROGRAM{
   DECLPROC $JettonWalletData$_constructor_balance_ownerAddress_jettonMasterAddress_jettonWalletCode
   DECLPROC $StateInit$_constructor_code_data
   DECLPROC $global_calculateJettonWalletAddress
+  DECLPROC $global_createZeroAddress
   DECLPROC $global_keccakBytes32
   DECLPROC $global_isValidEVMChainId
   DECLPROC $global_calculateEVMGasPrice
@@ -146,6 +149,14 @@ PROGRAM{
   DECLPROC $global_sendCrossChainMessage
   DECLPROC $global_isEscrowDeployed
   DECLPROC $global_buildEVMTransferMessage
+  DECLPROC $global_validateMessageAuthenticity
+  DECLPROC $global_validateMessageIntegrity
+  DECLPROC $global_validateSourceChain
+  DECLPROC $global_validateBridgeOperator
+  DECLPROC $global_validateEnhancedMessage
+  DECLPROC $global_validateReplayProtection
+  DECLPROC $global_calculateSecureGasEstimation
+  DECLPROC $global_handleGasPriceFluctuations
   DECLPROC $TonFusion$_fun_create
   DECLPROC $TonFusion$_fun_makeOrder
   DECLPROC $TonFusion$_fun_createEVMToTONOrder
@@ -220,6 +231,13 @@ PROGRAM{
     }>ELSE<{
       EQUAL
     }>
+  }>
+  __tact_cell_eq PROCINLINE:<{
+    SWAP
+    HASHCU
+    SWAP
+    HASHCU
+    EQUAL
   }>
   __tact_dict_get_slice_slice PROCINLINE:<{
     -ROT
@@ -345,6 +363,19 @@ PROGRAM{
     }>ELSE<{
       s1 s3 s3 XCHG3
       DICTUSETREF
+    }>
+  }>
+  __tact_dict_get_int_int PROCINLINE:<{
+    s1 s3 s3 XCHG3
+    DICTIGET
+    NULLSWAPIFNOT
+    IF:<{
+      SWAP
+      LDIX
+      DROP
+    }>ELSE<{
+      2DROP
+      PUSHNULL
     }>
   }>
   $DeployOk$_store PROCINLINE:<{
@@ -1266,6 +1297,14 @@ PROGRAM{
     $StateInit$_constructor_code_data INLINECALLDICT
     $global_contractAddress INLINECALLDICT
   }>
+  $global_createZeroAddress PROCREF:<{
+        NEWC
+        ENDC
+        NEWC
+        ENDC
+    $StateInit$_constructor_code_data INLINECALLDICT
+    $global_contractAddress INLINECALLDICT
+  }>
   $global_keccakBytes32 PROCREF:<{
         NEWC
     256 STU
@@ -1855,6 +1894,166 @@ PROGRAM{
     64 STU
         ENDC
   }>
+  $global_validateMessageAuthenticity PROCREF:<{
+    $global_isValidEVMChainId INLINECALLDICT
+    IFNOTJMP:<{
+      DROP
+      FALSE
+    }>
+        NEWC
+        ENDC
+    __tact_cell_eq INLINECALLDICT
+    IFJMP:<{
+      FALSE
+    }>
+    TRUE
+  }>
+  $global_validateMessageIntegrity PROCREF:<{
+        NEWC
+        ENDC
+    __tact_cell_eq INLINECALLDICT
+    IFJMP:<{
+      FALSE
+    }>
+    TRUE
+  }>
+  $global_validateSourceChain PROCREF:<{
+    OVER
+    $global_isValidEVMChainId INLINECALLDICT
+    IFNOTJMP:<{
+      2DROP
+      FALSE
+    }>
+    2DUP
+    EQUAL
+    IFJMP:<{
+      2DROP
+      FALSE
+    }>
+    SWAP
+    0 EQINT
+    IF:<{
+      DROP
+      TRUE
+    }>ELSE<{
+      0 EQINT
+    }>
+    IFJMP:<{
+      FALSE
+    }>
+    TRUE
+  }>
+  $global_validateBridgeOperator PROCREF:<{
+    DROP
+    $global_createZeroAddress INLINECALLDICT
+    SDEQ
+    IFJMP:<{
+      FALSE
+    }>
+    TRUE
+  }>
+  $global_validateEnhancedMessage PROCREF:<{
+    2OVER
+    $global_validateMessageAuthenticity INLINECALLDICT
+    IFNOTJMP:<{
+      4 BLKDROP
+      FALSE
+    }>
+    s0 s3 XCHG
+    $global_validateMessageIntegrity INLINECALLDICT
+    IFNOTJMP:<{
+      3 BLKDROP
+      FALSE
+    }>
+    s1 s(-1) PUXC
+    $global_validateSourceChain INLINECALLDICT
+    IFNOTJMP:<{
+      2DROP
+      FALSE
+    }>
+    $global_validateBridgeOperator INLINECALLDICT
+    IFNOTJMP:<{
+      FALSE
+    }>
+    TRUE
+  }>
+  $global_validateReplayProtection PROCREF:<{
+    s3 POP
+    OVER
+    1 LESSINT
+    IFJMP:<{
+      3 BLKDROP
+      FALSE
+    }>
+    DUP
+    300 PUSHINT
+    GREATER
+    IFJMP:<{
+      3 BLKDROP
+      FALSE
+    }>
+    -3600 PUSHINT
+    LESS
+    IFJMP:<{
+      2DROP
+      FALSE
+    }>
+    257 PUSHINT
+    SWAP
+    1 PUSHINT
+    __tact_dict_get_int_int INLINECALLDICT
+    TRUE
+    __tact_int_eq_nullable_left INLINECALLDICT
+    IFJMP:<{
+      FALSE
+    }>
+    TRUE
+  }>
+  $global_calculateSecureGasEstimation PROCREF:<{
+    $global_calculateEVMDynamicGasLimit INLINECALLDICT
+    110 MULCONST
+    100 PUSHINT
+    DIV
+    DUP
+    21000 PUSHINT
+    LESS
+    IF:<{
+      DROP
+      21000 PUSHINT
+    }>
+  }>
+  $global_handleGasPriceFluctuations PROCREF:<{
+    NIP
+    TUCK
+    $global_calculateOptimalEVMGasPrice INLINECALLDICT
+    100 PUSHINT
+    s2 PUSH
+    1 EQINT
+    IF:<{
+      DROP
+      NIP
+      80 PUSHINT
+    }>ELSE<{
+      s2 PUSH
+      2 EQINT
+      IF:<{
+        DROP
+        NIP
+        100 PUSHINT
+      }>ELSE<{
+        s0 s2 XCHG
+        3 EQINT
+        IF:<{
+          120 PUSHINT
+          s2 POP
+        }>
+        SWAP
+      }>
+    }>
+    MUL
+    100 PUSHINT
+    DIV
+  }>
   $TonFusion$_fun_create PROCREF:<{
     CTOS
     $LockJetton$_load_not_mut INLINECALLDICT
@@ -2382,6 +2581,17 @@ PROGRAM{
     $global_sendCrossChainMessage INLINECALLDICT
   }>
   $TonFusion$_fun_processEVMTransfer PROCREF:<{
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 PUSH
+    $global_buildEVMTransferMessage INLINECALLDICT
+    -3 PUSHINT
+    $global_createZeroAddress INLINECALLDICT
+    s15 s(-1) PUXC
+    $global_validateEnhancedMessage INLINECALLDICT
+    109 THROWIFNOT
     s12 PUSH
     $global_isValidEVMChainId INLINECALLDICT
     88 THROWIFNOT
@@ -2389,6 +2599,17 @@ PROGRAM{
     23 s() PUSH
     $global_isEscrowDeployed INLINECALLDICT
     106 THROWIFNOT
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 PUSH
+    $global_buildEVMTransferMessage INLINECALLDICT
+    s15 PUSH
+    0 PUSHINT
+    PUSHNULL
+    $global_validateReplayProtection INLINECALLDICT
+    109 THROWIFNOT
     18 s() PUSH
     32 PUSHINT
     s14 PUSH
@@ -2422,10 +2643,13 @@ PROGRAM{
     109 THROWIFNOT
     s12 s1 PUSH2
     TRUE
-    $global_calculateEVMDynamicGasLimit INLINECALLDICT
+    $global_calculateSecureGasEstimation INLINECALLDICT
     s13 PUSH
-    1 PUSHINT
+    2 PUSHINT
     $global_calculateOptimalEVMGasPrice INLINECALLDICT
+    s14 s(-1) PUXC
+    2 PUSHINT
+    $global_handleGasPriceFluctuations INLINECALLDICT
     s3 PUSH
     -3 PUSHINT
     16 s() PUSH

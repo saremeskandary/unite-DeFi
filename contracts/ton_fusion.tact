@@ -841,17 +841,27 @@ contract TonFusion with Deployable {
      * @custom:security Validates chain parameters and bridge configuration before execution
      */
     fun processEVMTransfer(order: OrderConfig, amount: Int, secret: Int) {
-        // 1. Validate target chain
+        // 1. Enhanced security validation
+        if (!validateEnhancedMessage(buildEVMTransferMessage(order, amount, secret), TON_CHAIN_MAINNET, order.id, createZeroAddress())) {
+            throw(INVALID_EVM_MESSAGE);
+        }
+
+        // 2. Validate target chain
         if (!isValidEVMChainId(order.id)) {
             throw(INVALID_CHAIN_ID);
         }
 
-        // 2. Check escrow contract deployment with enhanced validation
+        // 3. Check escrow contract deployment with enhanced validation
         if (!isEscrowDeployed(order.id, self.escrowContracts)) {
             throw(ESCROW_NOT_DEPLOYED);
         }
 
-        // 3. Get EVM chain configuration
+        // 4. Enhanced replay protection
+        if (!validateReplayProtection(buildEVMTransferMessage(order, amount, secret), self.evmTransactionNonce, 0, emptyMap())) {
+            throw(INVALID_EVM_MESSAGE);
+        }
+
+        // 5. Get EVM chain configuration
         let chainConfig = self.evmChainConfigs.get(order.id);
         if (chainConfig == null) {
             // Initialize default chain configuration if not exists
@@ -862,25 +872,25 @@ contract TonFusion with Deployable {
             self.evmChainConfigs.set(order.id, defaultConfig!!);
         }
 
-        // 4. Build enhanced cross-chain message with comprehensive order data
+        // 6. Build enhanced cross-chain message with comprehensive order data
         let message = buildEVMTransferMessage(order, amount, secret);
         
-        // 5. Validate enhanced message format
+        // 7. Validate enhanced message format
         if (!validateEnhancedEVMMessageFormat(message, order.id)) {
             throw(INVALID_EVM_MESSAGE);
         }
 
-        // 6. Calculate dynamic gas limit for target chain
-        let dynamicGasLimit = calculateEVMDynamicGasLimit(order.id, amount, true);
+        // 8. Enhanced gas estimation with security considerations
+        let secureGasLimit = calculateSecureGasEstimation(order.id, amount, true);
         
-        // 7. Calculate optimal gas price with medium priority
-        let optimalGasPrice = calculateOptimalEVMGasPrice(order.id, 1); // Medium priority
+        // 9. Handle gas price fluctuations with priority
+        let optimalGasPrice = handleGasPriceFluctuations(order.id, calculateOptimalEVMGasPrice(order.id, 2), 2); // Medium priority
 
-        // 8. Calculate bridge fee
+        // 10. Calculate bridge fee
         let bridgeFee = calculateEVMBridgeFee(amount, TON_CHAIN_MAINNET, order.id);
         self.evmBridgeFees = self.evmBridgeFees + bridgeFee;
 
-        // 9. Create enhanced EVM transaction for cross-chain transfer
+        // 11. Create enhanced EVM transaction for cross-chain transfer
         let evmTransaction = EVMTransaction {
             chainId: order.id,
             toContract: beginCell().endCell(), // Will be set by bridge
@@ -889,8 +899,8 @@ contract TonFusion with Deployable {
                 .storeAddress(order.receiverPubKey)
                 .storeUint(amount, 256)
                 .endCell(),
-            gasLimit: dynamicGasLimit, // Use dynamic gas estimation
-            gasPrice: optimalGasPrice, // Use optimal gas price
+            gasLimit: secureGasLimit, // Use secure gas estimation
+            gasPrice: optimalGasPrice, // Use optimized gas price
             value: 0, // ERC20 transfer doesn't require ETH
             nonce: self.evmTransactionNonce,
             status: 0, // pending
@@ -899,20 +909,20 @@ contract TonFusion with Deployable {
             confirmations: 0,
         };
 
-        // 10. Increment transaction nonce
+        // 12. Increment transaction nonce
         self.evmTransactionNonce = self.evmTransactionNonce + 1;
 
-        // 11. Store transaction for tracking
+        // 13. Store transaction for tracking
         self.evmTransactions.set(evmTransaction.nonce, evmTransaction);
 
-        // 12. Send enhanced cross-chain message to bridge with retry logic
+        // 14. Send enhanced cross-chain message to bridge with retry logic
         self.sendEVMCrossChainMessage(evmTransaction, order, secret);
 
-        // 13. Update order status
+        // 15. Update order status
         order.finalized = true;
         self.escrowLock.set(order.hashlock, order);
 
-        // 14. Increment total resolves
+        // 16. Increment total resolves
         self.totalResolves = self.totalResolves + 1;
     }
     

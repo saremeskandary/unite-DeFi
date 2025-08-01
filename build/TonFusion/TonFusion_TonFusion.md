@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: TonFusion
-BoC Size: 9859 bytes
+BoC Size: 10221 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 66
