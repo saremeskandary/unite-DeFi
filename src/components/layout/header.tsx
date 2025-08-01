@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { WalletConnection } from "@/components/wallet/wallet-connection"
 import { TONConnectButton } from "@/components/wallet/ton-connect-button"
+import { Menu, X } from "lucide-react"
 
 export function Header() {
   const [isConnected, setIsConnected] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
   const isActive = (path: string) => {
@@ -20,12 +22,20 @@ export function Header() {
     return pathname.startsWith(path)
   }
 
+  const navigationItems = [
+    { href: "/", label: "Swap" },
+    { href: "/orders", label: "Orders" },
+    { href: "/portfolio", label: "Portfolio" },
+    { href: "/settings", label: "Settings" },
+    { href: "/ton-test", label: "TON Test" },
+  ]
+
   return (
     <header className="border-b border-slate-700 bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
@@ -37,61 +47,69 @@ export function Header() {
             </Badge>
           </Link>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/"
-              className={`transition-colors ${isActive("/")
-                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                : "text-slate-400 hover:text-white"
-                }`}
-            >
-              Swap
-            </Link>
-            <Link
-              href="/orders"
-              className={`transition-colors ${isActive("/orders")
-                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                : "text-slate-400 hover:text-white"
-                }`}
-            >
-              Orders
-            </Link>
-            <Link
-              href="/portfolio"
-              className={`transition-colors ${isActive("/portfolio")
-                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                : "text-slate-400 hover:text-white"
-                }`}
-            >
-              Portfolio
-            </Link>
-            <Link
-              href="/settings"
-              className={`transition-colors ${isActive("/settings")
-                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                : "text-slate-400 hover:text-white"
-                }`}
-            >
-              Settings
-            </Link>
-            <Link
-              href="/ton-test"
-              className={`transition-colors ${isActive("/ton-test")
-                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                : "text-slate-400 hover:text-white"
-                }`}
-            >
-              TON Test
-            </Link>
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-6 flex-1 justify-center">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`transition-colors whitespace-nowrap ${isActive(item.href)
+                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                  : "text-slate-400 hover:text-white"
+                  }`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
-          {/* Wallet Connection */}
-          <div className="flex items-center space-x-4">
-            <WalletConnection />
-            <TONConnectButton />
+          {/* Wallet Connections - Desktop */}
+          <div className="hidden lg:flex items-center space-x-3 flex-shrink-0">
+            <WalletConnection compact />
+            <TONConnectButton size="sm" />
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden flex items-center space-x-2">
+            <div className="flex items-center space-x-2">
+              <WalletConnection compact />
+              <TONConnectButton size="sm" />
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-white hover:bg-slate-800"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </Button>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden border-t border-slate-700 bg-slate-900/95 backdrop-blur-sm">
+            <nav className="py-4 space-y-2">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-4 py-2 transition-colors ${isActive(item.href)
+                    ? "text-blue-400 bg-blue-500/10 border-l-2 border-blue-400"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800"
+                    }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   )

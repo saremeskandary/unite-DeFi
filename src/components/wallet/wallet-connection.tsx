@@ -16,7 +16,11 @@ import { enhancedWallet } from "@/lib/enhanced-wallet"
 import { Loader2, ExternalLink, Copy, CheckCircle, Wallet } from "lucide-react"
 import { toast } from "sonner"
 
-export function WalletConnection() {
+interface WalletConnectionProps {
+  compact?: boolean
+}
+
+export function WalletConnection({ compact = false }: WalletConnectionProps) {
   const {
     isConnected,
     address,
@@ -92,6 +96,29 @@ export function WalletConnection() {
   }
 
   if (isConnected && address) {
+    if (compact) {
+      return (
+        <div className="flex items-center space-x-2">
+          <div className="text-right">
+            <div className="text-xs text-white font-medium">
+              {parseFloat(nativeBalance).toFixed(3)} ETH
+            </div>
+            <div className="text-xs text-slate-400">
+              {address.slice(0, 4)}...{address.slice(-4)}
+            </div>
+          </div>
+          <Button
+            onClick={handleDisconnect}
+            variant="outline"
+            size="sm"
+            className="border-slate-600 bg-slate-800 text-white hover:bg-slate-700 px-2 py-1 text-xs"
+          >
+            Disconnect
+          </Button>
+        </div>
+      )
+    }
+
     return (
       <div className="flex items-center space-x-3">
         <div className="text-right">
@@ -138,16 +165,16 @@ export function WalletConnection() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white">
+        <Button className={`bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white ${compact ? 'px-3 py-1.5 text-sm' : ''}`}>
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Connecting...
+              <Loader2 className={`${compact ? 'w-3 h-3 mr-1' : 'w-4 h-4 mr-2'} animate-spin`} />
+              {compact ? 'Connecting...' : 'Connecting...'}
             </>
           ) : (
             <>
-              <Wallet className="w-4 h-4 mr-2" />
-              Connect Wallet
+              <Wallet className={compact ? 'w-3 h-3 mr-1' : 'w-4 h-4 mr-2'} />
+              {compact ? 'Connect' : 'Connect Wallet'}
             </>
           )}
         </Button>

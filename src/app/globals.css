@@ -131,3 +131,24 @@ select {
 .nav-inactive {
   @apply text-slate-400 hover:text-white;
 }
+
+/* TON Connect Button Overrides */
+.ton-connect-button-wrapper button,
+.ton-connect-button-wrapper [data-testid="ton-connect-button"],
+.ton-connect-button-wrapper .ton-connect-button {
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.ton-connect-button-wrapper button:hover,
+.ton-connect-button-wrapper [data-testid="ton-connect-button"]:hover,
+.ton-connect-button-wrapper .ton-connect-button:hover {
+  background: rgba(148, 163, 184, 0.1) !important;
+}
+
+/* Remove any background from the button container */
+.ton-connect-button-wrapper > div {
+  background: transparent !important;
+}
