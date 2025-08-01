@@ -1,4 +1,4 @@
-// automatically generated from `@stdlib/std/stdlib.fc` `/Users/parsa/Desktop/ton/build/TonFusion/TonFusion_TonFusion.fc` 
+// automatically generated from `@stdlib/std/stdlib.fc` `/home/sarem/projects/hackathon/ton-branch/build/TonFusion/TonFusion_TonFusion.fc` 
 PROGRAM{
   DECLPROC __tact_store_address_opt
   DECLPROC __tact_not_null

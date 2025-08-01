@@ -1,5 +1,33 @@
 import "./states.tact";
 
+/**
+ * @title TonFusion Utilities
+ * @author TonFusion Team
+ * @notice Utility functions and helpers for the TonFusion HTLC protocol
+ * @dev Provides common functionality used across the protocol
+ * 
+ * @custom:version 1.0.0
+ * 
+ * Utility Categories:
+ * - Jetton wallet management
+ * - Cryptographic functions
+ * - Chain validation
+ * - Order processing
+ * - Serialization helpers
+ */
+
+/**
+ * @notice Jetton transfer message for internal transfers
+ * @dev Used for sending jettons between contracts
+ * @param queryId Unique query identifier
+ * @param amount Amount of jettons to transfer
+ * @param destination Destination address
+ * @param responseDestination Optional response destination
+ * @param customPayload Optional custom payload
+ * @param forwardTonAmount Amount of TON to forward
+ * @param forwardPayload Forward payload data
+ * @custom:opcode 0xf8a7ea5
+ */
 message(0xf8a7ea5) SendViaJettonTransfer {
     queryId: Int as uint64;
     amount: Int as coins;
@@ -10,7 +38,16 @@ message(0xf8a7ea5) SendViaJettonTransfer {
     forwardPayload: Slice as remaining;
 }
 
-// Improved jetton wallet address calculation using RUNVM (like tact-dex)
+/**
+ * @notice Calculate jetton wallet address using RUNVM
+ * @dev Improved calculation using RUNVM for better compatibility
+ * @param owner Owner address for the jetton wallet
+ * @param jettonData Jetton data cell
+ * @param jettonCode Jetton wallet code cell
+ * @param jettonMaster Jetton master contract address
+ * @return Calculated jetton wallet address
+ * @custom:internal This is an internal utility function
+ */
 asm fun calculateJettonWallet(owner: Address, jettonData: Cell, jettonCode: Cell, jettonMaster: Address): Address {
     c7 PUSHCTR
     0 INDEX // Unpack singleton from c7
@@ -30,7 +67,15 @@ asm fun calculateJettonWallet(owner: Address, jettonData: Cell, jettonCode: Cell
     3 BLKDROP       // address"
 }
 
-// Fallback calculation for compatibility
+/**
+ * @notice Calculate jetton wallet address (fallback method)
+ * @dev Fallback calculation for compatibility with older jetton standards
+ * @param ownerAddress Owner address for the jetton wallet
+ * @param jettonMasterAddress Jetton master contract address
+ * @param jettonWalletCode Jetton wallet code cell
+ * @return Calculated jetton wallet address
+ * @custom:internal This is an internal utility function
+ */
 fun calculateJettonWalletAddress(
     ownerAddress: Address,
     jettonMasterAddress: Address,
@@ -49,7 +94,13 @@ fun calculateJettonWalletAddress(
     });
 }
 
-// Enhanced hash function for HTLC
+/**
+ * @notice Enhanced hash function for HTLC
+ * @dev Generates keccak256 hash of a secret for hashlock creation
+ * @param secret The secret to hash
+ * @return Hash of the secret (hashlock)
+ * @custom:security This function is critical for HTLC security
+ */
 fun keccakBytes32(secret: Int): Int {
     let cell: Cell = beginCell()
         .storeUint(secret, 256)
@@ -57,7 +108,14 @@ fun keccakBytes32(secret: Int): Int {
     return cell.hash();
 }
 
-// Generate multiple secrets for partial fills
+/**
+ * @notice Generate multiple secrets for partial fills
+ * @dev Creates a map of partial secrets for large order splitting
+ * @param baseSecret Base secret to derive from
+ * @param count Number of partial secrets to generate
+ * @return Map of partial hash to partial secret
+ * @custom:internal Used for partial fill functionality
+ */
 fun generatePartialSecrets(baseSecret: Int, count: Int): map<Int as uint256, Int as uint256> {
     let secrets: map<Int as uint256, Int as uint256> = emptyMap();
     let i: Int = 0;
@@ -70,7 +128,13 @@ fun generatePartialSecrets(baseSecret: Int, count: Int): map<Int as uint256, Int
     return secrets;
 }
 
-// Validate chain ID for supported networks
+/**
+ * @notice Validate chain ID for supported networks
+ * @dev Checks if a chain ID is supported by the protocol
+ * @param chainId Chain ID to validate
+ * @return True if chain ID is supported, false otherwise
+ * @custom:security Only supported chains are allowed
+ */
 fun isValidChainId(chainId: Int): Bool {
     return chainId == 1 || // Ethereum
            chainId == 137 || // Polygon
@@ -81,7 +145,14 @@ fun isValidChainId(chainId: Int): Bool {
            chainId == -239; // TON Testnet
 }
 
-// Calculate swap direction based on chain IDs
+/**
+ * @notice Calculate swap direction based on chain IDs
+ * @dev Determines the type of swap based on source and destination chains
+ * @param fromChainId Source chain ID
+ * @param toChainId Destination chain ID
+ * @return Swap direction constant (TON_TO_EVM, EVM_TO_TON, or TON_TO_TON)
+ * @custom:internal Used for order direction determination
+ */
 fun getSwapDirection(fromChainId: Int, toChainId: Int): Int {
     if (fromChainId == -3 || fromChainId == -239) {
         if (toChainId == -3 || toChainId == -239) {
@@ -94,7 +165,14 @@ fun getSwapDirection(fromChainId: Int, toChainId: Int): Int {
     }
 }
 
-// Calculate timelock based on chain and direction
+/**
+ * @notice Calculate timelock based on chain and direction
+ * @dev Sets appropriate timelock duration based on swap type
+ * @param chainId Target chain ID
+ * @param direction Swap direction
+ * @return Calculated timelock timestamp
+ * @custom:internal Used for order timelock calculation
+ */
 fun calculateTimelock(chainId: Int, direction: Int): Int {
     let baseTime = now();
     if (direction == TON_TO_EVM) {
@@ -106,7 +184,13 @@ fun calculateTimelock(chainId: Int, direction: Int): Int {
     }
 }
 
-// Validate order parameters
+/**
+ * @notice Validate order parameters
+ * @dev Checks if order parameters are valid
+ * @param order Order configuration to validate
+ * @return True if order is valid, false otherwise
+ * @custom:security Critical for order validation
+ */
 fun validateOrder(order: OrderConfig): Bool {
     return order.amount > 0 &&
            order.timelock > now() &&
@@ -114,7 +198,14 @@ fun validateOrder(order: OrderConfig): Bool {
            order.hashlock != 0;
 }
 
-// Calculate fees based on order size and direction
+/**
+ * @notice Calculate fees based on order size and direction
+ * @dev Determines appropriate fees for different swap types
+ * @param amount Order amount
+ * @param direction Swap direction
+ * @return Calculated fee amount
+ * @custom:internal Used for fee calculation
+ */
 fun calculateFees(amount: Int, direction: Int): Int {
     let baseFee = 1000000; // 0.001 TON base fee
     let percentageFee = amount * 5 / 10000; // 0.05% fee
@@ -128,6 +219,14 @@ fun calculateFees(amount: Int, direction: Int): Int {
     }
 }
 
+/**
+ * @notice Calculate price for jetton forward
+ * @dev Determines the cost of forwarding jettons
+ * @param fwdFee Forward fee
+ * @param fwdTonAmount Forward TON amount
+ * @return Calculated forward price
+ * @custom:internal Used for jetton transfer pricing
+ */
 inline fun priceOfJettonForward(fwdFee: Int, fwdTonAmount: Int): Int {
     return
         fwdTonAmount +
@@ -137,7 +236,14 @@ inline fun priceOfJettonForward(fwdFee: Int, fwdTonAmount: Int): Int {
          ton("0.02"));
 }
 
-// Enhanced serialization for OrderConfig with partial fills
+/**
+ * @notice Enhanced serialization for OrderConfig with partial fills
+ * @dev Serializes OrderConfig with secret for transfer
+ * @param order Order configuration to serialize
+ * @param secret Secret for the order
+ * @return Serialized order cell
+ * @custom:internal Used for order data serialization
+ */
 inline fun serializeOrderConfig(order: OrderConfig, secret: Int): Cell {
     return beginCell()
         .storeUint(order.id, 32)
@@ -154,7 +260,14 @@ inline fun serializeOrderConfig(order: OrderConfig, secret: Int): Cell {
         .endCell();
 }
 
-// Enhanced serialization for Order with partial fills
+/**
+ * @notice Enhanced serialization for Order with partial fills
+ * @dev Serializes Order with secret for transfer
+ * @param order Order to serialize
+ * @param secret Secret for the order
+ * @return Serialized order cell
+ * @custom:internal Used for order data serialization
+ */
 inline fun serializeOrder(order: Order, secret: Int): Cell {
     return beginCell()
         .storeUint(order.id, 32)
@@ -170,7 +283,13 @@ inline fun serializeOrder(order: Order, secret: Int): Cell {
         .endCell();
 }
 
-// Serialize escrow contract data
+/**
+ * @notice Serialize escrow contract data
+ * @dev Serializes EscrowContract for storage
+ * @param escrow Escrow contract data to serialize
+ * @return Serialized escrow contract cell
+ * @custom:internal Used for escrow data serialization
+ */
 inline fun serializeEscrowContract(escrow: EscrowContract): Cell {
     return beginCell()
         .storeUint(escrow.chainId, 32)
@@ -180,7 +299,13 @@ inline fun serializeEscrowContract(escrow: EscrowContract): Cell {
         .endCell();
 }
 
-// Serialize relayer data
+/**
+ * @notice Serialize relayer data
+ * @dev Serializes RelayerData for storage
+ * @param relayer Relayer data to serialize
+ * @return Serialized relayer data cell
+ * @custom:internal Used for relayer data serialization
+ */
 inline fun serializeRelayerData(relayer: RelayerData): Cell {
     return beginCell()
         .storeAddress(relayer.address)

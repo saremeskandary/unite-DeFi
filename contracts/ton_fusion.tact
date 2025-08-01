@@ -6,39 +6,104 @@ import "./states.tact";
 import "./consts.tact";
 import "./utils.tact";
 
+/**
+ * @title TonFusion - Cross-Chain HTLC Atomic Swap Protocol
+ * @author TonFusion Team
+ * @notice A comprehensive Hash Time-Locked Contract (HTLC) implementation for cross-chain atomic swaps
+ * @dev Supports TON ↔ EVM chains and TON ↔ TON swaps with partial fill capabilities
+ * 
+ * @custom:security-contact security@tonfusion.com
+ * @custom:version 1.0.0
+ * 
+ * Key Features:
+ * - Cross-chain atomic swaps between TON and EVM chains
+ * - Same-chain TON to TON swaps
+ * - Partial fill support for large orders
+ * - Relayer system for order resolution
+ * - Whitelist-based access control
+ * - Escrow contract factory for target chains
+ * 
+ * Supported Chains:
+ * - TON Mainnet (-3) and Testnet (-239)
+ * - Ethereum (1)
+ * - Polygon (137)
+ * - BSC (56)
+ * - Base (8453)
+ * - Arbitrum (42161)
+ * 
+ * @custom:warning This contract handles significant value transfers. Always verify order parameters
+ * @custom:warning Timelocks are critical for security. Ensure proper time validation
+ * @custom:warning Secrets must be kept secure until order completion
+ */
 contract TonFusion with Deployable {
     
+    /// @notice Contract owner with administrative privileges
+    /// @dev Only the owner can manage whitelists, relayers, and deploy escrow contracts
     owner: Address;
     
-    // Order storage
-    escrowLock: map<Int as uint256, OrderConfig> = emptyMap(); // Cross-chain orders
-    escrowOrder: map<Int as uint256, Order> = emptyMap(); // Same-chain orders
+    /// @notice Cross-chain order storage (TON ↔ EVM)
+    /// @dev Maps hashlock to OrderConfig for cross-chain swaps
+    escrowLock: map<Int as uint256, OrderConfig> = emptyMap();
     
-    // Jetton management
+    /// @notice Same-chain order storage (TON ↔ TON)
+    /// @dev Maps hashlock to Order for same-chain swaps
+    escrowOrder: map<Int as uint256, Order> = emptyMap();
+    
+    /// @notice Jetton master contract storage
+    /// @dev Maps jetton address to jetton master contract data
     jettons: map<Address, Cell> = emptyMap();
+    
+    /// @notice Jetton wallet address mapping
+    /// @dev Maps jetton address to corresponding wallet address
     jettonAccount: map<Address, Address> = emptyMap();
     
-    // Access control
+    /// @notice Whitelist for access control
+    /// @dev Maps address to whitelist status (true = whitelisted)
     whiteLists: map<Address, Bool> = emptyMap();
+    
+    /// @notice Relayer registry with performance metrics
+    /// @dev Maps relayer address to RelayerData with statistics
     relayers: map<Address, RelayerData> = emptyMap();
     
-    // Escrow factory
+    /// @notice Escrow contract registry for target chains
+    /// @dev Maps chain ID to deployed escrow contract information
     escrowContracts: map<Int as uint32, EscrowContract> = emptyMap();
     
-    // Statistics
+    /// @notice Total number of orders created
+    /// @dev Incremented on each order creation
     totalOrders: Int as uint32 = 0;
+    
+    /// @notice Total volume processed across all orders
+    /// @dev Accumulated from all order amounts
     totalVolume: Int as uint64 = 0;
+    
+    /// @notice Total number of successful order resolutions
+    /// @dev Incremented on successful partial fills and completions
     totalResolves: Int as uint32 = 0;
 
+    /**
+     * @notice Contract initialization
+     * @dev Sets the contract deployer as the owner
+     */
     init() {
         self.owner = sender();
     }
 
+    /**
+     * @notice Fallback function for unexpected messages
+     * @dev Returns any sent value back to the sender
+     */
     receive() { 
         cashback(sender()) 
     }
 
-    // Whitelist management
+    /**
+     * @notice Set whitelist status for an address
+     * @dev Only callable by contract owner
+     * @param action.resolver Address to set whitelist status for
+     * @param action.whitelistStatus True to whitelist, false to remove from whitelist
+     * @custom:security Only owner can modify whitelist
+     */
     receive(action: SetWhiteList) {
         if (self.owner != sender()) {
             throw(INVALID_OWNER);
@@ -46,7 +111,13 @@ contract TonFusion with Deployable {
         self.whiteLists.set(action.resolver, action.whitelistStatus);
     }
 
-    // Relayer management
+    /**
+     * @notice Register a new relayer
+     * @dev Only callable by contract owner. Relayers are automatically whitelisted
+     * @param action.relayer Address of the relayer to register
+     * @param action.customPayload Optional custom payload for additional data
+     * @custom:security Only owner can register relayers
+     */
     receive(action: RegisterRelayer) {
         if (self.owner != sender()) {
             throw(INVALID_OWNER);
@@ -62,7 +133,16 @@ contract TonFusion with Deployable {
         self.relayers.set(action.relayer, relayerData);
     }
 
-    // Jetton notifications with actions
+    /**
+     * @notice Handle jetton notifications with embedded actions
+     * @dev Routes different action types to appropriate handlers
+     * @param action.queryId Unique query identifier
+     * @param action.amount Amount of jettons transferred
+     * @param action.sender Address of the jetton sender
+     * @param action.actionOpcode Opcode identifying the action type
+     * @param action.actionPayload Encoded action data
+     * @custom:security Validates sender is the expected jetton wallet
+     */
     receive(action: JettonNotifyWithActionRequest) {
         if (action.actionOpcode == LockJetton.opcode()) {
             let msg = LockJetton.fromCell(action.actionPayload);
@@ -95,39 +175,95 @@ contract TonFusion with Deployable {
         }
     }
 
-    // Fund management
+    /**
+     * @notice Claim funds using the correct secret
+     * @dev Validates secret hash and transfers funds to receiver
+     * @param action.secret The secret that unlocks the hashlock
+     * @param action.hash The hashlock of the order
+     * @param action.customPayload Optional custom payload
+     * @custom:security Requires correct secret and valid timelock
+     */
     receive(action: GetFund) {
         self.getFund(action);
     }
 
+    /**
+     * @notice Refund cross-chain order after timelock expiration
+     * @dev Returns funds to original sender if order expires
+     * @param action.hash The hashlock of the order to refund
+     * @param action.customPayload Optional custom payload
+     * @custom:security Only works after timelock expiration
+     */
     receive(action: Refund) {
         self.refund(action);
     }
 
+    /**
+     * @notice Refund same-chain order after timelock expiration
+     * @dev Returns funds to original sender if order expires
+     * @param action.hash The hashlock of the order to refund
+     * @param action.customPayload Optional custom payload
+     * @custom:security Only works after timelock expiration
+     */
     receive(action: RefundOrder) {
         self.refundOrder(action);
     }
 
-    // Partial fill management
+    /**
+     * @notice Create a partial fill for an order
+     * @dev Allows multiple parties to fill parts of a large order
+     * @param action.orderHash The hashlock of the order
+     * @param action.secret Unique secret for this partial fill
+     * @param action.fillAmount Amount to fill in this partial
+     * @param action.resolver Address of the relayer/resolver
+     * @param action.customPayload Optional custom payload
+     * @custom:security Each secret can only be used once per order
+     */
     receive(action: PartialFill) {
         self.partialFill(action);
     }
 
+    /**
+     * @notice Complete a partial fill using the secret
+     * @dev Transfers the partial amount to the receiver
+     * @param action.orderHash The hashlock of the order
+     * @param action.secret The secret for the partial fill
+     * @param action.customPayload Optional custom payload
+     * @custom:security Requires valid partial fill secret
+     */
     receive(action: CompletePartialFill) {
         self.completePartialFill(action);
     }
 
-    // Escrow factory
+    /**
+     * @notice Deploy escrow contract for a target chain
+     * @dev Only callable by contract owner
+     * @param action.chainId Target chain ID for escrow deployment
+     * @param action.targetAddress Address where escrow should be deployed
+     * @param action.customPayload Optional custom payload
+     * @custom:security Only owner can deploy escrow contracts
+     */
     receive(action: DeployEscrow) {
         self.deployEscrow(action);
     }
 
-    // Relayer stats update
+    /**
+     * @notice Update relayer performance statistics
+     * @dev Tracks success/failure rates for relayer reputation
+     * @param action.relayer Address of the relayer
+     * @param action.success True if resolution was successful
+     * @param action.customPayload Optional custom payload
+     */
     receive(action: UpdateRelayerStats) {
         self.updateRelayerStats(action);
     }
 
-    // Create cross-chain order (TON → EVM)
+    /**
+     * @notice Create cross-chain order (TON → EVM)
+     * @dev Locks jettons for cross-chain swap to EVM chains
+     * @param payload Encoded LockJetton message
+     * @custom:security Validates whitelist, timelock, and order uniqueness
+     */
     fun create(payload: Cell) {
         let msg = LockJetton.fromCell(payload);
 
@@ -154,7 +290,12 @@ contract TonFusion with Deployable {
         self.totalVolume = self.totalVolume + msg.orderConfig.amount;
     }
 
-    // Create same-chain order (TON → TON)
+    /**
+     * @notice Create same-chain order (TON → TON)
+     * @dev Locks jettons for same-chain swap within TON
+     * @param payload Encoded CreateOrder message
+     * @custom:security Validates whitelist, timelock, and order uniqueness
+     */
     fun makeOrder(payload: Cell) {
         let msg = CreateOrder.fromCell(payload);
 
@@ -181,7 +322,12 @@ contract TonFusion with Deployable {
         self.totalVolume = self.totalVolume + msg.orderConfig.amount;
     }
 
-    // Create EVM → TON order
+    /**
+     * @notice Create EVM → TON order
+     * @dev Creates order for incoming EVM to TON swap
+     * @param payload Encoded CreateEVMToTONOrder message
+     * @custom:security Validates whitelist, timelock, and order uniqueness
+     */
     fun createEVMToTONOrder(payload: Cell) {
         let msg = CreateEVMToTONOrder.fromCell(payload);
 
@@ -206,7 +352,12 @@ contract TonFusion with Deployable {
         self.totalVolume = self.totalVolume + msg.orderConfig.amount;
     }
 
-    // Create TON → EVM order
+    /**
+     * @notice Create TON → EVM order
+     * @dev Creates order for outgoing TON to EVM swap
+     * @param payload Encoded CreateTONToEVMOrder message
+     * @custom:security Validates whitelist, timelock, and order uniqueness
+     */
     fun createTONToEVMOrder(payload: Cell) {
         let msg = CreateTONToEVMOrder.fromCell(payload);
 
@@ -231,7 +382,12 @@ contract TonFusion with Deployable {
         self.totalVolume = self.totalVolume + msg.orderConfig.amount;
     }
 
-    // Partial fill functionality
+    /**
+     * @notice Create a partial fill for an order
+     * @dev Allows multiple parties to fill parts of a large order with unique secrets
+     * @param msg PartialFill message containing order details
+     * @custom:security Validates order exists, not finalized, and secret uniqueness
+     */
     fun partialFill(msg: PartialFill) {
         let orderConfigData = self.escrowLock.get(msg.orderHash);
         if (orderConfigData != null) {
@@ -290,7 +446,12 @@ contract TonFusion with Deployable {
         throw(INVALID_HASH);
     }
 
-    // Complete partial fill
+    /**
+     * @notice Complete a partial fill using the secret
+     * @dev Transfers the partial amount to the receiver based on order direction
+     * @param msg CompletePartialFill message containing order details
+     * @custom:security Validates partial fill exists and processes transfer
+     */
     fun completePartialFill(msg: CompletePartialFill) {
         let orderConfigData = self.escrowLock.get(msg.orderHash);
         if (orderConfigData != null) {
@@ -320,7 +481,12 @@ contract TonFusion with Deployable {
         throw(INVALID_HASH);
     }
 
-    // Get fund with secret
+    /**
+     * @notice Claim funds using the correct secret
+     * @dev Validates secret hash matches hashlock and transfers full amount
+     * @param msg GetFund message containing secret and hash
+     * @custom:security Requires correct secret, valid timelock, and order not finalized
+     */
     fun getFund(msg: GetFund) {
         let data = self.escrowLock.get(msg.hash);
         if (data == null) {
@@ -346,7 +512,12 @@ contract TonFusion with Deployable {
         self.processJettonTransfer(order, order.amount, msg.secret);
     }
 
-    // Refund cross-chain order
+    /**
+     * @notice Refund cross-chain order after timelock expiration
+     * @dev Returns funds to original sender if order expires
+     * @param msg Refund message containing order hash
+     * @custom:security Only works after timelock expiration and order not finalized
+     */
     fun refund(msg: Refund) {
         let data = self.escrowLock.get(msg.hash);
         if (data == null) {
@@ -367,7 +538,12 @@ contract TonFusion with Deployable {
         self.processJettonRefund(order);
     }
 
-    // Refund same-chain order
+    /**
+     * @notice Refund same-chain order after timelock expiration
+     * @dev Returns funds to original sender if order expires
+     * @param msg RefundOrder message containing order hash
+     * @custom:security Only works after timelock expiration and order not finalized
+     */
     fun refundOrder(msg: RefundOrder) {
         let data = self.escrowOrder.get(msg.hash);
         if (data == null) {
@@ -384,7 +560,12 @@ contract TonFusion with Deployable {
         self.processJettonRefundOrder(order);
     }
 
-    // Deploy escrow contract
+    /**
+     * @notice Deploy escrow contract for a target chain
+     * @dev Only callable by contract owner
+     * @param msg DeployEscrow message containing chain and address details
+     * @custom:security Only owner can deploy escrow contracts
+     */
     fun deployEscrow(msg: DeployEscrow) {
         if (self.owner != sender()) {
             throw(INVALID_OWNER);
@@ -400,7 +581,12 @@ contract TonFusion with Deployable {
         self.escrowContracts.set(msg.chainId, escrowContract);
     }
 
-    // Update relayer statistics
+    /**
+     * @notice Update relayer performance statistics
+     * @dev Tracks success/failure rates for relayer reputation system
+     * @param msg UpdateRelayerStats message containing relayer and success status
+     * @custom:security Only registered relayers can update their stats
+     */
     fun updateRelayerStats(msg: UpdateRelayerStats) {
         let relayerData = self.relayers.get(msg.relayer);
         if (relayerData == null) {
@@ -422,7 +608,14 @@ contract TonFusion with Deployable {
         self.relayers.set(msg.relayer, updatedRelayer);
     }
 
-    // Process jetton transfer for OrderConfig
+    /**
+     * @notice Process jetton transfer for OrderConfig (cross-chain orders)
+     * @dev Sends jettons to receiver with serialized order data
+     * @param order OrderConfig containing transfer details
+     * @param amount Amount to transfer
+     * @param secret Secret for order validation
+     * @custom:internal This is an internal function for order processing
+     */
     fun processJettonTransfer(order: OrderConfig, amount: Int, secret: Int) {
         let jettonWallet = self.jettonAccount.get(order.srcJettonAddress);
         let ctx = context();
@@ -444,7 +637,14 @@ contract TonFusion with Deployable {
         });
     }
 
-    // Process jetton transfer for Order (TON_TO_TON)
+    /**
+     * @notice Process jetton transfer for Order (same-chain orders)
+     * @dev Sends jettons to sender with serialized order data
+     * @param order Order containing transfer details
+     * @param amount Amount to transfer
+     * @param secret Secret for order validation
+     * @custom:internal This is an internal function for order processing
+     */
     fun processJettonTransferOrder(order: Order, amount: Int, secret: Int) {
         let jettonWallet = self.jettonAccount.get(order.srcJettonAddress);
         let ctx = context();
@@ -466,7 +666,12 @@ contract TonFusion with Deployable {
         });
     }
 
-    // Process jetton refund for OrderConfig
+    /**
+     * @notice Process jetton refund for OrderConfig (cross-chain orders)
+     * @dev Returns jettons to original sender after timelock expiration
+     * @param order OrderConfig containing refund details
+     * @custom:internal This is an internal function for refund processing
+     */
     fun processJettonRefund(order: OrderConfig) {
         let jettonWallet = self.jettonAccount.get(order.srcJettonAddress);
         let ctx = context();
@@ -488,7 +693,12 @@ contract TonFusion with Deployable {
         });
     }
 
-    // Process jetton refund for Order (TON_TO_TON)
+    /**
+     * @notice Process jetton refund for Order (same-chain orders)
+     * @dev Returns jettons to original sender after timelock expiration
+     * @param order Order containing refund details
+     * @custom:internal This is an internal function for refund processing
+     */
     fun processJettonRefundOrder(order: Order) {
         let jettonWallet = self.jettonAccount.get(order.srcJettonAddress);
         let ctx = context();
@@ -510,7 +720,15 @@ contract TonFusion with Deployable {
         });
     }
 
-    // Process EVM transfer (placeholder for cross-chain functionality)
+    /**
+     * @notice Process EVM transfer (placeholder for cross-chain functionality)
+     * @dev This would interface with EVM chains via oracles/bridges
+     * @param order OrderConfig containing transfer details
+     * @param amount Amount to transfer
+     * @param secret Secret for order validation
+     * @custom:internal This is an internal function for cross-chain processing
+     * @custom:todo Implement actual EVM chain integration
+     */
     fun processEVMTransfer(order: OrderConfig, amount: Int, secret: Int) {
         // This would interface with EVM chains via oracles/bridges
         // For now, just log the transfer
