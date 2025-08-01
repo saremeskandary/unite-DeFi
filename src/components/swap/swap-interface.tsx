@@ -15,6 +15,7 @@ import { BitcoinSwapFlowUI } from "./bitcoin-swap-flow-ui"
 import { OrderSummary } from "./order-summary"
 import { ArrowUpDown, Settings, Info, ChevronDown, Check, Search } from "lucide-react"
 import { enhancedWallet } from "@/lib/enhanced-wallet"
+
 import { toast } from "sonner"
 import {
   getDefaultToken,
@@ -25,9 +26,7 @@ import {
   TOKENS_DATA
 } from "@/constants"
 
-interface SwapInterfaceProps {
-  onOrderCreated: (orderId: string) => void
-}
+
 
 // Token Selector Component - moved outside to prevent recreation
 const TokenSelectorWithNetwork = ({
@@ -347,7 +346,13 @@ interface NetworkFee {
   estimatedTime: string
 }
 
-export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
+interface SwapInterfaceProps {
+  onOrderCreated: (orderId: string) => void
+  tonWalletAddress?: string | null
+  tonWalletConnected?: boolean
+}
+
+export function SwapInterface({ onOrderCreated, tonWalletAddress = null, tonWalletConnected = false }: SwapInterfaceProps) {
   const [fromToken, setFromToken] = useState<Token>(getDefaultToken())
   const [toToken, setToToken] = useState<Token>({ symbol: "BTC", name: "Bitcoin", balance: "0.00" })
   const [fromNetwork, setFromNetwork] = useState<Network>(getDefaultNetwork())
@@ -365,6 +370,8 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
   const [walletConnected, setWalletConnected] = useState(false)
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
   const [showBitcoinFlow, setShowBitcoinFlow] = useState(false)
+
+
 
   // Token selection state
   const [isFromTokenSelectorOpen, setIsFromTokenSelectorOpen] = useState(false)
@@ -395,16 +402,19 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
       // Add a small delay to allow the enhanced wallet to restore its state
       await new Promise(resolve => setTimeout(resolve, 50));
 
+      // Initialize Ethereum wallet
       if (enhancedWallet.isConnected()) {
         setWalletConnected(true)
         setWalletAddress(enhancedWallet.getCurrentAddress())
         await loadTokenBalances()
       }
+
+
     }
 
     initializeWallet()
 
-    // Listen for wallet changes
+    // Listen for Ethereum wallet changes
     enhancedWallet.onAccountChange((address) => {
       setWalletAddress(address)
       setWalletConnected(true)
@@ -414,6 +424,8 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
     enhancedWallet.onChainChange((chainId) => {
       loadTokenBalances()
     })
+
+
   }, [])
 
   // Load token balances from wallet
@@ -561,9 +573,17 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
   }
 
   const handleCreateOrder = async () => {
-    if (!walletConnected) {
-      toast.error("Please connect your wallet first")
-      return
+    // Check if appropriate wallet is connected
+    if (fromToken.symbol === 'TON' || toToken.symbol === 'TON') {
+      if (!tonWalletConnected) {
+        toast.error("Please connect your TON wallet first")
+        return
+      }
+    } else {
+      if (!walletConnected) {
+        toast.error("Please connect your wallet first")
+        return
+      }
     }
 
     if (!currentQuote) {
@@ -573,6 +593,12 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
 
     setIsLoading(true)
     try {
+      // Determine the appropriate address based on token selection
+      let toAddress = bitcoinAddress || walletAddress
+      if (toToken.symbol === 'TON' && tonWalletAddress) {
+        toAddress = tonWalletAddress
+      }
+
       const response = await fetch('/api/swap/execute', {
         method: 'POST',
         headers: {
@@ -582,7 +608,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
           fromToken: fromToken.symbol,
           toToken: toToken.symbol,
           fromAmount: fromAmount,
-          toAddress: bitcoinAddress || walletAddress,
+          toAddress: toAddress,
           slippage: parseFloat(slippage),
           feePriority: selectedFeePriority,
           fromNetwork: fromNetwork.id,
@@ -723,10 +749,13 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
     }
   }, [isToTokenSelectorOpen])
 
-  // Update validation logic to handle Bitcoin as "from" token
+  // Update validation logic to handle Bitcoin as "from" token and TON wallet
   const isValidSwap = fromAmount && toAmount &&
     Number.parseFloat(fromAmount) > 0 &&
-    walletConnected &&
+    // Check if appropriate wallet is connected based on token selection
+    ((fromToken.symbol === 'TON' && tonWalletConnected) ||
+      (toToken.symbol === 'TON' && tonWalletConnected) ||
+      (fromToken.symbol !== 'TON' && toToken.symbol !== 'TON' && walletConnected)) &&
     currentQuote &&
     // For Bitcoin as "from" token, require valid Bitcoin address
     (!isBitcoinFrom || (fromBitcoinAddress && validateBitcoinAddress(fromBitcoinAddress))) &&
@@ -810,6 +839,8 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
       </CardHeader>
 
       <CardContent className="space-y-4 px-4 sm:px-6">
+
+
         {/* From Token */}
         <div className="space-y-2">
           <Label className="text-muted-foreground text-sm">From</Label>
@@ -1004,7 +1035,11 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
               <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
               <span className="text-xs sm:text-sm">Creating Order...</span>
             </div>
-          ) : !walletConnected ? (
+          ) : !walletConnected && !tonWalletConnected ? (
+            "Connect Wallet to Swap"
+          ) : (fromToken.symbol === 'TON' || toToken.symbol === 'TON') && !tonWalletConnected ? (
+            "Connect TON Wallet to Swap"
+          ) : !walletConnected && fromToken.symbol !== 'TON' && toToken.symbol !== 'TON' ? (
             "Connect Wallet to Swap"
           ) : isBitcoinSwap ? (
             isBitcoinFrom ? "Start Bitcoin to ERC20 Swap" : "Start ERC20 to Bitcoin Swap"

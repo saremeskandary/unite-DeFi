@@ -1,0 +1,12 @@
+{
+    "url": "http://localhost:3000",
+    "name": "Unite DeFi",
+    "iconUrl": "http://localhost:3000/Unite-Defi-favicon.png",
+    "termsOfUseUrl": "http://localhost:3000/terms",
+    "privacyPolicyUrl": "http://localhost:3000/privacy",
+    "features": [
+        "ton_addr",
+        "ton_proof",
+        "ton_send_tx"
+    ]
+}

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { WalletConnection } from "@/components/wallet/wallet-connection"
+import { TONConnectButton } from "@/components/wallet/ton-connect-button"
 
 export function Header() {
   const [isConnected, setIsConnected] = useState(false)
@@ -41,8 +42,8 @@ export function Header() {
             <Link
               href="/"
               className={`transition-colors ${isActive("/")
-                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                  : "text-slate-400 hover:text-white"
+                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                : "text-slate-400 hover:text-white"
                 }`}
             >
               Swap
@@ -50,8 +51,8 @@ export function Header() {
             <Link
               href="/orders"
               className={`transition-colors ${isActive("/orders")
-                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                  : "text-slate-400 hover:text-white"
+                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                : "text-slate-400 hover:text-white"
                 }`}
             >
               Orders
@@ -59,8 +60,8 @@ export function Header() {
             <Link
               href="/portfolio"
               className={`transition-colors ${isActive("/portfolio")
-                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                  : "text-slate-400 hover:text-white"
+                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                : "text-slate-400 hover:text-white"
                 }`}
             >
               Portfolio
@@ -68,17 +69,27 @@ export function Header() {
             <Link
               href="/settings"
               className={`transition-colors ${isActive("/settings")
-                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                  : "text-slate-400 hover:text-white"
+                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                : "text-slate-400 hover:text-white"
                 }`}
             >
               Settings
+            </Link>
+            <Link
+              href="/ton-test"
+              className={`transition-colors ${isActive("/ton-test")
+                ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                : "text-slate-400 hover:text-white"
+                }`}
+            >
+              TON Test
             </Link>
           </nav>
 
           {/* Wallet Connection */}
           <div className="flex items-center space-x-4">
             <WalletConnection />
+            <TONConnectButton />
           </div>
         </div>
       </div>
