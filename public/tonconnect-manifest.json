@@ -1,12 +1,9 @@
 {
-    "url": "http://localhost:3000",
-    "name": "Unite DeFi",
-    "iconUrl": "http://localhost:3000/Unite-Defi-favicon.png",
-    "termsOfUseUrl": "http://localhost:3000/terms",
-    "privacyPolicyUrl": "http://localhost:3000/privacy",
-    "features": [
-        "ton_addr",
-        "ton_proof",
-        "ton_send_tx"
-    ]
+  "url": "https://unite-defi.vercel.app",
+  "name": "Unite DeFi - Cross-Chain Swap Platform",
+  "iconUrl": "https://unite-defi.vercel.app/Unite-Defi-favicon.png",
+  "termsOfUseUrl": "https://unite-defi.vercel.app/terms",
+  "privacyPolicyUrl": "https://unite-defi.vercel.app/privacy",
+  "features": ["ton_addr", "ton_proof", "ton_send_tx"],
+  "version": "1.0.0"
 }

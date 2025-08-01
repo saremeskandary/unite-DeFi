@@ -28,6 +28,7 @@ export function Header() {
     { href: "/portfolio", label: "Portfolio" },
     { href: "/settings", label: "Settings" },
     { href: "/ton-test", label: "TON Test" },
+    { href: "/ton-debug", label: "TON Debug" },
   ]
 
   return (
