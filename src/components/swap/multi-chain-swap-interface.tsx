@@ -15,30 +15,17 @@ import { OrderSummary } from "./order-summary"
 import { ArrowUpDown, Settings, Info, AlertCircle } from "lucide-react"
 import { enhancedWallet } from "@/lib/enhanced-wallet"
 import { toast } from "sonner"
-import { CHAIN_CONFIG, CHAIN_TYPES } from "@/lib/security/validation-schemas"
+import {
+    NETWORKS,
+    TOKENS_DATA,
+    CROSS_CHAIN_PAIRS,
+    TOKENS_BY_NETWORK,
+    Token,
+    Network
+} from "@/constants"
 
 interface MultiChainSwapInterfaceProps {
     onOrderCreated: (orderId: string) => void
-}
-
-interface Token {
-    symbol: string
-    name: string
-    balance: string
-    price?: number
-    value?: number
-    chain?: string
-    networks?: string[]
-    networkCount?: number
-    isFavorite?: boolean
-}
-
-interface Network {
-    id: string
-    name: string
-    icon: string
-    chainId: number
-    type: 'simple' | 'smart_contract'
 }
 
 interface SwapQuote {
@@ -62,69 +49,11 @@ interface NetworkFee {
     estimatedTime: string
 }
 
-// Predefined chain pairs for tabs
-const CHAIN_PAIRS = [
-    { id: 'btc-eth', fromChain: 'BTC', toChain: 'ETH', label: 'Bitcoin ↔ Ethereum' },
-    { id: 'tron-eth', fromChain: 'TRON', toChain: 'ETH', label: 'Tron ↔ Ethereum' },
-    { id: 'ada-eth', fromChain: 'ADA', toChain: 'ETH', label: 'Cardano ↔ Ethereum' },
-    { id: 'sol-eth', fromChain: 'SOL', toChain: 'ETH', label: 'Solana ↔ Ethereum' },
-    { id: 'doge-eth', fromChain: 'DOGE', toChain: 'ETH', label: 'Dogecoin ↔ Ethereum' },
-    { id: 'btc-tron', fromChain: 'BTC', toChain: 'TRON', label: 'Bitcoin ↔ Tron' },
-    { id: 'eth-tron', fromChain: 'ETH', toChain: 'TRON', label: 'Ethereum ↔ Tron' },
-    { id: 'custom', fromChain: 'ETH', toChain: 'BTC', label: 'Custom Pair' }
-]
+// Predefined chain pairs for tabs - using the new chain support configuration
+const CHAIN_PAIRS = CROSS_CHAIN_PAIRS
 
-// Token lists for different chains
-const CHAIN_TOKENS = {
-    BTC: [{ symbol: "BTC", name: "Bitcoin", balance: "0.00" }],
-    DOGE: [{ symbol: "DOGE", name: "Dogecoin", balance: "0.00" }],
-    LTC: [{ symbol: "LTC", name: "Litecoin", balance: "0.00" }],
-    BCH: [{ symbol: "BCH", name: "Bitcoin Cash", balance: "0.00" }],
-    ETH: [
-        { symbol: "ETH", name: "Ethereum", balance: "0.00" },
-        { symbol: "USDC", name: "USD Coin", balance: "0.00" },
-        { symbol: "USDT", name: "Tether USD", balance: "0.00" },
-        { symbol: "WETH", name: "Wrapped Ethereum", balance: "0.00" },
-        { symbol: "WBTC", name: "Wrapped Bitcoin", balance: "0.00" },
-        { symbol: "DAI", name: "Dai Stablecoin", balance: "0.00" },
-        { symbol: "UNI", name: "Uniswap", balance: "0.00" },
-        { symbol: "LINK", name: "Chainlink", balance: "0.00" },
-        { symbol: "AAVE", name: "Aave", balance: "0.00" },
-        { symbol: "MATIC", name: "Polygon", balance: "0.00" }
-    ],
-    TRON: [
-        { symbol: "TRX", name: "Tron", balance: "0.00" },
-        { symbol: "USDT", name: "Tether USD", balance: "0.00" },
-        { symbol: "USDC", name: "USD Coin", balance: "0.00" },
-        { symbol: "BTT", name: "BitTorrent", balance: "0.00" },
-        { symbol: "JST", name: "JUST", balance: "0.00" },
-        { symbol: "WIN", name: "WINk", balance: "0.00" }
-    ],
-    ADA: [
-        { symbol: "ADA", name: "Cardano", balance: "0.00" },
-        { symbol: "AGIX", name: "SingularityNET", balance: "0.00" },
-        { symbol: "MIN", name: "Minswap", balance: "0.00" }
-    ],
-    SOL: [
-        { symbol: "SOL", name: "Solana", balance: "0.00" },
-        { symbol: "USDC", name: "USD Coin", balance: "0.00" },
-        { symbol: "USDT", name: "Tether USD", balance: "0.00" },
-        { symbol: "RAY", name: "Raydium", balance: "0.00" },
-        { symbol: "SRM", name: "Serum", balance: "0.00" }
-    ],
-    MATIC: [
-        { symbol: "MATIC", name: "Polygon", balance: "0.00" },
-        { symbol: "USDC", name: "USD Coin", balance: "0.00" },
-        { symbol: "USDT", name: "Tether USD", balance: "0.00" },
-        { symbol: "WETH", name: "Wrapped Ethereum", balance: "0.00" }
-    ],
-    BSC: [
-        { symbol: "BNB", name: "Binance Coin", balance: "0.00" },
-        { symbol: "USDC", name: "USD Coin", balance: "0.00" },
-        { symbol: "USDT", name: "Tether USD", balance: "0.00" },
-        { symbol: "CAKE", name: "PancakeSwap", balance: "0.00" }
-    ]
-}
+// Token lists for different chains - using the new chain support configuration
+const CHAIN_TOKENS = TOKENS_BY_NETWORK
 
 export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterfaceProps) {
     const [activeTab, setActiveTab] = useState('btc-eth')
@@ -155,17 +84,17 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
             setToChain(selectedPair.toChain)
 
             // Set appropriate tokens based on chain type
-            const fromChainConfig = CHAIN_CONFIG[selectedPair.fromChain as keyof typeof CHAIN_CONFIG]
-            const toChainConfig = CHAIN_CONFIG[selectedPair.toChain as keyof typeof CHAIN_CONFIG]
+            const fromNetwork = NETWORKS.find(n => n.id === selectedPair.fromChain.toLowerCase())
+            const toNetwork = NETWORKS.find(n => n.id === selectedPair.toChain.toLowerCase())
 
-            if (fromChainConfig) {
-                const fromTokens = CHAIN_TOKENS[selectedPair.fromChain as keyof typeof CHAIN_TOKENS] || []
-                setFromToken(fromTokens[0] || { symbol: fromChainConfig.nativeToken, name: fromChainConfig.name, balance: "0.00" })
+            if (fromNetwork) {
+                const fromTokens = TOKENS_BY_NETWORK[fromNetwork.id as keyof typeof TOKENS_BY_NETWORK] || []
+                setFromToken(fromTokens[0] || { symbol: fromNetwork.name, name: fromNetwork.name, balance: "0.00" })
             }
 
-            if (toChainConfig) {
-                const toTokens = CHAIN_TOKENS[selectedPair.toChain as keyof typeof CHAIN_TOKENS] || []
-                setToToken(toTokens[0] || { symbol: toChainConfig.nativeToken, name: toChainConfig.name, balance: "0.00" })
+            if (toNetwork) {
+                const toTokens = TOKENS_BY_NETWORK[toNetwork.id as keyof typeof TOKENS_BY_NETWORK] || []
+                setToToken(toTokens[0] || { symbol: toNetwork.name, name: toNetwork.name, balance: "0.00" })
             }
 
             // Clear amounts and quote when changing chains
@@ -184,8 +113,10 @@ export function MultiChainSwapInterface({ onOrderCreated }: MultiChainSwapInterf
             if (!walletInfo) return
 
             // Update token balances based on current chains
-            const fromTokens = CHAIN_TOKENS[fromChain as keyof typeof CHAIN_TOKENS] || []
-            const toTokens = CHAIN_TOKENS[toChain as keyof typeof CHAIN_TOKENS] || []
+            const fromNetwork = NETWORKS.find(n => n.id === fromChain.toLowerCase())
+            const toNetwork = NETWORKS.find(n => n.id === toChain.toLowerCase())
+            const fromTokens = fromNetwork ? TOKENS_BY_NETWORK[fromNetwork.id as keyof typeof TOKENS_BY_NETWORK] || [] : []
+            const toTokens = toNetwork ? TOKENS_BY_NETWORK[toNetwork.id as keyof typeof TOKENS_BY_NETWORK] || [] : []
 
             // Update from token balance
             const fromTokenBalance = walletInfo.tokens.find(t => t.symbol === fromToken.symbol)

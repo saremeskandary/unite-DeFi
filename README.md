@@ -1,14 +1,59 @@
-# Unite DeFi - Bitcoin Atomic Swap Implementation
+# Unite DeFi - Cross-Chain Atomic Swap Protocol
 
-A comprehensive Bitcoin atomic swap implementation with TDD (Test-Driven Development) structure, featuring HTLC (Hash Time-Locked Contract) support and integration with 1inch Fusion+ resolver.
+A decentralized cross-chain atomic swap protocol that enables trustless trading between Ethereum and Bitcoin networks.
 
-## 🚀 Quick Start
+## Features
+
+### Core Functionality
+- **Cross-Chain Atomic Swaps**: Secure, trustless trading between Ethereum and Bitcoin
+- **Partial Fill Support**: Execute large orders across multiple resolvers for better liquidity
+- **Bitcoin Relayer Service**: Automated transaction broadcasting and monitoring
+- **Real-Time Price Feeds**: Live market data from multiple sources
+- **WebSocket Integration**: Real-time updates for orders and prices
+
+### Wallet Integration
+- **Multi-Wallet Support**: MetaMask, WalletConnect, Coinbase Wallet
+- **Persistent Connections**: Wallet connections persist across browser tabs and page refreshes
+- **Automatic State Restoration**: Seamless reconnection when returning to the app
+- **Cross-Tab Synchronization**: Wallet state stays in sync across multiple tabs
+
+### Security Features
+- **Atomic Swap Protocol**: Ensures either both parties receive their assets or neither does
+- **Time-Locked Contracts**: Automatic refund mechanisms for failed swaps
+- **Multi-Signature Support**: Enhanced security for large transactions
+- **Audit-Ready Code**: Comprehensive test coverage and security best practices
+
+## Wallet Connection Persistence
+
+The application now supports persistent wallet connections that work across browser tabs and page refreshes. Here's how it works:
+
+### How It Works
+1. **Automatic State Saving**: When you connect your wallet, the connection state is automatically saved to localStorage
+2. **Cross-Tab Synchronization**: The wallet connection is recognized across all open tabs
+3. **Page Refresh Recovery**: When you refresh the page, your wallet connection is automatically restored
+4. **Security Features**: 
+   - Connection state expires after 24 hours
+   - Automatic cleanup when wallet is disconnected
+   - Graceful error handling for storage issues
+
+### Benefits
+- **Seamless User Experience**: No need to reconnect wallet when switching tabs or refreshing
+- **Improved Workflow**: Start a swap in one tab, monitor in another
+- **Reliable State Management**: Consistent wallet state across the entire application
+
+### Technical Implementation
+- Uses localStorage for persistent storage
+- Automatic state restoration on app initialization
+- Real-time synchronization of wallet events (account changes, chain changes)
+- Error handling for storage failures and network issues
+
+## Getting Started
 
 ### Prerequisites
-
-- Node.js 18+ and pnpm
-- Docker and Docker Compose
-- Git
+- Node.js 18+ 
+- pnpm package manager
+- MetaMask or compatible Web3 wallet
+- Bitcoin testnet wallet (for testing)
 
 ### Installation
 
@@ -20,212 +65,86 @@ cd unite-DeFi
 # Install dependencies
 pnpm install
 
-# Copy environment file
-cp env.test.example .env.test
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
 
-# Start Bitcoin testnet environment
-chmod +x scripts/start-bitcoin-testnet.sh
-./scripts/start-bitcoin-testnet.sh
-
-# Run tests
-pnpm test
+# Start development server
+pnpm dev
 ```
 
-## 🐳 Bitcoin Testnet Environment
-
-This project includes a complete local Bitcoin testnet environment for testing atomic swaps.
-
-### Starting the Environment
-
-```bash
-# Start Bitcoin testnet node and faucet
-./scripts/start-bitcoin-testnet.sh
-
-# Or manually with docker-compose
-docker-compose up -d
-```
-
-### Services
-
-- **Bitcoin Testnet Node**: `http://localhost:18332`
-- **Bitcoin Faucet**: `http://localhost:3001`
-
-### Faucet API
-
-```bash
-# Health check
-curl http://localhost:3001/health
-
-# Get balance
-curl http://localhost:3001/balance
-
-# Send testnet coins
-curl -X POST http://localhost:3001/send \
-  -H "Content-Type: application/json" \
-  -d '{"address": "YOUR_ADDRESS", "amount": 0.001}'
-```
-
-### Stopping the Environment
-
-```bash
-# Stop services
-./scripts/stop-bitcoin-testnet.sh
-
-# Or manually
-docker-compose down
-```
-
-## 🧪 Testing
-
-### Test Structure
-
-```
-tests/
-├── unit/
-│   ├── bitcoin/
-│   │   ├── htlc-script.test.ts      # HTLC script logic tests
-│   │   └── transaction.test.ts      # Transaction building tests
-│   ├── resolver/
-│   │   └── resolver-logic.test.ts   # Resolver profitability tests
-│   └── example.test.ts              # Basic setup verification
-├── integration/
-│   ├── bitcoin/
-│   │   └── network-operations.test.ts # Network interaction tests
-│   └── end-to-end/
-│       └── atomic-swap.test.ts      # Full swap workflow tests
-└── setup.ts                         # Global test configuration
-```
-
-### Running Tests
+### Testing
 
 ```bash
 # Run all tests
 pnpm test
 
-# Run specific test categories
+# Run specific test suites
 pnpm test:unit
 pnpm test:integration
-pnpm test:btc
+pnpm test:e2e
 
-# Run with coverage
+# Run tests with coverage
 pnpm test:coverage
-
-# Watch mode
-pnpm test:watch
 ```
 
-### Test Categories
+## Architecture
 
-1. **Unit Tests**: Core logic testing (HTLC scripts, transactions, resolver)
-2. **Integration Tests**: Network operations and Bitcoin node interaction
-3. **End-to-End Tests**: Complete atomic swap workflows
-4. **Security Tests**: Adversarial scenarios and edge cases
+### Frontend
+- **Next.js 14**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first styling
+- **Shadcn/ui**: Modern component library
+- **Ethers.js**: Ethereum interaction
+- **WebSocket**: Real-time updates
 
-## 📁 Project Structure
+### Backend
+- **Node.js**: Server runtime
+- **Express.js**: API framework
+- **WebSocket Server**: Real-time communication
+- **Bitcoin Core**: Bitcoin network integration
+- **PostgreSQL**: Data persistence
 
-```
-src/
-├── lib/
-│   ├── bitcoin-htlc.ts              # HTLC script generation and validation
-│   ├── bitcoin-transactions.ts      # Transaction building and signing
-│   ├── bitcoin-network.ts           # Network operations and monitoring
-│   ├── resolver-logic.ts            # Profitability calculations and bidding
-│   └── atomic-swap-integration.ts   # End-to-end swap orchestration
-├── components/                      # React components
-├── app/                            # Next.js app directory
-└── styles/                         # CSS and styling
+### Smart Contracts
+- **Solidity**: Ethereum smart contracts
+- **Hardhat**: Development and testing framework
+- **OpenZeppelin**: Security libraries
 
-docker/
-├── bitcoin.conf                    # Bitcoin node configuration
-└── faucet/                        # Bitcoin testnet faucet service
-    ├── index.js
-    ├── package.json
-    └── README.md
+## API Endpoints
 
-scripts/
-├── start-bitcoin-testnet.sh        # Start Bitcoin environment
-└── stop-bitcoin-testnet.sh         # Stop Bitcoin environment
-```
+### Swap Operations
+- `POST /api/swap/quote` - Get swap quote
+- `POST /api/swap/execute` - Execute swap
+- `GET /api/swap/orders/:id` - Get order status
 
-## 🔧 Configuration
+### Wallet Operations
+- `GET /api/wallet/balance` - Get wallet balances
+- `POST /api/wallet/connect` - Connect wallet
+- `POST /api/wallet/disconnect` - Disconnect wallet
 
-### Environment Variables
+### Market Data
+- `GET /api/prices` - Get current prices
+- `GET /api/prices/history` - Get price history
 
-Create a `.env.test` file based on `env.test.example`:
+## Contributing
 
-```bash
-# Bitcoin Testnet
-BITCOIN_NETWORK=testnet
-BITCOIN_RPC_URL=http://localhost:18332
-BITCOIN_RPC_USER=test
-BITCOIN_RPC_PASS=test
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
 
-# Bitcoin Faucet
-BITCOIN_FAUCET_URL=http://localhost:3001
+## License
 
-# Ethereum Testnet
-ETHEREUM_NETWORK=sepolia
-ETHEREUM_RPC_URL=https://sepolia.infura.io/v3/YOUR_KEY
-ETHEREUM_PRIVATE_KEY=your_test_private_key
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-# 1inch API
-INCH_API_KEY=your_1inch_api_key
-INCH_API_URL=https://api.1inch.dev
-```
+## Security
 
-## 🧪 TDD Workflow
+For security concerns, please email security@unitedefi.com or create a private issue.
 
-This project follows Test-Driven Development principles:
+## Support
 
-1. **Write failing tests first** - Tests are already written and failing (expected)
-2. **Implement minimal code** - Replace stub implementations with real functionality
-3. **Refactor while keeping tests green** - Iteratively improve the code
-
-### Current Status
-
-- ✅ **Test structure complete** - All test files created and organized
-- ✅ **Jest configuration** - Properly configured with Next.js integration
-- ✅ **Mock utilities** - Global test utilities for Bitcoin operations
-- ✅ **Docker environment** - Local Bitcoin testnet node and faucet
-- ❌ **Stub implementations** - Need to be replaced with real functionality
-
-### Next Steps
-
-1. Implement real HTLC script generation in `src/lib/bitcoin-htlc.ts`
-2. Implement transaction building in `src/lib/bitcoin-transactions.ts`
-3. Implement network operations in `src/lib/bitcoin-network.ts`
-4. Implement resolver logic in `src/lib/resolver-logic.ts`
-5. Implement end-to-end integration in `src/lib/atomic-swap-integration.ts`
-
-## 🚀 Development
-
-### Adding New Tests
-
-1. Create test file in appropriate directory
-2. Follow existing naming conventions
-3. Use global test utilities from `tests/setup.ts`
-4. Add test to appropriate category in `package.json` scripts
-
-### Running with Real Bitcoin Node
-
-1. Start the Bitcoin testnet environment
-2. Get testnet coins from the faucet
-3. Update tests to use real network operations
-4. Monitor logs with `docker-compose logs -f`
-
-## 📚 Documentation
-
-- [Bitcoin Testnet Faucet](./docker/faucet/README.md)
-- [Testing Plan](./docs/BICOIN_SIDE_TESTING_PLAN.md)
-- [Jest Configuration](./jest.config.ts)
-
-## 🤝 Contributing
-
-1. Follow TDD principles
-2. Write tests for new features
-3. Ensure all tests pass
-4. Update documentation
-
-## 📄 License
-
-MIT License - see LICENSE file for details 
+- Documentation: [docs.unitedefi.com](https://docs.unitedefi.com)
+- Discord: [discord.gg/unitedefi](https://discord.gg/unitedefi)
+- Twitter: [@UniteDeFi](https://twitter.com/UniteDeFi) 

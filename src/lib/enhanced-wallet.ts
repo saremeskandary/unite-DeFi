@@ -30,6 +30,7 @@ export class EnhancedWalletService {
   private signer: ethers.JsonRpcSigner | null = null;
   private currentAddress: string | null = null;
   private currentChainId: number | null = null;
+  private readonly STORAGE_KEY = 'unite-defi-wallet-connection';
 
   // ERC20 Token ABIs
   private erc20Abi = [
@@ -132,11 +133,110 @@ export class EnhancedWalletService {
 
   constructor() {
     this.initializeProvider();
+    // Use a timeout to prevent the restoration from hanging the app
+    setTimeout(() => {
+      this.restoreConnectionState().catch(error => {
+        console.warn('Failed to restore wallet connection state:', error);
+      });
+    }, 0);
   }
 
   private initializeProvider() {
     if (typeof window !== 'undefined' && window.ethereum) {
       this.provider = new ethers.BrowserProvider(window.ethereum);
+    }
+  }
+
+  /**
+   * Save connection state to localStorage
+   */
+  private saveConnectionState(): void {
+    if (typeof window === 'undefined') return;
+
+    const connectionState = {
+      address: this.currentAddress,
+      chainId: this.currentChainId,
+      timestamp: Date.now()
+    };
+
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(connectionState));
+    } catch (error) {
+      console.warn('Failed to save wallet connection state:', error);
+    }
+  }
+
+  /**
+   * Restore connection state from localStorage
+   */
+  private async restoreConnectionState(): Promise<void> {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const savedState = localStorage.getItem(this.STORAGE_KEY);
+      if (!savedState) return;
+
+      const connectionState = JSON.parse(savedState);
+      const { address, chainId, timestamp } = connectionState;
+
+      // Check if the saved state is not too old (24 hours)
+      const isExpired = Date.now() - timestamp > 24 * 60 * 60 * 1000;
+      if (isExpired) {
+        this.clearConnectionState();
+        return;
+      }
+
+      // Check if the wallet is still connected - use a timeout to prevent hanging
+      if (window.ethereum && address) {
+        try {
+          // Set a timeout for the wallet check to prevent hanging
+          const walletCheckPromise = window.ethereum.request({ method: 'eth_accounts' });
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Wallet check timeout')), 3000)
+          );
+
+          const accounts = await Promise.race([walletCheckPromise, timeoutPromise]) as string[];
+          
+          if (accounts && accounts.length > 0 && accounts[0].toLowerCase() === address.toLowerCase()) {
+            // Wallet is still connected, restore the state
+            this.currentAddress = address;
+            this.currentChainId = chainId;
+            
+            // Update the provider and signer asynchronously to avoid blocking
+            if (this.provider) {
+              this.provider.getSigner().then(signer => {
+                this.signer = signer;
+              }).catch(error => {
+                console.warn('Failed to restore signer:', error);
+              });
+            }
+            
+            console.log('Wallet connection restored from localStorage');
+          } else {
+            // Wallet is not connected anymore, clear the state
+            this.clearConnectionState();
+          }
+        } catch (error) {
+          console.warn('Failed to verify wallet connection:', error);
+          this.clearConnectionState();
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to restore wallet connection state:', error);
+      this.clearConnectionState();
+    }
+  }
+
+  /**
+   * Clear connection state from localStorage
+   */
+  private clearConnectionState(): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      localStorage.removeItem(this.STORAGE_KEY);
+    } catch (error) {
+      console.warn('Failed to clear wallet connection state:', error);
     }
   }
 
@@ -167,6 +267,9 @@ export class EnhancedWalletService {
       if (!supportedNetworks.includes(this.currentChainId)) {
         throw new Error(`Unsupported network. Please switch to Ethereum Mainnet, Goerli, Sepolia, or Anvil. Current chain ID: ${this.currentChainId}`);
       }
+
+      // Save connection state
+      this.saveConnectionState();
 
       return await this.getWalletInfo();
     } catch (error) {
@@ -502,6 +605,7 @@ export class EnhancedWalletService {
     this.currentAddress = null;
     this.currentChainId = null;
     this.signer = null;
+    this.clearConnectionState();
   }
 
   /**
@@ -512,6 +616,7 @@ export class EnhancedWalletService {
       window.ethereum.on('accountsChanged', (accounts: string[]) => {
         if (accounts.length > 0) {
           this.currentAddress = accounts[0];
+          this.saveConnectionState();
           callback(accounts[0]);
         } else {
           this.disconnect();
@@ -527,6 +632,7 @@ export class EnhancedWalletService {
     if (typeof window !== 'undefined' && window.ethereum) {
       window.ethereum.on('chainChanged', (chainId: string) => {
         this.currentChainId = parseInt(chainId, 16);
+        this.saveConnectionState();
         callback(this.currentChainId);
       });
     }

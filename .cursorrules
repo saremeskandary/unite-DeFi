@@ -2,3 +2,4 @@
 - use shadcn components for UI
 - don't use mapping like @
 - use tsx for frontend test files
+- don't run dev and tell me to test it manually and alwasy set frontend ports to 3000

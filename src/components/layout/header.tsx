@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -9,6 +10,14 @@ import { WalletConnection } from "@/components/wallet/wallet-connection"
 
 export function Header() {
   const [isConnected, setIsConnected] = useState(false)
+  const pathname = usePathname()
+
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return pathname === "/"
+    }
+    return pathname.startsWith(path)
+  }
 
   return (
     <header className="border-b border-slate-700 bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50">
@@ -29,16 +38,40 @@ export function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-white hover:text-blue-400 transition-colors">
+            <Link
+              href="/"
+              className={`transition-colors ${isActive("/")
+                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                  : "text-slate-400 hover:text-white"
+                }`}
+            >
               Swap
             </Link>
-            <Link href="/orders" className="text-slate-400 hover:text-white transition-colors">
+            <Link
+              href="/orders"
+              className={`transition-colors ${isActive("/orders")
+                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                  : "text-slate-400 hover:text-white"
+                }`}
+            >
               Orders
             </Link>
-            <Link href="/portfolio" className="text-slate-400 hover:text-white transition-colors">
+            <Link
+              href="/portfolio"
+              className={`transition-colors ${isActive("/portfolio")
+                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                  : "text-slate-400 hover:text-white"
+                }`}
+            >
               Portfolio
             </Link>
-            <Link href="/settings" className="text-slate-400 hover:text-white transition-colors">
+            <Link
+              href="/settings"
+              className={`transition-colors ${isActive("/settings")
+                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                  : "text-slate-400 hover:text-white"
+                }`}
+            >
               Settings
             </Link>
           </nav>

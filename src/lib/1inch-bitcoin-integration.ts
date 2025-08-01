@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { BitcoinNetworkOperations } from './blockchains/bitcoin/bitcoin-network-operations';
-import { getTestnetConfig, getChainId } from './testnet-config';
+import { getTestnetConfig, getChainId } from '@/constants';
 
 export interface SwapQuote {
   fromToken: string;

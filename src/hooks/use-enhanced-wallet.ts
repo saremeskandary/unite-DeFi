@@ -31,14 +31,17 @@ export function useEnhancedWallet(): UseEnhancedWalletReturn {
 
   // Initialize wallet state
   useEffect(() => {
-    const initializeWallet = () => {
+    const initializeWallet = async () => {
+      // Add a small delay to allow the enhanced wallet to restore its state
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
       const connected = enhancedWallet.isConnected();
       setIsConnected(connected);
 
       if (connected) {
         setAddress(enhancedWallet.getCurrentAddress());
         setChainId(enhancedWallet.getCurrentChainId());
-        loadWalletInfo();
+        await loadWalletInfo();
       }
     };
 

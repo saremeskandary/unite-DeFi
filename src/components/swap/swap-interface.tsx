@@ -12,20 +12,20 @@ import { TokenSelector } from "./token-selector"
 import { BitcoinAddressInput } from "./bitcoin-address-input"
 import { BitcoinSwapFlowUI } from "./bitcoin-swap-flow-ui"
 import { OrderSummary } from "./order-summary"
-import { ArrowUpDown, Settings, Info } from "lucide-react"
+import { ArrowUpDown, Settings, Info, ChevronDown, Check, Search } from "lucide-react"
 import { enhancedWallet } from "@/lib/enhanced-wallet"
 import { toast } from "sonner"
+import {
+  getDefaultToken,
+  getDefaultNetwork,
+  Token,
+  Network,
+  NETWORKS,
+  TOKENS_DATA
+} from "@/constants"
 
 interface SwapInterfaceProps {
   onOrderCreated: (orderId: string) => void
-}
-
-interface Token {
-  symbol: string
-  name: string
-  balance: string
-  price?: number
-  value?: number
 }
 
 interface SwapQuote {
@@ -50,8 +50,10 @@ interface NetworkFee {
 }
 
 export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
-  const [fromToken, setFromToken] = useState<Token>({ symbol: "USDC", name: "USD Coin", balance: "0.00" })
+  const [fromToken, setFromToken] = useState<Token>(getDefaultToken())
   const [toToken, setToToken] = useState<Token>({ symbol: "BTC", name: "Bitcoin", balance: "0.00" })
+  const [fromNetwork, setFromNetwork] = useState<Network>(getDefaultNetwork())
+  const [toNetwork, setToNetwork] = useState<Network>(NETWORKS.find(n => n.id === 'bitcoin-testnet')!)
   const [fromAmount, setFromAmount] = useState("")
   const [toAmount, setToAmount] = useState("")
   const [bitcoinAddress, setBitcoinAddress] = useState("")
@@ -66,9 +68,19 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
   const [showBitcoinFlow, setShowBitcoinFlow] = useState(false)
 
+  // Token selection state
+  const [isFromTokenSelectorOpen, setIsFromTokenSelectorOpen] = useState(false)
+  const [isToTokenSelectorOpen, setIsToTokenSelectorOpen] = useState(false)
+  const [selectedNetworkFilter, setSelectedNetworkFilter] = useState<string>('all')
+  const [tokenSearch, setTokenSearch] = useState("")
+  const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false)
+
   // Initialize wallet connection and load token balances
   useEffect(() => {
     const initializeWallet = async () => {
+      // Add a small delay to allow the enhanced wallet to restore its state
+      await new Promise(resolve => setTimeout(resolve, 50));
+
       if (enhancedWallet.isConnected()) {
         setWalletConnected(true)
         setWalletAddress(enhancedWallet.getCurrentAddress())
@@ -81,6 +93,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
     // Listen for wallet changes
     enhancedWallet.onAccountChange((address) => {
       setWalletAddress(address)
+      setWalletConnected(true)
       loadTokenBalances()
     })
 
@@ -144,7 +157,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
     setIsQuoteLoading(true)
     try {
       const response = await fetch(
-        `/api/swap/quote?fromToken=${fromToken.symbol}&toToken=${toToken.symbol}&amount=${amount}&fromAddress=${walletAddress}`
+        `/api/swap/quote?fromToken=${fromToken.symbol}&toToken=${toToken.symbol}&amount=${amount}&fromAddress=${walletAddress}&fromNetwork=${fromNetwork.id}&toNetwork=${toNetwork.id}`
       )
 
       if (response.ok) {
@@ -164,14 +177,19 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
     } finally {
       setIsQuoteLoading(false)
     }
-  }, [fromToken.symbol, toToken.symbol, walletAddress])
+  }, [fromToken.symbol, toToken.symbol, walletAddress, fromNetwork.id, toNetwork.id])
 
   const handleSwapTokens = () => {
-    const temp = fromToken
+    const tempToken = fromToken
+    const tempNetwork = fromNetwork
+    const tempAmount = fromAmount
+
     setFromToken(toToken)
-    setToToken(temp)
+    setToToken(tempToken)
+    setFromNetwork(toNetwork)
+    setToNetwork(tempNetwork)
     setFromAmount(toAmount)
-    setToAmount(fromAmount)
+    setToAmount(tempAmount)
     // Clear current quote when swapping tokens
     setCurrentQuote(null)
   }
@@ -216,7 +234,9 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
           fromAmount: fromAmount,
           toAddress: bitcoinAddress || walletAddress,
           slippage: parseFloat(slippage),
-          feePriority: selectedFeePriority
+          feePriority: selectedFeePriority,
+          fromNetwork: fromNetwork.id,
+          toNetwork: toNetwork.id
         })
       })
 
@@ -236,11 +256,263 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
     }
   }
 
-  const isValidSwap = fromAmount && toAmount && (bitcoinAddress || walletAddress) &&
-    Number.parseFloat(fromAmount) > 0 && walletConnected && currentQuote
+  // Filter tokens based on search and network
+  const filteredTokens = TOKENS_DATA.filter(token => {
+    const matchesSearch = token.symbol.toLowerCase().includes(tokenSearch.toLowerCase()) ||
+      token.name.toLowerCase().includes(tokenSearch.toLowerCase())
+    const matchesNetwork = selectedNetworkFilter === 'all' ||
+      (token.networks && token.networks.includes(selectedNetworkFilter))
+    return matchesSearch && matchesNetwork
+  })
+
+  // Render network icon
+  const renderNetworkIcon = (networkId: string, size: number = 20) => {
+    const network = NETWORKS.find(n => n.id === networkId)
+    if (!network) return null
+
+    return (
+      <div
+        className="rounded-full flex items-center justify-center"
+        style={{
+          width: size,
+          height: size,
+          backgroundColor: network.icon === 'eth' ? '#627EEA' :
+            network.icon === 'btc' ? '#F7931A' :
+              network.icon === 'ton' ? '#0088CC' : '#FF0000',
+          fontSize: size * 0.6
+        }}
+      >
+        {network.icon.toUpperCase().slice(0, 2)}
+      </div>
+    )
+  }
+
+  // Token Selector Component
+  const TokenSelectorWithNetwork = ({
+    isOpen,
+    onClose,
+    onSelect,
+    currentToken,
+    currentNetwork,
+    type
+  }: {
+    isOpen: boolean
+    onClose: () => void
+    onSelect: (token: Token, network: Network) => void
+    currentToken: Token
+    currentNetwork: Network
+    type: 'from' | 'to'
+  }) => {
+    if (!isOpen) return null
+
+    return (
+      <Dialog open={isOpen} onOpenChange={(open) => {
+        if (!open) {
+          onClose()
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select {type === 'from' ? 'You Pay' : 'You Receive'}</DialogTitle>
+          </DialogHeader>
+
+          {/* Network Selection */}
+          <div className="mb-4">
+            <div className="relative">
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => setIsNetworkDropdownOpen(!isNetworkDropdownOpen)}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">N</span>
+                  </div>
+                  <span>{selectedNetworkFilter === 'all' ? 'All Networks' : NETWORKS.find(n => n.id === selectedNetworkFilter)?.name}</span>
+                </div>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isNetworkDropdownOpen ? 'rotate-180' : ''}`} />
+              </Button>
+
+              {/* Network Dropdown */}
+              {isNetworkDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className="p-2">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setSelectedNetworkFilter('all')
+                        setIsNetworkDropdownOpen(false)
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">N</span>
+                        </div>
+                        <span>All Networks</span>
+                        {selectedNetworkFilter === 'all' && <Check className="w-4 h-4 ml-auto" />}
+                      </div>
+                    </Button>
+                    {NETWORKS.map((network) => (
+                      <Button
+                        key={network.id}
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          setSelectedNetworkFilter(network.id)
+                          setIsNetworkDropdownOpen(false)
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          {renderNetworkIcon(network.id, 16)}
+                          <span>{network.name}</span>
+                          {selectedNetworkFilter === network.id && <Check className="w-4 h-4 ml-auto" />}
+                        </div>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Search */}
+          <div className="relative mb-4">
+            <Input
+              placeholder="Search tokens..."
+              value={tokenSearch}
+              onChange={(e) => setTokenSearch(e.target.value)}
+              className="pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          </div>
+
+          {/* Token List */}
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {filteredTokens.map((token) => (
+              <div key={token.symbol}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between p-3 h-auto"
+                  onClick={() => {
+                    const defaultNetwork = NETWORKS.find(n => token.networks?.includes(n.id)) || NETWORKS[0]
+                    onSelect(token, defaultNetwork)
+                    onClose()
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      {token.symbol.slice(0, 2)}
+                    </div>
+                    <div className="text-left">
+                      <div className="font-medium">{token.symbol}</div>
+                      <div className="text-sm text-muted-foreground">{token.name}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {token.networkCount && token.networkCount > 1 && (
+                      <Badge variant="secondary" className="text-xs">
+                        {token.networkCount}
+                      </Badge>
+                    )}
+                    <div className="text-right">
+                      <div className="text-sm">{token.balance}</div>
+                      <div className="text-xs text-muted-foreground">
+                        ${(token as any).value ? (token as any).value.toFixed(2) : '0.00'}
+                      </div>
+                    </div>
+                  </div>
+                </Button>
+
+                {/* Show networks if token has multiple */}
+                {token.networks && token.networks.length > 1 && (
+                  <div className="ml-12 mb-2 flex flex-wrap gap-1">
+                    {token.networks.map(networkId => {
+                      const network = NETWORKS.find(n => n.id === networkId)
+                      if (!network) return null
+                      return (
+                        <Badge
+                          key={networkId}
+                          variant="outline"
+                          className="text-xs cursor-pointer hover:bg-primary/10"
+                          onClick={() => {
+                            onSelect(token, network)
+                            onClose()
+                          }}
+                        >
+                          {renderNetworkIcon(networkId, 12)}
+                          <span className="ml-1">{network.name}</span>
+                        </Badge>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
 
   // Check if this is a Bitcoin swap
   const isBitcoinSwap = fromToken.symbol === "BTC" || toToken.symbol === "BTC"
+
+  // Check if this is a cross-chain swap
+  const isCrossChainSwap = fromNetwork.id !== toNetwork.id
+
+  // Check if Bitcoin is the "from" token (requires special handling)
+  const isBitcoinFrom = fromToken.symbol === "BTC"
+
+  // Check if Bitcoin is the "to" token (requires Bitcoin address)
+  const isBitcoinTo = toToken.symbol === "BTC"
+
+  // Bitcoin address for "from" token (when swapping from Bitcoin)
+  const [fromBitcoinAddress, setFromBitcoinAddress] = useState("")
+  const [isFromBitcoinAddressValid, setIsFromBitcoinAddressValid] = useState<boolean | null>(null)
+
+  // Validate Bitcoin address
+  const validateBitcoinAddress = (address: string): boolean => {
+    if (!address) return false
+
+    const patterns = [
+      /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/, // Legacy
+      /^3[a-km-zA-HJ-NP-Z1-9]{25,34}$/, // P2SH
+      /^bc1[a-z0-9]{39,59}$/, // Bech32
+      /^bc1[a-z0-9]{25,39}$/, // Bech32m
+    ]
+
+    return patterns.some(pattern => pattern.test(address))
+  }
+
+  // Handle Bitcoin address validation for "from" token
+  useEffect(() => {
+    if (isBitcoinFrom && fromBitcoinAddress) {
+      setIsFromBitcoinAddressValid(validateBitcoinAddress(fromBitcoinAddress))
+    } else if (!isBitcoinFrom) {
+      setFromBitcoinAddress("")
+      setIsFromBitcoinAddressValid(null)
+    }
+  }, [fromBitcoinAddress, isBitcoinFrom])
+
+  // Handle Bitcoin address validation for "to" token
+  useEffect(() => {
+    if (isBitcoinTo && bitcoinAddress) {
+      // This is already handled by the BitcoinAddressInput component
+    } else if (!isBitcoinTo) {
+      setBitcoinAddress("")
+    }
+  }, [bitcoinAddress, isBitcoinTo])
+
+  // Update validation logic to handle Bitcoin as "from" token
+  const isValidSwap = fromAmount && toAmount &&
+    Number.parseFloat(fromAmount) > 0 &&
+    walletConnected &&
+    currentQuote &&
+    // For Bitcoin as "from" token, require valid Bitcoin address
+    (!isBitcoinFrom || (fromBitcoinAddress && isFromBitcoinAddressValid === true)) &&
+    // For Bitcoin as "to" token, require valid Bitcoin address
+    (!isBitcoinTo || (bitcoinAddress && validateBitcoinAddress(bitcoinAddress)))
 
   return (
     <Card className="bg-card/50 border-border backdrop-blur-sm w-full max-w-md mx-auto">
@@ -248,6 +520,11 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-foreground text-lg sm:text-xl">Swap</CardTitle>
           <div className="flex items-center space-x-2">
+            {isCrossChainSwap && (
+              <Badge variant="outline" className="text-xs bg-blue-500/20 text-blue-500 border-blue-500/30">
+                Cross-Chain
+              </Badge>
+            )}
             <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30 text-xs sm:text-sm">
               Best Rate
             </Badge>
@@ -326,23 +603,65 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
               className="bg-muted/50 border-border text-foreground text-lg sm:text-xl h-14 sm:h-16 pr-28 sm:pr-32"
             />
             <div className="absolute right-2 top-2">
-              <TokenSelector token={fromToken} onSelect={setFromToken} type="from" />
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 p-2 h-auto"
+                onClick={() => setIsFromTokenSelectorOpen(true)}
+              >
+                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  {fromToken.symbol.slice(0, 2)}
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-sm">{fromToken.symbol}</div>
+                  <div className="text-xs text-muted-foreground">{fromNetwork.name}</div>
+                </div>
+                <ChevronDown className="w-4 h-4" />
+              </Button>
             </div>
           </div>
           <div className="flex justify-between text-xs sm:text-sm">
             <span className="text-muted-foreground">
               Balance: {fromToken.balance} {fromToken.symbol}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-primary hover:text-primary/80 h-auto p-0 text-xs"
-              onClick={handleMaxAmount}
-            >
-              Max
-            </Button>
+            {!isBitcoinFrom && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:text-primary/80 h-auto p-0 text-xs"
+                onClick={handleMaxAmount}
+              >
+                Max
+              </Button>
+            )}
           </div>
         </div>
+
+        {/* Bitcoin Address Input for "From" Token */}
+        {isBitcoinFrom && (
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-sm">Bitcoin Source Address</Label>
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Enter your Bitcoin address"
+                value={fromBitcoinAddress}
+                onChange={(e) => setFromBitcoinAddress(e.target.value)}
+                className={`bg-muted/50 border-border text-foreground h-12 ${isFromBitcoinAddressValid === true ? 'border-green-500' :
+                  isFromBitcoinAddressValid === false ? 'border-red-500' : ''
+                  }`}
+              />
+            </div>
+            {isFromBitcoinAddressValid === false && (
+              <p className="text-xs text-red-500">Please enter a valid Bitcoin address</p>
+            )}
+            {isFromBitcoinAddressValid === true && (
+              <p className="text-xs text-green-500">✓ Valid Bitcoin address</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              This is the Bitcoin address where you'll send your BTC from. The swap will be initiated once the funds are received.
+            </p>
+          </div>
+        )}
 
         {/* Swap Button */}
         <div className="flex justify-center">
@@ -368,7 +687,20 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
               className="bg-muted/50 border-border text-foreground text-lg sm:text-xl h-14 sm:h-16 pr-28 sm:pr-32"
             />
             <div className="absolute right-2 top-2">
-              <TokenSelector token={toToken} onSelect={setToToken} type="to" />
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 p-2 h-auto"
+                onClick={() => setIsToTokenSelectorOpen(true)}
+              >
+                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  {toToken.symbol.slice(0, 2)}
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-sm">{toToken.symbol}</div>
+                  <div className="text-xs text-muted-foreground">{toNetwork.name}</div>
+                </div>
+                <ChevronDown className="w-4 h-4" />
+              </Button>
             </div>
           </div>
           <div className="text-xs sm:text-sm text-muted-foreground">
@@ -376,8 +708,16 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
           </div>
         </div>
 
-        {/* Bitcoin Address Input */}
-        {toToken.symbol === "BTC" && <BitcoinAddressInput value={bitcoinAddress} onChange={setBitcoinAddress} />}
+        {/* Bitcoin Address Input for "To" Token */}
+        {isBitcoinTo && (
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-sm">Bitcoin Destination Address</Label>
+            <BitcoinAddressInput value={bitcoinAddress} onChange={setBitcoinAddress} />
+            <p className="text-xs text-muted-foreground">
+              This is where your Bitcoin will be sent after the swap is completed.
+            </p>
+          </div>
+        )}
 
         {/* Price Info */}
         {currentQuote && (
@@ -408,6 +748,14 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
               <span className="text-muted-foreground">Source</span>
               <span className="text-foreground">{currentQuote.source}</span>
             </div>
+            {isCrossChainSwap && (
+              <div className="flex justify-between text-xs sm:text-sm">
+                <span className="text-muted-foreground">Route</span>
+                <span className="text-foreground text-right">
+                  {fromNetwork.name} → {toNetwork.name}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -436,7 +784,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
           ) : !walletConnected ? (
             "Connect Wallet to Swap"
           ) : isBitcoinSwap ? (
-            "Start Bitcoin Swap"
+            isBitcoinFrom ? "Start Bitcoin to ERC20 Swap" : "Start ERC20 to Bitcoin Swap"
           ) : (
             "Create Swap Order"
           )}
@@ -452,6 +800,31 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
         </div>
       </CardContent>
 
+      {/* Token Selectors */}
+      <TokenSelectorWithNetwork
+        isOpen={isFromTokenSelectorOpen}
+        onClose={() => setIsFromTokenSelectorOpen(false)}
+        onSelect={(token, network) => {
+          setFromToken(token)
+          setFromNetwork(network)
+        }}
+        currentToken={fromToken}
+        currentNetwork={fromNetwork}
+        type="from"
+      />
+
+      <TokenSelectorWithNetwork
+        isOpen={isToTokenSelectorOpen}
+        onClose={() => setIsToTokenSelectorOpen(false)}
+        onSelect={(token, network) => {
+          setToToken(token)
+          setToNetwork(network)
+        }}
+        currentToken={toToken}
+        currentNetwork={toNetwork}
+        type="to"
+      />
+
       {/* Bitcoin Swap Flow Dialog */}
       <Dialog open={showBitcoinFlow} onOpenChange={setShowBitcoinFlow}>
         <DialogContent className="bg-card border-border w-[95vw] max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
@@ -464,6 +837,8 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
             fromAmount={fromAmount}
             toAmount={toAmount}
             userEthereumAddress={walletAddress || ''}
+            fromBitcoinAddress={isBitcoinFrom ? fromBitcoinAddress : ''}
+            toBitcoinAddress={isBitcoinTo ? bitcoinAddress : ''}
             onSwapComplete={(result) => {
               if (result.success && result.orderHash) {
                 onOrderCreated(result.orderHash)

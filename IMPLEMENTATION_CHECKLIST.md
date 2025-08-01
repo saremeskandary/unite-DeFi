@@ -173,7 +173,7 @@
 
 **Priority**: 🟡 **MEDIUM** (Production readiness)
 
-#### 4.1 Mainnet Configuration (`src/lib/testnet-config.ts`) ✅ **COMPLETED**
+#### 4.1 Mainnet Configuration (`src/constants/testnet-config.tsx`) ✅ **COMPLETED**
 
 - [x] **MAINNET-01**: Mainnet network setup
 

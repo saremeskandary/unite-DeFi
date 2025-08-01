@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
     Copy,
     ExternalLink,
@@ -16,7 +17,8 @@ import {
     Clock,
     Bitcoin,
     ArrowRight,
-    Info
+    Info,
+    Code
 } from "lucide-react"
 import { toast } from "sonner"
 import { BitcoinSwapFlow, BitcoinSwapFlowParams, BitcoinSwapFlowResult } from "@/lib/blockchains/bitcoin/bitcoin-swap-flow"
@@ -29,6 +31,8 @@ interface BitcoinSwapFlowUIProps {
     fromAmount: string
     toAmount: string
     userEthereumAddress: string
+    fromBitcoinAddress?: string
+    toBitcoinAddress?: string
     onSwapComplete: (result: BitcoinSwapFlowResult) => void
 }
 
@@ -38,6 +42,8 @@ export function BitcoinSwapFlowUI({
     fromAmount,
     toAmount,
     userEthereumAddress,
+    fromBitcoinAddress = "",
+    toBitcoinAddress = "",
     onSwapComplete
 }: BitcoinSwapFlowUIProps) {
     const [bitcoinAddress, setBitcoinAddress] = useState("")
@@ -67,6 +73,15 @@ export function BitcoinSwapFlowUI({
             setSwapDirection('erc20-to-btc')
         }
     }, [fromToken, toToken])
+
+    // Use passed Bitcoin addresses based on swap direction
+    useEffect(() => {
+        if (swapDirection === 'btc-to-erc20') {
+            setBitcoinAddress(fromBitcoinAddress)
+        } else {
+            setBitcoinAddress(toBitcoinAddress)
+        }
+    }, [fromBitcoinAddress, toBitcoinAddress, swapDirection])
 
     // Validate Bitcoin address
     useEffect(() => {
@@ -106,7 +121,7 @@ export function BitcoinSwapFlowUI({
                 toToken: toToken as 'BTC' | 'ERC20',
                 fromAmount,
                 toAmount,
-                userBitcoinAddress: bitcoinAddress,
+                userBitcoinAddress: swapDirection === 'btc-to-erc20' ? fromBitcoinAddress : toBitcoinAddress,
                 userEthereumAddress
             }
 

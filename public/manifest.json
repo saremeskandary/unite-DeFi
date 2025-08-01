@@ -1,0 +1,27 @@
+{
+  "name": "FusionSwap - Cross-Chain Bitcoin Swaps",
+  "short_name": "FusionSwap",
+  "description": "Seamlessly swap between Bitcoin and ERC20 tokens using atomic swaps powered by 1inch Fusion+",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/Unite-Defi-favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Unite-Defi-favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "utilities"],
+  "lang": "en",
+  "dir": "ltr"
+} 

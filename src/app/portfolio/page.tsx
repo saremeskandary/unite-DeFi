@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Header } from "@/components/layout/header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, TrendingDown, DollarSign, Activity, BarChart3, PieChart } from "lucide-react"
@@ -88,8 +87,6 @@ export default function PortfolioPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <Header />
-
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Page Header */}
@@ -165,9 +162,8 @@ export default function PortfolioPage() {
                     </div>
                   </div>
                   <div
-                    className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      portfolio.profitLoss >= 0 ? "bg-green-500/20" : "bg-red-500/20"
-                    }`}
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center ${portfolio.profitLoss >= 0 ? "bg-green-500/20" : "bg-red-500/20"
+                      }`}
                   >
                     {portfolio.profitLoss >= 0 ? (
                       <TrendingUp className="w-6 h-6 text-green-400" />
@@ -204,9 +200,8 @@ export default function PortfolioPage() {
                     <div className="text-right">
                       <div className="text-white font-medium">{formatCurrency(token.value)}</div>
                       <div
-                        className={`text-sm flex items-center ${
-                          token.change24h >= 0 ? "text-green-400" : "text-red-400"
-                        }`}
+                        className={`text-sm flex items-center ${token.change24h >= 0 ? "text-green-400" : "text-red-400"
+                          }`}
                       >
                         {token.change24h >= 0 ? (
                           <TrendingUp className="w-3 h-3 mr-1" />
@@ -235,9 +230,8 @@ export default function PortfolioPage() {
                   <div key={index} className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          activity.type === "swap" ? "bg-blue-500/20" : "bg-green-500/20"
-                        }`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.type === "swap" ? "bg-blue-500/20" : "bg-green-500/20"
+                          }`}
                       >
                         {activity.type === "swap" ? (
                           <Activity
