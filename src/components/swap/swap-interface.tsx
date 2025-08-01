@@ -462,7 +462,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
 
   // Get swap quote when amount changes
   const getSwapQuote = useCallback(async (amount: string) => {
-    if (!amount || parseFloat(amount) <= 0 || !walletAddress) {
+    if (!amount || parseFloat(amount) <= 0 || !walletAddress || !walletConnected) {
       setToAmount("")
       setCurrentQuote(null)
       return
@@ -470,8 +470,42 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
 
     setIsQuoteLoading(true)
     try {
+      // For cross-chain swaps, we need to handle them differently
+      // For now, we'll use the source chain's chainId and handle cross-chain logic separately
+      const chainId = fromNetwork.chainId || 11155111 // Default to Ethereum testnet
+
+      // Check if this is a cross-chain swap
+      const isCrossChain = fromNetwork.id !== toNetwork.id
+
+      if (isCrossChain) {
+        // For cross-chain swaps, we'll use a mock quote for now
+        // In a real implementation, this would call a cross-chain quote service
+        const mockRate = 0.0001 // Mock rate for BTC to ETH
+        const toAmount = (parseFloat(amount) * mockRate).toFixed(8)
+
+        setCurrentQuote({
+          fromToken: fromToken.symbol,
+          toToken: toToken.symbol,
+          fromAmount: amount,
+          toAmount: toAmount,
+          rate: mockRate,
+          priceImpact: 0.5,
+          gasEstimate: "21000",
+          gasCost: 0.001,
+          source: "Cross-Chain Bridge"
+        })
+        setToAmount(toAmount)
+        setNetworkFees({
+          slow: { gasPrice: 20, gasLimit: 21000, totalFee: 0.42, feeInUSD: 0.84, priority: 'slow', estimatedTime: '5-10 minutes' },
+          standard: { gasPrice: 25, gasLimit: 21000, totalFee: 0.525, feeInUSD: 1.05, priority: 'standard', estimatedTime: '2-5 minutes' },
+          fast: { gasPrice: 30, gasLimit: 21000, totalFee: 0.63, feeInUSD: 1.26, priority: 'fast', estimatedTime: '30 seconds - 2 minutes' }
+        })
+        return
+      }
+
+      // For same-chain swaps, use the regular API
       const response = await fetch(
-        `/api/swap/quote?fromToken=${fromToken.symbol}&toToken=${toToken.symbol}&amount=${amount}&fromAddress=${walletAddress}&fromNetwork=${fromNetwork.id}&toNetwork=${toNetwork.id}`
+        `/api/swap/quote?fromToken=${fromToken.symbol}&toToken=${toToken.symbol}&amount=${amount}&fromAddress=${walletAddress}&chainId=${chainId}&slippage=${slippage}`
       )
 
       if (response.ok) {
@@ -480,7 +514,9 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
         setToAmount(data.quote.toAmount)
         setNetworkFees(data.fees)
       } else {
-        console.error('Failed to get swap quote')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Failed to get swap quote:', errorData)
+        toast.error(errorData.error || 'Failed to get swap quote. Please try again.')
         setToAmount("")
         setCurrentQuote(null)
       }
@@ -491,7 +527,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
     } finally {
       setIsQuoteLoading(false)
     }
-  }, [fromToken.symbol, toToken.symbol, walletAddress, fromNetwork.id, toNetwork.id])
+  }, [fromToken.symbol, toToken.symbol, walletAddress, walletConnected, fromNetwork.chainId, toNetwork.id, slippage])
 
   const handleSwapTokens = () => {
     const tempToken = fromToken
