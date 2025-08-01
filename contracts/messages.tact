@@ -1,35 +1,96 @@
 import "./states.tact";
 
-
-
+// Cross-chain order messages
 message(0xf512f7df) LockJetton {
     orderConfig: OrderConfig;
     jetton: Cell;
     customPayload: Cell?;
-    
 }
 
+message(0x7362d09c) CreateOrder {
+    orderConfig: Order;
+    jetton: Cell;
+    customPayload: Cell?;
+}
+
+// Bi-directional swap messages
+message(0x8b341822) CreateEVMToTONOrder {
+    orderConfig: OrderConfig;
+    evmContractAddress: Address;
+    customPayload: Cell?;
+}
+
+message(0x62239978) CreateTONToEVMOrder {
+    orderConfig: OrderConfig;
+    targetChainId: Int as uint32;
+    customPayload: Cell?;
+}
+
+// Partial fill messages
+message(0x4ef5cb26) PartialFill {
+    orderHash: Int as uint256;
+    secret: Int as uint256;
+    fillAmount: Int as uint64;
+    resolver: Address;
+    customPayload: Cell?;
+}
+
+message(0x8b341823) CompletePartialFill {
+    orderHash: Int as uint256;
+    secret: Int as uint256;
+    customPayload: Cell?;
+}
+
+// Escrow factory messages
+message(0x595f07bc) DeployEscrow {
+    chainId: Int as uint32;
+    targetAddress: Address;
+    customPayload: Cell?;
+}
+
+message(0x7bdd97de) EscrowDeployed {
+    chainId: Int as uint32;
+    contractAddress: Address;
+    success: Bool;
+    customPayload: Cell?;
+}
+
+// Relayer/Resolver messages
+message(0x7362d09e) RegisterRelayer {
+    relayer: Address;
+    customPayload: Cell?;
+}
+
+message(0x7362d09f) UpdateRelayerStats {
+    relayer: Address;
+    success: Bool;
+    customPayload: Cell?;
+}
+
+// Fund management messages
 message(0x50635fd2) GetFund {
     secret: Int as uint256;
     hash: Int as uint256;
     customPayload: Cell?;
-    
 }
+
 message(0xe49e1dcb) Refund {
     hash: Int as uint256;
     customPayload: Cell?;
-    
 }
 
+message(0x7362d09d) RefundOrder {
+    hash: Int as uint256;
+    customPayload: Cell?;
+}
 
-
+// Whitelist management
 message(0xa985fdf8) SetWhiteList {
-    
     resolver: Address;
-    whitelistStatus:Bool;
+    whitelistStatus: Bool;
 }
 
-
+// Jetton notification with action
 message(0x7362d09c) JettonNotifyWithActionRequest {
     queryId: Int as uint64;
     amount: Int as coins;
@@ -38,7 +99,7 @@ message(0x7362d09c) JettonNotifyWithActionRequest {
     actionPayload: Cell; // Obligatory ref
 }
 
-message(0x2fcb26a2) GetWalletAddress  {
+message(0x2fcb26a2) GetWalletAddress {
     queryId: Int;
     owner: Address;
 }

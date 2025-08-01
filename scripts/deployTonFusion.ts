@@ -3,7 +3,7 @@ import { TonFusion } from '../build/TonFusion/TonFusion_TonFusion';
 import { NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {
-    const tonFusion = provider.open(await TonFusion.fromInit(BigInt(Math.floor(Math.random() * 10000)), 0n));
+    const tonFusion = provider.open(await TonFusion.fromInit());
 
     await tonFusion.send(
         provider.sender(),
@@ -15,5 +15,7 @@ export async function run(provider: NetworkProvider) {
 
     await provider.waitForDeploy(tonFusion.address);
 
-    console.log('ID', await tonFusion.getId());
+    console.log('TonFusion deployed successfully!');
+    console.log('Contract address:', tonFusion.address.toString());
+    console.log('Owner:', provider.sender().address?.toString());
 }

@@ -1,0 +1,1670 @@
+#pragma version =0.4.6;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+;; TonFusion_TonFusion.headers.fc
+;;
+;; Header files for TonFusion
+;; NOTE: declarations are sorted for optimal order
+;;
+
+;; __tact_store_address_opt
+builder __tact_store_address_opt(builder b, slice address) inline;
+
+;; __tact_not_null
+forall X -> X __tact_not_null(X x) impure inline;
+
+;; __tact_context_get
+(int, slice, int, slice) __tact_context_get() inline;
+
+;; __tact_context_get_sender
+slice __tact_context_get_sender() inline;
+
+;; __tact_int_eq_nullable_left
+int __tact_int_eq_nullable_left(int a, int b) inline;
+
+;; __tact_dict_get_slice_slice
+slice __tact_dict_get_slice_slice(cell d, int kl, slice k) inline;
+
+;; __tact_dict_set_slice_slice
+(cell, ()) __tact_dict_set_slice_slice(cell d, int kl, slice k, slice v) inline;
+
+;; __tact_dict_get_slice_int
+int __tact_dict_get_slice_int(cell d, int kl, slice k, int vl) inline;
+
+;; __tact_dict_set_slice_int
+(cell, ()) __tact_dict_set_slice_int(cell d, int kl, slice k, int v, int vl) inline;
+
+;; __tact_dict_get_slice_cell
+cell __tact_dict_get_slice_cell(cell d, int kl, slice k) inline;
+
+;; __tact_dict_set_slice_cell
+(cell, ()) __tact_dict_set_slice_cell(cell d, int kl, slice k, cell v) inline;
+
+;; __tact_dict_get_uint_uint
+int __tact_dict_get_uint_uint(cell d, int kl, int k, int vl) inline;
+
+;; __tact_dict_set_uint_uint
+(cell, ()) __tact_dict_set_uint_uint(cell d, int kl, int k, int v, int vl) inline;
+
+;; __tact_dict_get_uint_cell
+cell __tact_dict_get_uint_cell(cell d, int kl, int k) inline;
+
+;; __tact_dict_set_uint_cell
+(cell, ()) __tact_dict_set_uint_cell(cell d, int kl, int k, cell v) inline;
+
+;; $DeployOk$_store
+builder $DeployOk$_store(builder build_0, (int) v) inline;
+
+;; $DeployOk$_store_cell
+cell $DeployOk$_store_cell((int) v, builder b) inline;
+
+;; $OrderConfig$_store
+builder $OrderConfig$_store(builder build_0, (int, slice, slice, slice, int, int, int, int, cell, int, int) v) inline_ref;
+
+;; $OrderConfig$_store_cell
+cell $OrderConfig$_store_cell((int, slice, slice, slice, int, int, int, int, cell, int, int) v, builder b) inline;
+
+;; $OrderConfig$_load
+(slice, ((int, slice, slice, slice, int, int, int, int, cell, int, int))) $OrderConfig$_load(slice sc_0) inline_ref;
+
+;; $OrderConfig$_as_optional
+tuple $OrderConfig$_as_optional((int, slice, slice, slice, int, int, int, int, cell, int, int) v) inline;
+
+;; $OrderConfig$_load_opt
+tuple $OrderConfig$_load_opt(cell cl) inline;
+
+;; $LockJetton$_load
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell))) $LockJetton$_load(slice sc_0) impure inline;
+
+;; $LockJetton$_load_not_mut
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell)) $LockJetton$_load_not_mut(slice sc_0) inline;
+
+;; $Order$_store
+builder $Order$_store(builder build_0, (int, slice, slice, int, int, int, int, cell, int, int) v) inline;
+
+;; $Order$_store_cell
+cell $Order$_store_cell((int, slice, slice, int, int, int, int, cell, int, int) v, builder b) inline;
+
+;; $Order$_load
+(slice, ((int, slice, slice, int, int, int, int, cell, int, int))) $Order$_load(slice sc_0) inline;
+
+;; $Order$_as_optional
+tuple $Order$_as_optional((int, slice, slice, int, int, int, int, cell, int, int) v) inline;
+
+;; $Order$_load_opt
+tuple $Order$_load_opt(cell cl) inline;
+
+;; $CreateOrder$_load
+(slice, (((int, slice, slice, int, int, int, int, cell, int, int), cell, cell))) $CreateOrder$_load(slice sc_0) impure inline;
+
+;; $CreateOrder$_load_not_mut
+(((int, slice, slice, int, int, int, int, cell, int, int), cell, cell)) $CreateOrder$_load_not_mut(slice sc_0) inline;
+
+;; $CreateEVMToTONOrder$_load
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), slice, cell))) $CreateEVMToTONOrder$_load(slice sc_0) impure inline;
+
+;; $CreateEVMToTONOrder$_load_not_mut
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), slice, cell)) $CreateEVMToTONOrder$_load_not_mut(slice sc_0) inline;
+
+;; $CreateTONToEVMOrder$_load
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), int, cell))) $CreateTONToEVMOrder$_load(slice sc_0) impure inline;
+
+;; $CreateTONToEVMOrder$_load_not_mut
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), int, cell)) $CreateTONToEVMOrder$_load_not_mut(slice sc_0) inline;
+
+;; $EscrowContract$_store
+builder $EscrowContract$_store(builder build_0, (int, slice, int, int) v) inline;
+
+;; $EscrowContract$_store_cell
+cell $EscrowContract$_store_cell((int, slice, int, int) v, builder b) inline;
+
+;; $RelayerData$_store
+builder $RelayerData$_store(builder build_0, (slice, int, int, int) v) inline;
+
+;; $RelayerData$_store_cell
+cell $RelayerData$_store_cell((slice, int, int, int) v, builder b) inline;
+
+;; $RelayerData$_load
+(slice, ((slice, int, int, int))) $RelayerData$_load(slice sc_0) inline;
+
+;; $RelayerData$_as_optional
+tuple $RelayerData$_as_optional((slice, int, int, int) v) inline;
+
+;; $RelayerData$_load_opt
+tuple $RelayerData$_load_opt(cell cl) inline;
+
+;; $JettonWalletData$_store
+builder $JettonWalletData$_store(builder build_0, (int, slice, slice, cell) v) inline;
+
+;; $JettonWalletData$_store_cell
+cell $JettonWalletData$_store_cell((int, slice, slice, cell) v, builder b) inline;
+
+;; $SendViaJettonTransfer$_store
+builder $SendViaJettonTransfer$_store(builder build_0, (int, int, slice, slice, cell, int, slice) v) inline;
+
+;; $SendViaJettonTransfer$_store_cell
+cell $SendViaJettonTransfer$_store_cell((int, int, slice, slice, cell, int, slice) v, builder b) inline;
+
+;; $TonFusion$_store
+builder $TonFusion$_store(builder build_0, (slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) v) inline;
+
+;; $TonFusion$_load
+(slice, ((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int))) $TonFusion$_load(slice sc_0) inline;
+
+;; $Context$_get_value
+_ $Context$_get_value((int, slice, int, slice) v) inline;
+
+;; $OrderConfig$_not_null
+((int, slice, slice, slice, int, int, int, int, cell, int, int)) $OrderConfig$_not_null(tuple v) inline;
+
+;; $Order$_not_null
+((int, slice, slice, int, int, int, int, cell, int, int)) $Order$_not_null(tuple v) inline;
+
+;; $RelayerData$_get_address
+_ $RelayerData$_get_address((slice, int, int, int) v) inline;
+
+;; $RelayerData$_get_whitelisted
+_ $RelayerData$_get_whitelisted((slice, int, int, int) v) inline;
+
+;; $RelayerData$_get_totalResolves
+_ $RelayerData$_get_totalResolves((slice, int, int, int) v) inline;
+
+;; $RelayerData$_get_successRate
+_ $RelayerData$_get_successRate((slice, int, int, int) v) inline;
+
+;; $RelayerData$_not_null
+((slice, int, int, int)) $RelayerData$_not_null(tuple v) inline;
+
+;; $TonFusion$_contract_init
+(slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $TonFusion$_contract_init() impure inline;
+
+;; $TonFusion$_contract_load
+(slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $TonFusion$_contract_load() impure inline;
+
+;; $TonFusion$_contract_store
+() $TonFusion$_contract_store((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) v) impure inline;
+
+;; $Cell$_fun_asSlice
+slice $Cell$_fun_asSlice(cell $self) impure inline;
+
+;; $global_newAddress
+slice $global_newAddress(int $chain, int $hash) impure inline;
+
+;; $global_contractAddressExt
+slice $global_contractAddressExt(int $chain, cell $code, cell $data) impure inline;
+
+;; $global_contractAddress
+slice $global_contractAddress((cell, cell) $s) impure inline;
+
+;; $JettonWalletData$_constructor_balance_ownerAddress_jettonMasterAddress_jettonWalletCode
+((int, slice, slice, cell)) $JettonWalletData$_constructor_balance_ownerAddress_jettonMasterAddress_jettonWalletCode(int $balance, slice $ownerAddress, slice $jettonMasterAddress, cell $jettonWalletCode) inline;
+
+;; $StateInit$_constructor_code_data
+((cell, cell)) $StateInit$_constructor_code_data(cell $code, cell $data) inline;
+
+;; $global_calculateJettonWalletAddress
+slice $global_calculateJettonWalletAddress(slice $ownerAddress, slice $jettonMasterAddress, cell $jettonWalletCode) impure inline_ref;
+
+;; $global_keccakBytes32
+int $global_keccakBytes32(int $secret) impure inline_ref;
+
+;; $global_priceOfJettonForward
+int $global_priceOfJettonForward(int $fwdFee, int $fwdTonAmount) impure inline;
+
+;; $global_serializeOrderConfig
+cell $global_serializeOrderConfig((int, slice, slice, slice, int, int, int, int, cell, int, int) $order, int $secret) impure inline;
+
+;; $global_serializeOrder
+cell $global_serializeOrder((int, slice, slice, int, int, int, int, cell, int, int) $order, int $secret) impure inline;
+
+;; $TonFusion$_fun_create
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_create((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $payload) impure inline_ref;
+
+;; $TonFusion$_fun_makeOrder
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_makeOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $payload) impure inline_ref;
+
+;; $TonFusion$_fun_createEVMToTONOrder
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_createEVMToTONOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $payload) impure inline_ref;
+
+;; $TonFusion$_fun_createTONToEVMOrder
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_createTONToEVMOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $payload) impure inline_ref;
+
+;; $RelayerData$_constructor_address_whitelisted_totalResolves_successRate
+((slice, int, int, int)) $RelayerData$_constructor_address_whitelisted_totalResolves_successRate(slice $address, int $whitelisted, int $totalResolves, int $successRate) inline;
+
+;; $TonFusion$_fun_partialFill
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_partialFill((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, int, int, slice, cell) $msg) impure inline_ref;
+
+;; $MessageParameters$_constructor_to_value_mode_body
+((int, cell, int, slice, int)) $MessageParameters$_constructor_to_value_mode_body(slice $to, int $value, int $mode, cell $body) inline;
+
+;; $SendViaJettonTransfer$_constructor_queryId_amount_responseDestination_destination_forwardTonAmount_forwardPayload_customPayload
+((int, int, slice, slice, cell, int, slice)) $SendViaJettonTransfer$_constructor_queryId_amount_responseDestination_destination_forwardTonAmount_forwardPayload_customPayload(int $queryId, int $amount, slice $responseDestination, slice $destination, int $forwardTonAmount, slice $forwardPayload, cell $customPayload) inline;
+
+;; $TonFusion$_fun_processJettonTransfer
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processJettonTransfer((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, slice, int, int, int, int, cell, int, int) $order, int $amount, int $secret) impure inline_ref;
+
+;; $TonFusion$_fun_processEVMTransfer
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processEVMTransfer((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, slice, int, int, int, int, cell, int, int) $order, int $amount, int $secret) impure inline_ref;
+
+;; $TonFusion$_fun_processJettonTransferOrder
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processJettonTransferOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, int, int, int, int, cell, int, int) $order, int $amount, int $secret) impure inline_ref;
+
+;; $TonFusion$_fun_completePartialFill
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_completePartialFill((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, int, cell) $msg) impure inline_ref;
+
+;; $TonFusion$_fun_getFund
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_getFund((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, int, cell) $msg) impure inline_ref;
+
+;; $TonFusion$_fun_processJettonRefund
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processJettonRefund((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, slice, int, int, int, int, cell, int, int) $order) impure inline_ref;
+
+;; $TonFusion$_fun_refund
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_refund((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, cell) $msg) impure inline_ref;
+
+;; $TonFusion$_fun_processJettonRefundOrder
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processJettonRefundOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, int, int, int, int, cell, int, int) $order) impure inline_ref;
+
+;; $TonFusion$_fun_refundOrder
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_refundOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, cell) $msg) impure inline_ref;
+
+;; $EscrowContract$_constructor_chainId_contractAddress_deployed_totalOrders
+((int, slice, int, int)) $EscrowContract$_constructor_chainId_contractAddress_deployed_totalOrders(int $chainId, slice $contractAddress, int $deployed, int $totalOrders) inline;
+
+;; $TonFusion$_fun_deployEscrow
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_deployEscrow((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, cell) $msg) impure inline_ref;
+
+;; $TonFusion$_fun_updateRelayerStats
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_updateRelayerStats((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (slice, int, cell) $msg) impure inline_ref;
+
+;; $MessageParameters$_constructor_bounce_to_value_mode_body
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline;
+
+;; $TonFusion$_fun_notify
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_notify((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $body) impure inline;
+
+;; $DeployOk$_constructor_queryId
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline;
+
+
+;; TonFusion_TonFusion.stdlib.fc
+global (int, slice, int, slice) __tact_context;
+global slice __tact_context_sender;
+global cell __tact_child_contract_codes;
+global int __tact_randomized;
+
+builder __tact_store_addr_none(builder b) asm "b{00} STSLICECONST";
+
+builder __tact_store_address_opt(builder b, slice address) inline {
+    if (null?(address)) {
+        return __tact_store_addr_none(b);
+    } else {
+        return b.store_slice(address);
+    }
+}
+
+forall X -> X __tact_not_null(X x) impure inline {
+    throw_if(128, null?(x)); return x;
+}
+
+(cell, int) __tact_dict_delete(cell dict, int key_len, slice index) asm(index dict key_len) """
+    DICTDEL
+""";
+
+((cell), ()) __tact_dict_set_ref(cell dict, int key_len, slice index, cell value) asm(value index dict key_len) """
+    DICTSETREF
+""";
+
+(slice, int) __tact_dict_get(cell dict, int key_len, slice index) asm(index dict key_len) """
+    DICTGET NULLSWAPIFNOT
+""";
+
+(cell, int) __tact_dict_get_ref(cell dict, int key_len, slice index) asm(index dict key_len) """
+    DICTGETREF NULLSWAPIFNOT
+""";
+
+(int, slice, int, slice) __tact_context_get() inline {
+    return __tact_context;
+}
+
+slice __tact_context_get_sender() inline {
+    return __tact_context_sender;
+}
+
+int __tact_int_eq_nullable_left(int a, int b) inline {
+    return (null?(a)) ? (false) : (a == b);
+}
+
+forall X0, X1, X2, X3 -> tuple __tact_tuple_create_4((X0, X1, X2, X3) v) asm """
+    4 TUPLE
+""";
+
+forall X0, X1, X2, X3 -> (X0, X1, X2, X3) __tact_tuple_destroy_4(tuple v) asm """
+    4 UNTUPLE
+""";
+
+forall X0, X1, X2, X3, X4, X5, X6, X7, X8, X9 -> tuple __tact_tuple_create_10((X0, X1, X2, X3, X4, X5, X6, X7, X8, X9) v) asm """
+    10 TUPLE
+""";
+
+forall X0, X1, X2, X3, X4, X5, X6, X7, X8, X9 -> (X0, X1, X2, X3, X4, X5, X6, X7, X8, X9) __tact_tuple_destroy_10(tuple v) asm """
+    10 UNTUPLE
+""";
+
+forall X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10 -> tuple __tact_tuple_create_11((X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10) v) asm """
+    11 TUPLE
+""";
+
+forall X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10 -> (X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10) __tact_tuple_destroy_11(tuple v) asm """
+    11 UNTUPLE
+""";
+
+slice __tact_dict_get_slice_slice(cell d, int kl, slice k) inline {
+    var (r, ok) = __tact_dict_get(d, kl, k);
+    if (ok) {
+        return r;
+    } else {
+        return null();
+    }
+}
+
+(cell, ()) __tact_dict_set_slice_slice(cell d, int kl, slice k, slice v) inline {
+    if (null?(v)) {
+        var (r, ok) = __tact_dict_delete(d, kl, k);
+        return (r, ());
+    } else {
+        return (dict_set_builder(d, kl, k, begin_cell().store_slice(v)), ());
+    }
+}
+
+int __tact_dict_get_slice_int(cell d, int kl, slice k, int vl) inline {
+    var (r, ok) = __tact_dict_get(d, kl, k);
+    if (ok) {
+        return r~load_int(vl);
+    } else {
+        return null();
+    }
+}
+
+(cell, ()) __tact_dict_set_slice_int(cell d, int kl, slice k, int v, int vl) inline {
+    if (null?(v)) {
+        var (r, ok) = __tact_dict_delete(d, kl, k);
+        return (r, ());
+    } else {
+        return (dict_set_builder(d, kl, k, begin_cell().store_int(v, vl)), ());
+    }
+}
+
+cell __tact_dict_get_slice_cell(cell d, int kl, slice k) inline {
+    var (r, ok) = __tact_dict_get_ref(d, kl, k);
+    if (ok) {
+        return r;
+    } else {
+        return null();
+    }
+}
+
+(cell, ()) __tact_dict_set_slice_cell(cell d, int kl, slice k, cell v) inline {
+    if (null?(v)) {
+        var (r, ok) = __tact_dict_delete(d, kl, k);
+        return (r, ());
+    } else {
+        return __tact_dict_set_ref(d, kl, k, v);
+    }
+}
+
+int __tact_dict_get_uint_uint(cell d, int kl, int k, int vl) inline {
+    var (r, ok) = udict_get?(d, kl, k);
+    if (ok) {
+        return r~load_uint(vl);
+    } else {
+        return null();
+    }
+}
+
+(cell, ()) __tact_dict_set_uint_uint(cell d, int kl, int k, int v, int vl) inline {
+    if (null?(v)) {
+        var (r, ok) = udict_delete?(d, kl, k);
+        return (r, ());
+    } else {
+        return (udict_set_builder(d, kl, k, begin_cell().store_uint(v, vl)), ());
+    }
+}
+
+cell __tact_dict_get_uint_cell(cell d, int kl, int k) inline {
+    var (r, ok) = udict_get_ref?(d, kl, k);
+    if (ok) {
+        return r;
+    } else {
+        return null();
+    }
+}
+
+(cell, ()) __tact_dict_set_uint_cell(cell d, int kl, int k, cell v) inline {
+    if (null?(v)) {
+        var (r, ok) = udict_delete?(d, kl, k);
+        return (r, ());
+    } else {
+        return (udict_set_ref(d, kl, k, v), ());
+    }
+}
+
+builder $global_beginCell() impure asm """
+    NEWC
+""";
+
+int $global_min(int $x, int $y) impure asm """
+    MIN
+""";
+
+int $global_max(int $x, int $y) impure asm """
+    MAX
+""";
+
+int $global_contractHash(cell $code, cell $data) impure asm """
+    s0 PUSH HASHCU // `data` hash
+    s2 PUSH HASHCU // `code` hash
+    SWAP2
+    CDEPTH         // `data` depth
+    SWAP
+    CDEPTH         // `code` depth
+    131380 INT     // (2 << 16) | (1 << 8) | 0x34
+
+    // Group 2: Composition of the Builder
+    NEWC
+    24 STU  // store refs_descriptor | bits_descriptor | data
+    16 STU  // store depth_descriptor for `code`
+    16 STU  // store depth_descriptor for `data`
+    256 STU // store `code` hash
+    256 STU // store `data` hash
+
+    // Group 3: SHA256 hash of the resulting Builder
+    ONE HASHEXT_SHA256
+""";
+
+slice $Slice$_fun_asAddressUnsafe(slice $self) impure asm "NOP";
+
+slice $Cell$_fun_beginParse(cell $self) impure asm """
+    CTOS
+""";
+
+slice $Cell$_fun_asSlice(cell $self) impure inline {
+    var ($self) = $self;
+    return $Cell$_fun_beginParse($self);
+}
+
+cell $Builder$_fun_endCell(builder $self) impure asm """
+    ENDC
+""";
+
+slice $global_newAddress(int $chain, int $hash) impure inline {
+    return $Slice$_fun_asAddressUnsafe($Cell$_fun_asSlice($Builder$_fun_endCell(store_uint(store_int(store_uint($global_beginCell(), 4, 3), $chain, 8), $hash, 256))));
+}
+
+slice $global_contractAddressExt(int $chain, cell $code, cell $data) impure inline {
+    int $hash = $global_contractHash($code, $data);
+    return $global_newAddress($chain, $hash);
+}
+
+slice $global_contractAddress((cell, cell) $s) impure inline {
+    var (($s'code, $s'data)) = $s;
+    return $global_contractAddressExt(0, $s'code, $s'data);
+}
+
+int $global_myBalance() impure asm """
+    BALANCE FIRST
+""";
+
+int $global_getComputeFee(int $gasUsed, int $isMasterchain) impure asm """
+    GETGASFEE
+""";
+
+int $global_getForwardFee(int $cells, int $bits, int $isMasterchain) impure asm """
+    GETFORWARDFEE
+""";
+
+() $global_nativeReserve(int $amount, int $mode) impure asm """
+    RAWRESERVE
+""";
+
+() $global_message((int, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+    STZEROES
+    // → Stack state
+    // s0: Builder
+    // s1: `body`
+    // s2: `mode`
+    STDICT
+    ENDC
+    SWAP
+    SENDRAWMSG
+""";
+
+() $global_cashback(slice $to) impure asm """
+    NEWC
+    x{42_} STSLICECONST // .storeUint(0x10, 6)
+    STSLICE          // .storeAddress(to)
+    0 PUSHINT        // 0
+    111 STUR         // .storeUint(0, 111)
+                     // 4 zeros for coins and 107 zeros for lt, fees, etc.
+    ENDC
+    66 PUSHINT       // SendRemainingValue | SendIgnoreErrors
+    SENDRAWMSG
+""";
+
+int $global_now() impure asm """
+    NOW
+""";
+
+int $Cell$_fun_hash(cell $self) impure asm """
+    HASHCU
+""";
+
+builder $Builder$_fun_storeBool(int $value, builder $self) impure asm """
+    1 STI
+""";
+
+builder $Builder$_fun_storeAddress(builder $self, slice $address) impure asm """
+    STSLICER
+""";
+
+builder $Builder$_fun_storeRef(cell $cell, builder $self) impure asm """
+    STREF
+""";
+
+int $Context$_fun_readForwardFee((int, slice, int, slice) $self) impure asm """
+    LDMSGADDR   // load dest:MsgAddressInt
+    LDGRAMS     // load value:CurrencyCollection
+    ONE
+    SDSKIPFIRST // skip extra currency collection
+    LDGRAMS     // load ihr_fee
+    LDGRAMS     // load fwd_fee, we'll be using this!
+    DROP        // drop remaining Slice (with created_lt and created_at)
+
+    // There are 7 entries on the stack — first 3 fields of Context plus 4 loaded ones.
+    // The topmost is fwd_fee, which is the only one we're after, so let's drop 6 entries below:
+    6 1 BLKDROP2 // drop the loaded values as well as the first 3 fields of Context
+
+    ZERO              // not masterchain
+    GETORIGINALFWDFEE // floor(fwd_fee * 2^16 / (2^16 - first_frac)), where
+                      // first_frac is a value listed in config param 25
+                      // of the blockchain: https://tonviewer.com/config#25
+                      // this instruction effectively multiplies the fwd_fee by 1.5,
+                      // at least for the current value of first_frac, which is 21845
+""";
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_notify((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $body) impure inline {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    slice $to = __tact_context_get_sender();
+    int $bounce = false;
+    if (false) {
+        int $balance = $global_myBalance();
+        int $balanceBeforeMessage = ($balance - $Context$_get_value(__tact_context_get()));
+        if (($balanceBeforeMessage < 0)) {
+            $global_nativeReserve(0, 0);
+            $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 130, $body));
+            return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+        }
+    }
+    $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 66, $body));
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+;; TonFusion_TonFusion.storage.fc
+;;
+;; Type: StateInit
+;; TLB: _ code:^cell data:^cell = StateInit
+;;
+
+((cell, cell)) $StateInit$_constructor_code_data(cell $code, cell $data) inline {
+    return ($code, $data);
+}
+
+;;
+;; Type: Context
+;; TLB: _ bounceable:bool sender:address value:int257 raw:^slice = Context
+;;
+
+_ $Context$_get_value((int, slice, int, slice) v) inline {
+    var (v'bounceable, v'sender, v'value, v'raw) = v;
+    return v'value;
+}
+
+;;
+;; Type: MessageParameters
+;; TLB: _ mode:int257 body:Maybe ^cell value:int257 to:address bounce:bool = MessageParameters
+;;
+
+((int, cell, int, slice, int)) $MessageParameters$_constructor_to_value_mode_body(slice $to, int $value, int $mode, cell $body) inline {
+    return ($mode, $body, $value, $to, true);
+}
+
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline {
+    return ($mode, $body, $value, $to, $bounce);
+}
+
+;;
+;; Type: DeployOk
+;; Header: 0xaff90f57
+;; TLB: deploy_ok#aff90f57 queryId:uint64 = DeployOk
+;;
+
+builder $DeployOk$_store(builder build_0, (int) v) inline {
+    var (v'queryId) = v;
+    build_0 = store_uint(build_0, 2952335191, 32);
+    build_0 = build_0.store_uint(v'queryId, 64);
+    return build_0;
+}
+
+cell $DeployOk$_store_cell((int) v, builder b) inline {
+    return $DeployOk$_store(b, v).end_cell();
+}
+
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline {
+    return ($queryId);
+}
+
+;;
+;; Type: OrderConfig
+;; TLB: _ id:uint32 srcJettonAddress:address senderPubKey:address receiverPubKey:address hashlock:uint256 timelock:uint32 amount:uint64 finalized:bool partialFills:dict<uint256, uint64> totalFilled:uint64 direction:uint8 = OrderConfig
+;;
+
+builder $OrderConfig$_store(builder build_0, (int, slice, slice, slice, int, int, int, int, cell, int, int) v) inline_ref {
+    var (v'id, v'srcJettonAddress, v'senderPubKey, v'receiverPubKey, v'hashlock, v'timelock, v'amount, v'finalized, v'partialFills, v'totalFilled, v'direction) = v;
+    build_0 = build_0.store_uint(v'id, 32);
+    build_0 = build_0.store_slice(v'srcJettonAddress);
+    build_0 = build_0.store_slice(v'senderPubKey);
+    build_0 = build_0.store_slice(v'receiverPubKey);
+    var build_1 = begin_cell();
+    build_1 = build_1.store_uint(v'hashlock, 256);
+    build_1 = build_1.store_uint(v'timelock, 32);
+    build_1 = build_1.store_uint(v'amount, 64);
+    build_1 = build_1.store_int(v'finalized, 1);
+    build_1 = build_1.store_dict(v'partialFills);
+    build_1 = build_1.store_uint(v'totalFilled, 64);
+    build_1 = build_1.store_uint(v'direction, 8);
+    build_0 = store_builder_ref(build_0, build_1);
+    return build_0;
+}
+
+cell $OrderConfig$_store_cell((int, slice, slice, slice, int, int, int, int, cell, int, int) v, builder b) inline {
+    return $OrderConfig$_store(b, v).end_cell();
+}
+
+(slice, ((int, slice, slice, slice, int, int, int, int, cell, int, int))) $OrderConfig$_load(slice sc_0) inline_ref {
+    var v'id = sc_0~load_uint(32);
+    var v'srcJettonAddress = sc_0~load_msg_addr();
+    var v'senderPubKey = sc_0~load_msg_addr();
+    var v'receiverPubKey = sc_0~load_msg_addr();
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'hashlock = sc_1~load_uint(256);
+    var v'timelock = sc_1~load_uint(32);
+    var v'amount = sc_1~load_uint(64);
+    var v'finalized = sc_1~load_int(1);
+    var v'partialFills = sc_1~load_dict();
+    var v'totalFilled = sc_1~load_uint(64);
+    var v'direction = sc_1~load_uint(8);
+    return (sc_0, (v'id, v'srcJettonAddress, v'senderPubKey, v'receiverPubKey, v'hashlock, v'timelock, v'amount, v'finalized, v'partialFills, v'totalFilled, v'direction));
+}
+
+tuple $OrderConfig$_as_optional((int, slice, slice, slice, int, int, int, int, cell, int, int) v) inline {
+    var (v'id, v'srcJettonAddress, v'senderPubKey, v'receiverPubKey, v'hashlock, v'timelock, v'amount, v'finalized, v'partialFills, v'totalFilled, v'direction) = v;
+    return __tact_tuple_create_11(v'id, v'srcJettonAddress, v'senderPubKey, v'receiverPubKey, v'hashlock, v'timelock, v'amount, v'finalized, v'partialFills, v'totalFilled, v'direction);
+}
+
+tuple $OrderConfig$_load_opt(cell cl) inline {
+    if (null?(cl)) {
+        return null();
+    }
+    var sc = cl.begin_parse();
+    return $OrderConfig$_as_optional(sc~$OrderConfig$_load());
+}
+
+((int, slice, slice, slice, int, int, int, int, cell, int, int)) $OrderConfig$_tensor_cast((int, slice, slice, slice, int, int, int, int, cell, int, int) v) asm "NOP";
+
+((int, slice, slice, slice, int, int, int, int, cell, int, int)) $OrderConfig$_not_null(tuple v) inline {
+    throw_if(128, null?(v));
+    var (int vvv'id, slice vvv'srcJettonAddress, slice vvv'senderPubKey, slice vvv'receiverPubKey, int vvv'hashlock, int vvv'timelock, int vvv'amount, int vvv'finalized, cell vvv'partialFills, int vvv'totalFilled, int vvv'direction) = __tact_tuple_destroy_11(v);
+    return (vvv'id, vvv'srcJettonAddress, vvv'senderPubKey, vvv'receiverPubKey, vvv'hashlock, vvv'timelock, vvv'amount, vvv'finalized, vvv'partialFills, vvv'totalFilled, vvv'direction);
+}
+
+;;
+;; Type: LockJetton
+;; Header: 0xf512f7df
+;; TLB: lock_jetton#f512f7df orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} jetton:^cell customPayload:Maybe ^cell = LockJetton
+;;
+
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell))) $LockJetton$_load(slice sc_0) impure inline {
+    throw_unless(129, sc_0~load_uint(32) == 4111661023);
+    var v'orderConfig = sc_0~$OrderConfig$_load();
+    var v'jetton = sc_0~load_ref();
+    var v'customPayload = sc_0~load_maybe_ref();
+    return (sc_0, (v'orderConfig, v'jetton, v'customPayload));
+}
+
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), cell, cell)) $LockJetton$_load_not_mut(slice sc_0) inline {
+    var r = sc_0~$LockJetton$_load();
+    sc_0.end_parse();
+    return r;
+}
+
+;;
+;; Type: Order
+;; TLB: _ id:uint32 srcJettonAddress:address senderPubKey:address hashlock:uint256 timelock:uint32 amount:uint64 finalized:bool partialFills:dict<uint256, uint64> totalFilled:uint64 direction:uint8 = Order
+;;
+
+builder $Order$_store(builder build_0, (int, slice, slice, int, int, int, int, cell, int, int) v) inline {
+    var (v'id, v'srcJettonAddress, v'senderPubKey, v'hashlock, v'timelock, v'amount, v'finalized, v'partialFills, v'totalFilled, v'direction) = v;
+    build_0 = build_0.store_uint(v'id, 32);
+    build_0 = build_0.store_slice(v'srcJettonAddress);
+    build_0 = build_0.store_slice(v'senderPubKey);
+    build_0 = build_0.store_uint(v'hashlock, 256);
+    build_0 = build_0.store_uint(v'timelock, 32);
+    build_0 = build_0.store_uint(v'amount, 64);
+    build_0 = build_0.store_int(v'finalized, 1);
+    build_0 = build_0.store_dict(v'partialFills);
+    build_0 = build_0.store_uint(v'totalFilled, 64);
+    build_0 = build_0.store_uint(v'direction, 8);
+    return build_0;
+}
+
+cell $Order$_store_cell((int, slice, slice, int, int, int, int, cell, int, int) v, builder b) inline {
+    return $Order$_store(b, v).end_cell();
+}
+
+(slice, ((int, slice, slice, int, int, int, int, cell, int, int))) $Order$_load(slice sc_0) inline {
+    var v'id = sc_0~load_uint(32);
+    var v'srcJettonAddress = sc_0~load_msg_addr();
+    var v'senderPubKey = sc_0~load_msg_addr();
+    var v'hashlock = sc_0~load_uint(256);
+    var v'timelock = sc_0~load_uint(32);
+    var v'amount = sc_0~load_uint(64);
+    var v'finalized = sc_0~load_int(1);
+    var v'partialFills = sc_0~load_dict();
+    var v'totalFilled = sc_0~load_uint(64);
+    var v'direction = sc_0~load_uint(8);
+    return (sc_0, (v'id, v'srcJettonAddress, v'senderPubKey, v'hashlock, v'timelock, v'amount, v'finalized, v'partialFills, v'totalFilled, v'direction));
+}
+
+tuple $Order$_as_optional((int, slice, slice, int, int, int, int, cell, int, int) v) inline {
+    var (v'id, v'srcJettonAddress, v'senderPubKey, v'hashlock, v'timelock, v'amount, v'finalized, v'partialFills, v'totalFilled, v'direction) = v;
+    return __tact_tuple_create_10(v'id, v'srcJettonAddress, v'senderPubKey, v'hashlock, v'timelock, v'amount, v'finalized, v'partialFills, v'totalFilled, v'direction);
+}
+
+tuple $Order$_load_opt(cell cl) inline {
+    if (null?(cl)) {
+        return null();
+    }
+    var sc = cl.begin_parse();
+    return $Order$_as_optional(sc~$Order$_load());
+}
+
+((int, slice, slice, int, int, int, int, cell, int, int)) $Order$_tensor_cast((int, slice, slice, int, int, int, int, cell, int, int) v) asm "NOP";
+
+((int, slice, slice, int, int, int, int, cell, int, int)) $Order$_not_null(tuple v) inline {
+    throw_if(128, null?(v));
+    var (int vvv'id, slice vvv'srcJettonAddress, slice vvv'senderPubKey, int vvv'hashlock, int vvv'timelock, int vvv'amount, int vvv'finalized, cell vvv'partialFills, int vvv'totalFilled, int vvv'direction) = __tact_tuple_destroy_10(v);
+    return (vvv'id, vvv'srcJettonAddress, vvv'senderPubKey, vvv'hashlock, vvv'timelock, vvv'amount, vvv'finalized, vvv'partialFills, vvv'totalFilled, vvv'direction);
+}
+
+;;
+;; Type: CreateOrder
+;; Header: 0x7362d09c
+;; TLB: create_order#7362d09c orderConfig:Order{id:uint32,srcJettonAddress:address,senderPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} jetton:^cell customPayload:Maybe ^cell = CreateOrder
+;;
+
+(slice, (((int, slice, slice, int, int, int, int, cell, int, int), cell, cell))) $CreateOrder$_load(slice sc_0) impure inline {
+    throw_unless(129, sc_0~load_uint(32) == 1935855772);
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'orderConfig = sc_1~$Order$_load();
+    var v'jetton = sc_1~load_ref();
+    var v'customPayload = sc_1~load_maybe_ref();
+    return (sc_0, (v'orderConfig, v'jetton, v'customPayload));
+}
+
+(((int, slice, slice, int, int, int, int, cell, int, int), cell, cell)) $CreateOrder$_load_not_mut(slice sc_0) inline {
+    var r = sc_0~$CreateOrder$_load();
+    sc_0.end_parse();
+    return r;
+}
+
+;;
+;; Type: CreateEVMToTONOrder
+;; Header: 0x8b341822
+;; TLB: create_evm_to_ton_order#8b341822 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} evmContractAddress:address customPayload:Maybe ^cell = CreateEVMToTONOrder
+;;
+
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), slice, cell))) $CreateEVMToTONOrder$_load(slice sc_0) impure inline {
+    throw_unless(129, sc_0~load_uint(32) == 2335447074);
+    var v'orderConfig = sc_0~$OrderConfig$_load();
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'evmContractAddress = sc_1~load_msg_addr();
+    var v'customPayload = sc_1~load_maybe_ref();
+    return (sc_0, (v'orderConfig, v'evmContractAddress, v'customPayload));
+}
+
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), slice, cell)) $CreateEVMToTONOrder$_load_not_mut(slice sc_0) inline {
+    var r = sc_0~$CreateEVMToTONOrder$_load();
+    sc_0.end_parse();
+    return r;
+}
+
+;;
+;; Type: CreateTONToEVMOrder
+;; Header: 0x62239978
+;; TLB: create_ton_to_evm_order#62239978 orderConfig:OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8} targetChainId:uint32 customPayload:Maybe ^cell = CreateTONToEVMOrder
+;;
+
+(slice, (((int, slice, slice, slice, int, int, int, int, cell, int, int), int, cell))) $CreateTONToEVMOrder$_load(slice sc_0) impure inline {
+    throw_unless(129, sc_0~load_uint(32) == 1646500216);
+    var v'orderConfig = sc_0~$OrderConfig$_load();
+    var v'targetChainId = sc_0~load_uint(32);
+    var v'customPayload = sc_0~load_maybe_ref();
+    return (sc_0, (v'orderConfig, v'targetChainId, v'customPayload));
+}
+
+(((int, slice, slice, slice, int, int, int, int, cell, int, int), int, cell)) $CreateTONToEVMOrder$_load_not_mut(slice sc_0) inline {
+    var r = sc_0~$CreateTONToEVMOrder$_load();
+    sc_0.end_parse();
+    return r;
+}
+
+;;
+;; Type: PartialFill
+;; Header: 0x4ef5cb26
+;; TLB: partial_fill#4ef5cb26 orderHash:uint256 secret:uint256 fillAmount:uint64 resolver:address customPayload:Maybe ^cell = PartialFill
+;;
+
+((int, int, int, slice, cell)) $PartialFill$_tensor_cast((int, int, int, slice, cell) v) asm "NOP";
+
+;;
+;; Type: CompletePartialFill
+;; Header: 0x8b341823
+;; TLB: complete_partial_fill#8b341823 orderHash:uint256 secret:uint256 customPayload:Maybe ^cell = CompletePartialFill
+;;
+
+((int, int, cell)) $CompletePartialFill$_tensor_cast((int, int, cell) v) asm "NOP";
+
+;;
+;; Type: DeployEscrow
+;; Header: 0x595f07bc
+;; TLB: deploy_escrow#595f07bc chainId:uint32 targetAddress:address customPayload:Maybe ^cell = DeployEscrow
+;;
+
+((int, slice, cell)) $DeployEscrow$_tensor_cast((int, slice, cell) v) asm "NOP";
+
+;;
+;; Type: UpdateRelayerStats
+;; Header: 0x7362d09f
+;; TLB: update_relayer_stats#7362d09f relayer:address success:bool customPayload:Maybe ^cell = UpdateRelayerStats
+;;
+
+((slice, int, cell)) $UpdateRelayerStats$_tensor_cast((slice, int, cell) v) asm "NOP";
+
+;;
+;; Type: GetFund
+;; Header: 0x50635fd2
+;; TLB: get_fund#50635fd2 secret:uint256 hash:uint256 customPayload:Maybe ^cell = GetFund
+;;
+
+((int, int, cell)) $GetFund$_tensor_cast((int, int, cell) v) asm "NOP";
+
+;;
+;; Type: Refund
+;; Header: 0xe49e1dcb
+;; TLB: refund#e49e1dcb hash:uint256 customPayload:Maybe ^cell = Refund
+;;
+
+((int, cell)) $Refund$_tensor_cast((int, cell) v) asm "NOP";
+
+;;
+;; Type: RefundOrder
+;; Header: 0x7362d09d
+;; TLB: refund_order#7362d09d hash:uint256 customPayload:Maybe ^cell = RefundOrder
+;;
+
+((int, cell)) $RefundOrder$_tensor_cast((int, cell) v) asm "NOP";
+
+;;
+;; Type: EscrowContract
+;; TLB: _ chainId:uint32 contractAddress:address deployed:bool totalOrders:uint32 = EscrowContract
+;;
+
+builder $EscrowContract$_store(builder build_0, (int, slice, int, int) v) inline {
+    var (v'chainId, v'contractAddress, v'deployed, v'totalOrders) = v;
+    build_0 = build_0.store_uint(v'chainId, 32);
+    build_0 = build_0.store_slice(v'contractAddress);
+    build_0 = build_0.store_int(v'deployed, 1);
+    build_0 = build_0.store_uint(v'totalOrders, 32);
+    return build_0;
+}
+
+cell $EscrowContract$_store_cell((int, slice, int, int) v, builder b) inline {
+    return $EscrowContract$_store(b, v).end_cell();
+}
+
+((int, slice, int, int)) $EscrowContract$_constructor_chainId_contractAddress_deployed_totalOrders(int $chainId, slice $contractAddress, int $deployed, int $totalOrders) inline {
+    return ($chainId, $contractAddress, $deployed, $totalOrders);
+}
+
+;;
+;; Type: RelayerData
+;; TLB: _ address:address whitelisted:bool totalResolves:uint32 successRate:uint16 = RelayerData
+;;
+
+builder $RelayerData$_store(builder build_0, (slice, int, int, int) v) inline {
+    var (v'address, v'whitelisted, v'totalResolves, v'successRate) = v;
+    build_0 = build_0.store_slice(v'address);
+    build_0 = build_0.store_int(v'whitelisted, 1);
+    build_0 = build_0.store_uint(v'totalResolves, 32);
+    build_0 = build_0.store_uint(v'successRate, 16);
+    return build_0;
+}
+
+cell $RelayerData$_store_cell((slice, int, int, int) v, builder b) inline {
+    return $RelayerData$_store(b, v).end_cell();
+}
+
+(slice, ((slice, int, int, int))) $RelayerData$_load(slice sc_0) inline {
+    var v'address = sc_0~load_msg_addr();
+    var v'whitelisted = sc_0~load_int(1);
+    var v'totalResolves = sc_0~load_uint(32);
+    var v'successRate = sc_0~load_uint(16);
+    return (sc_0, (v'address, v'whitelisted, v'totalResolves, v'successRate));
+}
+
+tuple $RelayerData$_as_optional((slice, int, int, int) v) inline {
+    var (v'address, v'whitelisted, v'totalResolves, v'successRate) = v;
+    return __tact_tuple_create_4(v'address, v'whitelisted, v'totalResolves, v'successRate);
+}
+
+tuple $RelayerData$_load_opt(cell cl) inline {
+    if (null?(cl)) {
+        return null();
+    }
+    var sc = cl.begin_parse();
+    return $RelayerData$_as_optional(sc~$RelayerData$_load());
+}
+
+_ $RelayerData$_get_address((slice, int, int, int) v) inline {
+    var (v'address, v'whitelisted, v'totalResolves, v'successRate) = v;
+    return v'address;
+}
+
+_ $RelayerData$_get_whitelisted((slice, int, int, int) v) inline {
+    var (v'address, v'whitelisted, v'totalResolves, v'successRate) = v;
+    return v'whitelisted;
+}
+
+_ $RelayerData$_get_totalResolves((slice, int, int, int) v) inline {
+    var (v'address, v'whitelisted, v'totalResolves, v'successRate) = v;
+    return v'totalResolves;
+}
+
+_ $RelayerData$_get_successRate((slice, int, int, int) v) inline {
+    var (v'address, v'whitelisted, v'totalResolves, v'successRate) = v;
+    return v'successRate;
+}
+
+((slice, int, int, int)) $RelayerData$_not_null(tuple v) inline {
+    throw_if(128, null?(v));
+    var (slice vvv'address, int vvv'whitelisted, int vvv'totalResolves, int vvv'successRate) = __tact_tuple_destroy_4(v);
+    return (vvv'address, vvv'whitelisted, vvv'totalResolves, vvv'successRate);
+}
+
+((slice, int, int, int)) $RelayerData$_constructor_address_whitelisted_totalResolves_successRate(slice $address, int $whitelisted, int $totalResolves, int $successRate) inline {
+    return ($address, $whitelisted, $totalResolves, $successRate);
+}
+
+;;
+;; Type: JettonWalletData
+;; TLB: _ balance:coins ownerAddress:address jettonMasterAddress:address jettonWalletCode:^cell = JettonWalletData
+;;
+
+builder $JettonWalletData$_store(builder build_0, (int, slice, slice, cell) v) inline {
+    var (v'balance, v'ownerAddress, v'jettonMasterAddress, v'jettonWalletCode) = v;
+    build_0 = build_0.store_varuint16(v'balance);
+    build_0 = build_0.store_slice(v'ownerAddress);
+    build_0 = build_0.store_slice(v'jettonMasterAddress);
+    build_0 = build_0.store_ref(v'jettonWalletCode);
+    return build_0;
+}
+
+cell $JettonWalletData$_store_cell((int, slice, slice, cell) v, builder b) inline {
+    return $JettonWalletData$_store(b, v).end_cell();
+}
+
+((int, slice, slice, cell)) $JettonWalletData$_constructor_balance_ownerAddress_jettonMasterAddress_jettonWalletCode(int $balance, slice $ownerAddress, slice $jettonMasterAddress, cell $jettonWalletCode) inline {
+    return ($balance, $ownerAddress, $jettonMasterAddress, $jettonWalletCode);
+}
+
+;;
+;; Type: SendViaJettonTransfer
+;; Header: 0x0f8a7ea5
+;; TLB: send_via_jetton_transfer#0f8a7ea5 queryId:uint64 amount:coins destination:address responseDestination:address customPayload:Maybe ^cell forwardTonAmount:coins forwardPayload:remainder<slice> = SendViaJettonTransfer
+;;
+
+builder $SendViaJettonTransfer$_store(builder build_0, (int, int, slice, slice, cell, int, slice) v) inline {
+    var (v'queryId, v'amount, v'destination, v'responseDestination, v'customPayload, v'forwardTonAmount, v'forwardPayload) = v;
+    build_0 = store_uint(build_0, 260734629, 32);
+    build_0 = build_0.store_uint(v'queryId, 64);
+    build_0 = build_0.store_varuint16(v'amount);
+    build_0 = build_0.store_slice(v'destination);
+    build_0 = __tact_store_address_opt(build_0, v'responseDestination);
+    build_0 = build_0.store_maybe_ref(v'customPayload);
+    build_0 = build_0.store_varuint16(v'forwardTonAmount);
+    build_0 = build_0.store_slice(v'forwardPayload);
+    return build_0;
+}
+
+cell $SendViaJettonTransfer$_store_cell((int, int, slice, slice, cell, int, slice) v, builder b) inline {
+    return $SendViaJettonTransfer$_store(b, v).end_cell();
+}
+
+((int, int, slice, slice, cell, int, slice)) $SendViaJettonTransfer$_constructor_queryId_amount_responseDestination_destination_forwardTonAmount_forwardPayload_customPayload(int $queryId, int $amount, slice $responseDestination, slice $destination, int $forwardTonAmount, slice $forwardPayload, cell $customPayload) inline {
+    return ($queryId, $amount, $destination, $responseDestination, $customPayload, $forwardTonAmount, $forwardPayload);
+}
+
+;;
+;; Type: TonFusion
+;; TLB: _ owner:address escrowLock:dict<uint256, ^OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}> escrowOrder:dict<uint256, ^Order{id:uint32,srcJettonAddress:address,senderPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}> jettons:dict<address, ^cell> jettonAccount:dict<address, address> whiteLists:dict<address, bool> relayers:dict<address, ^RelayerData{address:address,whitelisted:bool,totalResolves:uint32,successRate:uint16}> escrowContracts:dict<uint32, ^EscrowContract{chainId:uint32,contractAddress:address,deployed:bool,totalOrders:uint32}> totalOrders:uint32 totalVolume:uint64 totalResolves:uint32 = TonFusion
+;;
+
+builder $TonFusion$_store(builder build_0, (slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) v) inline {
+    var (v'owner, v'escrowLock, v'escrowOrder, v'jettons, v'jettonAccount, v'whiteLists, v'relayers, v'escrowContracts, v'totalOrders, v'totalVolume, v'totalResolves) = v;
+    build_0 = build_0.store_slice(v'owner);
+    build_0 = build_0.store_dict(v'escrowLock);
+    var build_1 = begin_cell();
+    build_1 = build_1.store_dict(v'escrowOrder);
+    build_1 = build_1.store_dict(v'jettons);
+    build_1 = build_1.store_dict(v'jettonAccount);
+    var build_2 = begin_cell();
+    build_2 = build_2.store_dict(v'whiteLists);
+    build_2 = build_2.store_dict(v'relayers);
+    build_2 = build_2.store_dict(v'escrowContracts);
+    build_2 = build_2.store_uint(v'totalOrders, 32);
+    build_2 = build_2.store_uint(v'totalVolume, 64);
+    build_2 = build_2.store_uint(v'totalResolves, 32);
+    build_1 = store_builder_ref(build_1, build_2);
+    build_0 = store_builder_ref(build_0, build_1);
+    return build_0;
+}
+
+(slice, ((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int))) $TonFusion$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'escrowLock = sc_0~load_dict();
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'escrowOrder = sc_1~load_dict();
+    var v'jettons = sc_1~load_dict();
+    var v'jettonAccount = sc_1~load_dict();
+    slice sc_2 = sc_1~load_ref().begin_parse();
+    var v'whiteLists = sc_2~load_dict();
+    var v'relayers = sc_2~load_dict();
+    var v'escrowContracts = sc_2~load_dict();
+    var v'totalOrders = sc_2~load_uint(32);
+    var v'totalVolume = sc_2~load_uint(64);
+    var v'totalResolves = sc_2~load_uint(32);
+    return (sc_0, (v'owner, v'escrowLock, v'escrowOrder, v'jettons, v'jettonAccount, v'whiteLists, v'relayers, v'escrowContracts, v'totalOrders, v'totalVolume, v'totalResolves));
+}
+
+(slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $TonFusion$_contract_load() impure inline {
+    slice $sc = get_data().begin_parse();
+    int $loaded = $sc~load_int(1);
+    if ($loaded) {
+        return $sc~$TonFusion$_load();
+    }
+    else {
+        return $TonFusion$_contract_init();
+    }
+}
+
+() $TonFusion$_contract_store((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) v) impure inline {
+    builder b = begin_cell();
+    b = b.store_int(true, 1);
+    b = $TonFusion$_store(b, v);
+    set_data(b.end_cell());
+}
+
+;;
+;; Contract TonFusion functions
+;;
+
+(slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $TonFusion$_contract_init() impure inline {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = (null(), null(), null(), null(), null(), null(), null(), null(), 0, 0, 0);
+    $self'owner = __tact_context_get_sender();
+    return ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves);
+}
+
+slice $global_calculateJettonWalletAddress(slice $ownerAddress, slice $jettonMasterAddress, cell $jettonWalletCode) impure inline_ref {
+    var ($initData'balance, $initData'ownerAddress, $initData'jettonMasterAddress, $initData'jettonWalletCode) = $JettonWalletData$_constructor_balance_ownerAddress_jettonMasterAddress_jettonWalletCode(0, $ownerAddress, $jettonMasterAddress, $jettonWalletCode);
+    return $global_contractAddress($StateInit$_constructor_code_data($jettonWalletCode, $JettonWalletData$_store_cell(($initData'balance, $initData'ownerAddress, $initData'jettonMasterAddress, $initData'jettonWalletCode), begin_cell())));
+}
+
+int $global_keccakBytes32(int $secret) impure inline_ref {
+    cell $cell = $Builder$_fun_endCell(store_uint($global_beginCell(), $secret, 256));
+    return $Cell$_fun_hash($cell);
+}
+
+int $global_priceOfJettonForward(int $fwdFee, int $fwdTonAmount) impure inline {
+    return ((($fwdTonAmount + (2 * $fwdFee)) + $global_getForwardFee(40, 30000, false)) + ((2 * $global_getComputeFee(30000, false)) + 20000000));
+}
+
+cell $global_serializeOrderConfig((int, slice, slice, slice, int, int, int, int, cell, int, int) $order, int $secret) impure inline {
+    var (($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)) = $order;
+    return $Builder$_fun_endCell(store_uint(store_uint(store_uint($Builder$_fun_storeBool($order'finalized, store_uint(store_uint(store_uint($Builder$_fun_storeAddress($Builder$_fun_storeAddress($Builder$_fun_storeAddress(store_uint($global_beginCell(), $order'id, 32), $order'srcJettonAddress), $order'senderPubKey), $order'receiverPubKey), $order'hashlock, 256), $order'timelock, 32), $order'amount, 64)), $order'totalFilled, 64), $order'direction, 8), $secret, 256));
+}
+
+cell $global_serializeOrder((int, slice, slice, int, int, int, int, cell, int, int) $order, int $secret) impure inline {
+    var (($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)) = $order;
+    return $Builder$_fun_endCell(store_uint(store_uint(store_uint($Builder$_fun_storeBool($order'finalized, store_uint(store_uint(store_uint($Builder$_fun_storeAddress($Builder$_fun_storeAddress(store_uint($global_beginCell(), $order'id, 32), $order'srcJettonAddress), $order'senderPubKey), $order'hashlock, 256), $order'timelock, 32), $order'amount, 64)), $order'totalFilled, 64), $order'direction, 8), $secret, 256));
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_create((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $payload) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'jetton, $msg'customPayload) = $LockJetton$_load_not_mut($payload.begin_parse());
+    throw_if(87, __tact_int_eq_nullable_left(__tact_dict_get_slice_int($self'whiteLists, 267, __tact_context_get_sender(), 1), true));
+    throw_if(75, ($global_now() >= $msg'orderConfig'timelock));
+    throw_if(90, (~ null?($OrderConfig$_load_opt(__tact_dict_get_uint_cell($self'escrowLock, 256, $msg'orderConfig'hashlock)))));
+    $msg'orderConfig'direction = 0;
+    $self'jettons~__tact_dict_set_slice_cell(267, $msg'orderConfig'srcJettonAddress, $msg'jetton);
+    $self'jettonAccount~__tact_dict_set_slice_slice(267, $msg'orderConfig'srcJettonAddress, __tact_context_get_sender());
+    $self'escrowLock~__tact_dict_set_uint_cell(256, $msg'orderConfig'hashlock, $OrderConfig$_store_cell(($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), begin_cell()));
+    $self'totalOrders = ($self'totalOrders + 1);
+    $self'totalVolume = ($self'totalVolume + $msg'orderConfig'amount);
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_makeOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $payload) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'jetton, $msg'customPayload) = $CreateOrder$_load_not_mut($payload.begin_parse());
+    throw_if(87, __tact_int_eq_nullable_left(__tact_dict_get_slice_int($self'whiteLists, 267, __tact_context_get_sender(), 1), true));
+    throw_if(75, ($global_now() >= $msg'orderConfig'timelock));
+    throw_if(90, (~ null?($Order$_load_opt(__tact_dict_get_uint_cell($self'escrowOrder, 256, $msg'orderConfig'hashlock)))));
+    $msg'orderConfig'direction = 2;
+    $self'jettons~__tact_dict_set_slice_cell(267, $msg'orderConfig'srcJettonAddress, $msg'jetton);
+    $self'jettonAccount~__tact_dict_set_slice_slice(267, $msg'orderConfig'srcJettonAddress, __tact_context_get_sender());
+    $self'escrowOrder~__tact_dict_set_uint_cell(256, $msg'orderConfig'hashlock, $Order$_store_cell(($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), begin_cell()));
+    $self'totalOrders = ($self'totalOrders + 1);
+    $self'totalVolume = ($self'totalVolume + $msg'orderConfig'amount);
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_createEVMToTONOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $payload) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'evmContractAddress, $msg'customPayload) = $CreateEVMToTONOrder$_load_not_mut($payload.begin_parse());
+    throw_if(87, __tact_int_eq_nullable_left(__tact_dict_get_slice_int($self'whiteLists, 267, __tact_context_get_sender(), 1), true));
+    throw_if(75, ($global_now() >= $msg'orderConfig'timelock));
+    throw_if(90, (~ null?($OrderConfig$_load_opt(__tact_dict_get_uint_cell($self'escrowLock, 256, $msg'orderConfig'hashlock)))));
+    $msg'orderConfig'direction = 1;
+    $self'escrowLock~__tact_dict_set_uint_cell(256, $msg'orderConfig'hashlock, $OrderConfig$_store_cell(($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), begin_cell()));
+    $self'totalOrders = ($self'totalOrders + 1);
+    $self'totalVolume = ($self'totalVolume + $msg'orderConfig'amount);
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_createTONToEVMOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, cell $payload) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'targetChainId, $msg'customPayload) = $CreateTONToEVMOrder$_load_not_mut($payload.begin_parse());
+    throw_if(87, __tact_int_eq_nullable_left(__tact_dict_get_slice_int($self'whiteLists, 267, __tact_context_get_sender(), 1), true));
+    throw_if(75, ($global_now() >= $msg'orderConfig'timelock));
+    throw_if(90, (~ null?($OrderConfig$_load_opt(__tact_dict_get_uint_cell($self'escrowLock, 256, $msg'orderConfig'hashlock)))));
+    $msg'orderConfig'direction = 0;
+    $self'escrowLock~__tact_dict_set_uint_cell(256, $msg'orderConfig'hashlock, $OrderConfig$_store_cell(($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), begin_cell()));
+    $self'totalOrders = ($self'totalOrders + 1);
+    $self'totalVolume = ($self'totalVolume + $msg'orderConfig'amount);
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_partialFill((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, int, int, slice, cell) $msg) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'orderHash, $msg'secret, $msg'fillAmount, $msg'resolver, $msg'customPayload)) = $msg;
+    tuple $orderConfigData = $OrderConfig$_load_opt(__tact_dict_get_uint_cell($self'escrowLock, 256, $msg'orderHash));
+    if ((~ null?($orderConfigData))) {
+        var ($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction) = $OrderConfig$_not_null($orderConfigData);
+        throw_if(91, $order'finalized);
+        throw_if(103, ($msg'fillAmount > ($order'amount - $order'totalFilled)));
+        throw_if(104, (~ null?(__tact_dict_get_uint_uint($order'partialFills, 256, $msg'secret, 64))));
+        $order'partialFills~__tact_dict_set_uint_uint(256, $msg'secret, $msg'fillAmount, 64);
+        $order'totalFilled = ($order'totalFilled + $msg'fillAmount);
+        tuple $relayerData = $RelayerData$_load_opt(__tact_dict_get_slice_cell($self'relayers, 267, $msg'resolver));
+        if ((~ null?($relayerData))) {
+            var ($updatedRelayer'address, $updatedRelayer'whitelisted, $updatedRelayer'totalResolves, $updatedRelayer'successRate) = $RelayerData$_constructor_address_whitelisted_totalResolves_successRate($RelayerData$_get_address($RelayerData$_not_null($relayerData)), $RelayerData$_get_whitelisted($RelayerData$_not_null($relayerData)), ($RelayerData$_get_totalResolves($RelayerData$_not_null($relayerData)) + 1), $RelayerData$_get_successRate($RelayerData$_not_null($relayerData)));
+            $self'relayers~__tact_dict_set_slice_cell(267, $msg'resolver, $RelayerData$_store_cell(($updatedRelayer'address, $updatedRelayer'whitelisted, $updatedRelayer'totalResolves, $updatedRelayer'successRate), begin_cell()));
+        }
+        $self'totalResolves = ($self'totalResolves + 1);
+        return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+    }
+    tuple $orderData = $Order$_load_opt(__tact_dict_get_uint_cell($self'escrowOrder, 256, $msg'orderHash));
+    if ((~ null?($orderData))) {
+        var ($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction) = $Order$_not_null($orderData);
+        throw_if(91, $order'finalized);
+        throw_if(103, ($msg'fillAmount > ($order'amount - $order'totalFilled)));
+        throw_if(104, (~ null?(__tact_dict_get_uint_uint($order'partialFills, 256, $msg'secret, 64))));
+        $order'partialFills~__tact_dict_set_uint_uint(256, $msg'secret, $msg'fillAmount, 64);
+        $order'totalFilled = ($order'totalFilled + $msg'fillAmount);
+        tuple $relayerData = $RelayerData$_load_opt(__tact_dict_get_slice_cell($self'relayers, 267, $msg'resolver));
+        if ((~ null?($relayerData))) {
+            var ($updatedRelayer'address, $updatedRelayer'whitelisted, $updatedRelayer'totalResolves, $updatedRelayer'successRate) = $RelayerData$_constructor_address_whitelisted_totalResolves_successRate($RelayerData$_get_address($RelayerData$_not_null($relayerData)), $RelayerData$_get_whitelisted($RelayerData$_not_null($relayerData)), ($RelayerData$_get_totalResolves($RelayerData$_not_null($relayerData)) + 1), $RelayerData$_get_successRate($RelayerData$_not_null($relayerData)));
+            $self'relayers~__tact_dict_set_slice_cell(267, $msg'resolver, $RelayerData$_store_cell(($updatedRelayer'address, $updatedRelayer'whitelisted, $updatedRelayer'totalResolves, $updatedRelayer'successRate), begin_cell()));
+        }
+        $self'totalResolves = ($self'totalResolves + 1);
+        return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+    }
+    throw(88);
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processJettonTransfer((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, slice, int, int, int, int, cell, int, int) $order, int $amount, int $secret) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)) = $order;
+    slice $jettonWallet = __tact_dict_get_slice_slice($self'jettonAccount, 267, $order'srcJettonAddress);
+    var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
+    int $remainingValue = ($ctx'value - $global_priceOfJettonForward($Context$_fun_readForwardFee(($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw)), 1));
+    $remainingValue = $global_min($remainingValue, 0);
+    $global_message($MessageParameters$_constructor_to_value_mode_body(__tact_not_null($jettonWallet), 0, 64, $SendViaJettonTransfer$_store_cell($SendViaJettonTransfer$_constructor_queryId_amount_responseDestination_destination_forwardTonAmount_forwardPayload_customPayload(0, $amount, $order'receiverPubKey, $order'receiverPubKey, $remainingValue, $Cell$_fun_beginParse($Builder$_fun_endCell($Builder$_fun_storeRef($global_serializeOrderConfig(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), $secret), $global_beginCell()))), null()), begin_cell())));
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processEVMTransfer((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, slice, int, int, int, int, cell, int, int) $order, int $amount, int $secret) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)) = $order;
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processJettonTransferOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, int, int, int, int, cell, int, int) $order, int $amount, int $secret) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)) = $order;
+    slice $jettonWallet = __tact_dict_get_slice_slice($self'jettonAccount, 267, $order'srcJettonAddress);
+    var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
+    int $remainingValue = ($ctx'value - $global_priceOfJettonForward($Context$_fun_readForwardFee(($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw)), 1));
+    $remainingValue = $global_min($remainingValue, 0);
+    $global_message($MessageParameters$_constructor_to_value_mode_body(__tact_not_null($jettonWallet), 0, 64, $SendViaJettonTransfer$_store_cell($SendViaJettonTransfer$_constructor_queryId_amount_responseDestination_destination_forwardTonAmount_forwardPayload_customPayload(0, $amount, $order'senderPubKey, $order'senderPubKey, $remainingValue, $Cell$_fun_beginParse($Builder$_fun_endCell($Builder$_fun_storeRef($global_serializeOrder(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), $secret), $global_beginCell()))), null()), begin_cell())));
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_completePartialFill((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, int, cell) $msg) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'orderHash, $msg'secret, $msg'customPayload)) = $msg;
+    tuple $orderConfigData = $OrderConfig$_load_opt(__tact_dict_get_uint_cell($self'escrowLock, 256, $msg'orderHash));
+    if ((~ null?($orderConfigData))) {
+        var ($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction) = $OrderConfig$_not_null($orderConfigData);
+        int $fillAmount = __tact_dict_get_uint_uint($order'partialFills, 256, $msg'secret, 64);
+        throw_if(95, null?($fillAmount));
+        if (( (($order'direction == 0)) ? (true) : (($order'direction == 2)) )) {
+            ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_processJettonTransfer(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), __tact_not_null($fillAmount), $msg'secret);
+        } else {
+            ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_processEVMTransfer(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), __tact_not_null($fillAmount), $msg'secret);
+        }
+        return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+    }
+    tuple $orderData = $Order$_load_opt(__tact_dict_get_uint_cell($self'escrowOrder, 256, $msg'orderHash));
+    if ((~ null?($orderData))) {
+        var ($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction) = $Order$_not_null($orderData);
+        int $fillAmount = __tact_dict_get_uint_uint($order'partialFills, 256, $msg'secret, 64);
+        throw_if(95, null?($fillAmount));
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_processJettonTransferOrder(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), __tact_not_null($fillAmount), $msg'secret);
+        return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+    }
+    throw(88);
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_getFund((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, int, cell) $msg) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'secret, $msg'hash, $msg'customPayload)) = $msg;
+    tuple $data = $OrderConfig$_load_opt(__tact_dict_get_uint_cell($self'escrowLock, 256, $msg'hash));
+    throw_if(88, null?($data));
+    var ($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction) = $OrderConfig$_not_null($data);
+    int $secretHash = $global_keccakBytes32($msg'secret);
+    throw_if(75, ($global_now() > $order'timelock));
+    throw_if(91, $order'finalized);
+    throw_if(89, ($secretHash != $order'hashlock));
+    $order'finalized = true;
+    ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_processJettonTransfer(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), $order'amount, $msg'secret);
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processJettonRefund((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, slice, int, int, int, int, cell, int, int) $order) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)) = $order;
+    slice $jettonWallet = __tact_dict_get_slice_slice($self'jettonAccount, 267, $order'srcJettonAddress);
+    var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
+    int $remainingValue = ($ctx'value - $global_priceOfJettonForward($Context$_fun_readForwardFee(($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw)), 1));
+    $remainingValue = $global_min($remainingValue, 0);
+    $global_message($MessageParameters$_constructor_to_value_mode_body(__tact_not_null($jettonWallet), 0, 64, $SendViaJettonTransfer$_store_cell($SendViaJettonTransfer$_constructor_queryId_amount_responseDestination_destination_forwardTonAmount_forwardPayload_customPayload(0, $order'amount, $order'senderPubKey, $order'senderPubKey, $remainingValue, $Cell$_fun_beginParse($Builder$_fun_endCell($Builder$_fun_storeRef($global_serializeOrderConfig(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), 0), $global_beginCell()))), null()), begin_cell())));
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_refund((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, cell) $msg) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'hash, $msg'customPayload)) = $msg;
+    tuple $data = $OrderConfig$_load_opt(__tact_dict_get_uint_cell($self'escrowLock, 256, $msg'hash));
+    throw_if(88, null?($data));
+    var ($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction) = $OrderConfig$_not_null($data);
+    throw_if(80, ($global_now() < $order'timelock));
+    throw_if(91, $order'finalized);
+    $order'finalized = true;
+    ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_processJettonRefund($OrderConfig$_tensor_cast(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'receiverPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)));
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_processJettonRefundOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, slice, int, int, int, int, cell, int, int) $order) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)) = $order;
+    slice $jettonWallet = __tact_dict_get_slice_slice($self'jettonAccount, 267, $order'srcJettonAddress);
+    var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
+    int $remainingValue = ($ctx'value - $global_priceOfJettonForward($Context$_fun_readForwardFee(($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw)), 1));
+    $remainingValue = $global_min($remainingValue, 0);
+    $global_message($MessageParameters$_constructor_to_value_mode_body(__tact_not_null($jettonWallet), 0, 64, $SendViaJettonTransfer$_store_cell($SendViaJettonTransfer$_constructor_queryId_amount_responseDestination_destination_forwardTonAmount_forwardPayload_customPayload(0, $order'amount, $order'senderPubKey, $order'senderPubKey, $remainingValue, $Cell$_fun_beginParse($Builder$_fun_endCell($Builder$_fun_storeRef($global_serializeOrder(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction), 0), $global_beginCell()))), null()), begin_cell())));
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_refundOrder((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, cell) $msg) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'hash, $msg'customPayload)) = $msg;
+    tuple $data = $Order$_load_opt(__tact_dict_get_uint_cell($self'escrowOrder, 256, $msg'hash));
+    throw_if(88, null?($data));
+    var ($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction) = $Order$_not_null($data);
+    throw_if(80, ($global_now() < $order'timelock));
+    throw_if(91, $order'finalized);
+    $order'finalized = true;
+    ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_processJettonRefundOrder($Order$_tensor_cast(($order'id, $order'srcJettonAddress, $order'senderPubKey, $order'hashlock, $order'timelock, $order'amount, $order'finalized, $order'partialFills, $order'totalFilled, $order'direction)));
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_deployEscrow((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (int, slice, cell) $msg) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'chainId, $msg'targetAddress, $msg'customPayload)) = $msg;
+    throw_if(86, ( ~ equal_slices_bits($self'owner, __tact_context_get_sender()) ));
+    var ($escrowContract'chainId, $escrowContract'contractAddress, $escrowContract'deployed, $escrowContract'totalOrders) = $EscrowContract$_constructor_chainId_contractAddress_deployed_totalOrders($msg'chainId, $msg'targetAddress, true, 0);
+    $self'escrowContracts~__tact_dict_set_uint_cell(32, $msg'chainId, $EscrowContract$_store_cell(($escrowContract'chainId, $escrowContract'contractAddress, $escrowContract'deployed, $escrowContract'totalOrders), begin_cell()));
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int), ()) $TonFusion$_fun_updateRelayerStats((slice, cell, cell, cell, cell, cell, cell, cell, int, int, int) $self, (slice, int, cell) $msg) impure inline_ref {
+    var (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)) = $self;
+    var (($msg'relayer, $msg'success, $msg'customPayload)) = $msg;
+    tuple $relayerData = $RelayerData$_load_opt(__tact_dict_get_slice_cell($self'relayers, 267, $msg'relayer));
+    throw_if(96, null?($relayerData));
+    int $newTotalResolves = ($RelayerData$_get_totalResolves($RelayerData$_not_null($relayerData)) + 1);
+    int $newSuccessRate = $RelayerData$_get_successRate($RelayerData$_not_null($relayerData));
+    if ($msg'success) {
+        $newSuccessRate = $global_min(($RelayerData$_get_successRate($RelayerData$_not_null($relayerData)) + 1), 100);
+    } else {
+        $newSuccessRate = $global_max(($RelayerData$_get_successRate($RelayerData$_not_null($relayerData)) - 1), 0);
+    }
+    var ($updatedRelayer'address, $updatedRelayer'whitelisted, $updatedRelayer'totalResolves, $updatedRelayer'successRate) = $RelayerData$_constructor_address_whitelisted_totalResolves_successRate($RelayerData$_get_address($RelayerData$_not_null($relayerData)), $RelayerData$_get_whitelisted($RelayerData$_not_null($relayerData)), $newTotalResolves, $newSuccessRate);
+    $self'relayers~__tact_dict_set_slice_cell(267, $msg'relayer, $RelayerData$_store_cell(($updatedRelayer'address, $updatedRelayer'whitelisted, $updatedRelayer'totalResolves, $updatedRelayer'successRate), begin_cell()));
+    return (($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves), ());
+}
+
+;;
+;; Get methods of a Contract TonFusion
+;;
+
+;;
+;; Routing of a Contract TonFusion
+;;
+
+;; message opcode reader utility: only binary receivers
+;; Returns 32 bit message opcode, otherwise throws the "Invalid incoming message" exit code
+(slice, int) ~load_opcode_internal(slice s) asm( -> 1 0) "32 LDUQ 130 THROWIFNOT";
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    cs~skip_bits(2);
+    var msg_bounceable = cs~load_int(1);
+    var msg_bounced = cs~load_int(1);
+    slice msg_sender_addr = cs~load_msg_addr();
+    __tact_context = (msg_bounceable, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves) = $TonFusion$_contract_load();
+    
+    ;; Handle bounced messages
+    if (msg_bounced) { return (); }
+    int op = 0;
+    int in_msg_length = slice_bits(in_msg);
+    if (in_msg_length >= 32) {
+        op = in_msg~load_uint(32);
+    }
+    ;; Receive SetWhiteList message
+    if (op == 0xa985fdf8) {
+        var $action'resolver = in_msg~load_msg_addr();
+        var $action'whitelistStatus = in_msg~load_int(1);
+        throw_if(86, ( ~ equal_slices_bits($self'owner, __tact_context_get_sender()) ));
+        $self'whiteLists~__tact_dict_set_slice_int(267, $action'resolver, $action'whitelistStatus, 1);
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive RegisterRelayer message
+    if (op == 0x7362d09e) {
+        var $action'relayer = in_msg~load_msg_addr();
+        var $action'customPayload = in_msg~load_maybe_ref();
+        throw_if(86, ( ~ equal_slices_bits($self'owner, __tact_context_get_sender()) ));
+        var ($relayerData'address, $relayerData'whitelisted, $relayerData'totalResolves, $relayerData'successRate) = $RelayerData$_constructor_address_whitelisted_totalResolves_successRate($action'relayer, true, 0, 0);
+        $self'relayers~__tact_dict_set_slice_cell(267, $action'relayer, $RelayerData$_store_cell(($relayerData'address, $relayerData'whitelisted, $relayerData'totalResolves, $relayerData'successRate), begin_cell()));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive JettonNotifyWithActionRequest message
+    if (op == 0x7362d09c) {
+        var $action'queryId = in_msg~load_uint(64);
+        var $action'amount = in_msg~load_varuint16();
+        var $action'sender = in_msg~load_msg_addr();
+        var $action'actionOpcode = in_msg~load_uint(32);
+        var $action'actionPayload = in_msg~load_ref();
+        if (($action'actionOpcode == 0xf512f7df)) {
+            var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'jetton, $msg'customPayload) = $LockJetton$_load_not_mut($action'actionPayload.begin_parse());
+            slice $wallet = $global_calculateJettonWalletAddress($action'sender, $msg'orderConfig'srcJettonAddress, $msg'jetton);
+            if (( equal_slices_bits($wallet, __tact_context_get_sender()) )) {
+                ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_create($action'actionPayload);
+            } else {
+                $global_cashback(__tact_context_get_sender());
+                throw(86);
+            }
+        } elseif (($action'actionOpcode == 0x7362d09c)) {
+            var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'jetton, $msg'customPayload) = $CreateOrder$_load_not_mut($action'actionPayload.begin_parse());
+            slice $wallet = $global_calculateJettonWalletAddress($action'sender, $msg'orderConfig'srcJettonAddress, $msg'jetton);
+            if (( equal_slices_bits($wallet, __tact_context_get_sender()) )) {
+                ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_makeOrder($action'actionPayload);
+            } else {
+                $global_cashback(__tact_context_get_sender());
+                throw(86);
+            }
+        } elseif (($action'actionOpcode == 0x8b341822)) {
+            var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'evmContractAddress, $msg'customPayload) = $CreateEVMToTONOrder$_load_not_mut($action'actionPayload.begin_parse());
+            ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_createEVMToTONOrder($action'actionPayload);
+        } elseif (($action'actionOpcode == 0x62239978)) {
+            var (($msg'orderConfig'id, $msg'orderConfig'srcJettonAddress, $msg'orderConfig'senderPubKey, $msg'orderConfig'receiverPubKey, $msg'orderConfig'hashlock, $msg'orderConfig'timelock, $msg'orderConfig'amount, $msg'orderConfig'finalized, $msg'orderConfig'partialFills, $msg'orderConfig'totalFilled, $msg'orderConfig'direction), $msg'targetChainId, $msg'customPayload) = $CreateTONToEVMOrder$_load_not_mut($action'actionPayload.begin_parse());
+            ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_createTONToEVMOrder($action'actionPayload);
+        } else {
+            $global_cashback(__tact_context_get_sender());
+        }
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive GetFund message
+    if (op == 0x50635fd2) {
+        var $action'secret = in_msg~load_uint(256);
+        var $action'hash = in_msg~load_uint(256);
+        var $action'customPayload = in_msg~load_maybe_ref();
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_getFund($GetFund$_tensor_cast(($action'secret, $action'hash, $action'customPayload)));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive Refund message
+    if (op == 0xe49e1dcb) {
+        var $action'hash = in_msg~load_uint(256);
+        var $action'customPayload = in_msg~load_maybe_ref();
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_refund($Refund$_tensor_cast(($action'hash, $action'customPayload)));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive RefundOrder message
+    if (op == 0x7362d09d) {
+        var $action'hash = in_msg~load_uint(256);
+        var $action'customPayload = in_msg~load_maybe_ref();
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_refundOrder($RefundOrder$_tensor_cast(($action'hash, $action'customPayload)));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive PartialFill message
+    if (op == 0x4ef5cb26) {
+        var $action'orderHash = in_msg~load_uint(256);
+        var $action'secret = in_msg~load_uint(256);
+        var $action'fillAmount = in_msg~load_uint(64);
+        var $action'resolver = in_msg~load_msg_addr();
+        var $action'customPayload = in_msg~load_maybe_ref();
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_partialFill($PartialFill$_tensor_cast(($action'orderHash, $action'secret, $action'fillAmount, $action'resolver, $action'customPayload)));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive CompletePartialFill message
+    if (op == 0x8b341823) {
+        var $action'orderHash = in_msg~load_uint(256);
+        var $action'secret = in_msg~load_uint(256);
+        var $action'customPayload = in_msg~load_maybe_ref();
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_completePartialFill($CompletePartialFill$_tensor_cast(($action'orderHash, $action'secret, $action'customPayload)));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive DeployEscrow message
+    if (op == 0x595f07bc) {
+        var $action'chainId = in_msg~load_uint(32);
+        var $action'targetAddress = in_msg~load_msg_addr();
+        var $action'customPayload = in_msg~load_maybe_ref();
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_deployEscrow($DeployEscrow$_tensor_cast(($action'chainId, $action'targetAddress, $action'customPayload)));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive UpdateRelayerStats message
+    if (op == 0x7362d09f) {
+        var $action'relayer = in_msg~load_msg_addr();
+        var $action'success = in_msg~load_int(1);
+        var $action'customPayload = in_msg~load_maybe_ref();
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_updateRelayerStats($UpdateRelayerStats$_tensor_cast(($action'relayer, $action'success, $action'customPayload)));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive Deploy message
+    if (op == 0x946a98b6) {
+        var $deploy'queryId = in_msg~load_uint(64);
+        ($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves)~$TonFusion$_fun_notify($DeployOk$_store_cell($DeployOk$_constructor_queryId($deploy'queryId), begin_cell()));
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    
+    ;; Receive empty message
+    if ((op == 0) & (in_msg_length <= 32)) {
+        $global_cashback(__tact_context_get_sender());
+        $TonFusion$_contract_store(($self'owner, $self'escrowLock, $self'escrowOrder, $self'jettons, $self'jettonAccount, $self'whiteLists, $self'relayers, $self'escrowContracts, $self'totalOrders, $self'totalVolume, $self'totalResolves));
+        return ();
+    }
+    ;; Throw if not handled
+    throw(130);
+}
+
+
+() __tact_selector_hack_asm() impure asm """
+@atend @ 1 {
+        execute current@ context@ current!
+        {
+            // The core idea of this function is to save gas by avoiding unnecessary dict jump, when recv_internal/recv_external is called
+            // We want to extract recv_internal/recv_external from the dict and select needed function
+            // not by jumping to the needed function by it's index, but by using usual IF statements.
+
+            }END> b> // Close previous builder, now we have a cell of previous code on top of the stack
+
+            <{ // Start of the new code builder
+                SETCP0
+                // Swap the new code builder with the previous code, now we have previous code on top of the stack
+                swap
+                // Transform cell to slice and load first ref from the previous code, now we have the dict on top of the stack
+                <s ref@
+
+                // Extract the recv_internal from the dict
+                dup 0 swap @procdictkeylen idict@ { "internal shortcut error" abort } ifnot
+                swap
+
+                // Delete the recv_internal from the dict
+                0 swap @procdictkeylen idict- drop
+                // Delete the recv_external from the dict (it's okay if it's not there)
+                -1 swap @procdictkeylen idict- drop
+                // Delete the __tact_selector_hack from the dict
+                65535 swap @procdictkeylen idict- drop
+
+                // Bring the code builder from the bottom of the stack
+                // because if recv_external extraction is optional, and the number of elements on the stack is not fixed
+                depth 1- roll
+                // Swap with the dict from which we extracted recv_internal and (maybe) recv_external
+                swap
+
+                // Check if the dict is empty
+                dup null?
+                // Store a copy of this flag in the bottom of the stack
+                dup depth 1- -roll
+                {
+                    // If the dict is empty, just drop it (it will be null if it's empty)
+                    drop
+                }
+                {
+                    // If the dict is not empty, prepare continuation to be stored in c3
+                    <{
+                        // Save this dict as first ref in this continuation, it will be pushed in runtime by DICTPUSHCONST
+                        swap @procdictkeylen DICTPUSHCONST
+                        // Jump to the needed function by it's index
+                        DICTIGETJMPZ
+                        // If such key is not found, throw 11 along with the key as an argument
+                        11 THROWARG
+                    }> PUSHCONT
+                    // Store the continuation in c3
+                    c3 POP
+                } cond
+
+                // Function id is on top of the (runtime) stack
+                DUP IFNOTJMP:<{
+                    // place recv_internal here
+                    DROP swap @addop
+                }>
+
+                // Bring back the flag, indicating if the dict is empty or not from the bottom of the stack
+                depth 1- roll
+                {
+                    // If the dict is empty, throw 11
+                    11 THROWARG
+                }
+                {
+                    // If the dict is not empty, jump to continuation from c3
+                    c3 PUSH JMPX
+                } cond
+            }> b>
+        } : }END>c
+        current@ context! current!
+    } does @atend !
+""";
+
+() __tact_selector_hack() method_id(65535) {
+    return __tact_selector_hack_asm();
+}

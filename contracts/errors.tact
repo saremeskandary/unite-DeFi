@@ -17,8 +17,25 @@ const MISSING_MAKER_SRC_ATA: Int = 84;
 const INVALID_RECIPIENT: Int = 85;
 const INVALID_OWNER: Int = 86;
 const INVALID_WHITELIST: Int = 87;
-const INVALID_HASH: Int = 87;
+const INVALID_HASH: Int = 88;
 const INVALID_SECRET: Int = 89;
+const ORDER_ALREADY_EXISTS: Int = 90;
+const ORDER_ALREADY_FINALIZED: Int = 91;
+
+// New error codes for enhanced functionality
+const INVALID_SWAP_DIRECTION: Int = 92;
+const INVALID_CHAIN_ID: Int = 93;
+const INVALID_PARTIAL_FILL: Int = 94;
+const ORDER_NOT_PARTIALLY_FILLED: Int = 95;
+const INVALID_RELAYER: Int = 96;
+const ESCROW_DEPLOYMENT_FAILED: Int = 97;
+const INVALID_ESCROW_CONTRACT: Int = 98;
+const INSUFFICIENT_FUNDS: Int = 99;
+const RELAYER_NOT_WHITELISTED: Int = 100;
+const ORDER_ALREADY_COMPLETED: Int = 101;
+const INVALID_TARGET_CHAIN: Int = 102;
+const PARTIAL_FILL_EXCEEDS_ORDER: Int = 103;
+const SECRET_ALREADY_USED: Int = 104;
 
 
 const WRONG_OP: Int = 0xffff;
