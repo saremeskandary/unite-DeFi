@@ -68,7 +68,7 @@
   }
 }
 
-/* PWA-specific styles */
+/* PWA-specific styles - modified to prevent hydration issues */
 html {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
@@ -78,7 +78,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
-  touch-action: manipulation;
+  /* Remove touch-action manipulation to prevent hydration issues */
+  /* touch-action: manipulation; */
 }
 
 /* Prevent page transitions and make it feel more app-like */

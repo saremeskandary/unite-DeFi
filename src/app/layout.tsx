@@ -9,6 +9,7 @@ import { ErrorHandlingProvider } from "@/components/providers/error-handling-pro
 import { Toaster } from "@/components/ui/toaster"
 import { Header } from "@/components/layout/header"
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register"
+import { TonConnectProvider } from "@/components/providers/ton-connect-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -66,17 +67,19 @@ export default function RootLayout({
         <link rel="mask-icon" href="/Unite-Defi-favicon.png" color="#3b82f6" />
         <link rel="shortcut icon" href="/Unite-Defi-favicon.png" />
       </head>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning={true}>
         <ErrorBoundary>
           <ErrorHandlingProvider>
             <QueryProvider>
-              {/* Temporarily disabled WebSocket provider to prevent connection errors */}
-              {/* <WebSocketProvider> */}
-              <Header />
-              {children}
-              <Toaster />
-              <ServiceWorkerRegister />
-              {/* </WebSocketProvider> */}
+              <TonConnectProvider>
+                {/* Temporarily disabled WebSocket provider to prevent connection errors */}
+                {/* <WebSocketProvider> */}
+                <Header />
+                {children}
+                <Toaster />
+                <ServiceWorkerRegister />
+                {/* </WebSocketProvider> */}
+              </TonConnectProvider>
             </QueryProvider>
           </ErrorHandlingProvider>
         </ErrorBoundary>

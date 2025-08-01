@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { SwapInterface } from "@/components/swap/swap-interface"
+import { SwapInterfaceClient } from "@/components/swap/swap-interface-client"
 import { OrderStatusPanel } from "@/components/orders/order-status-panel"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { ClientOnly } from "@/components/providers/client-only"
 
 export default function HomePage() {
   const [activeOrder, setActiveOrder] = useState<string | null>(null)
@@ -34,12 +35,28 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Main Swap Interface */}
             <div className="space-y-6">
-              <SwapInterface onOrderCreated={setActiveOrder} />
+              <ClientOnly
+                fallback={
+                  <div className="animate-pulse">
+                    <div className="h-96 bg-card rounded-lg border border-border"></div>
+                  </div>
+                }
+              >
+                <SwapInterfaceClient onOrderCreated={setActiveOrder} />
+              </ClientOnly>
             </div>
 
             {/* Order Status Panel */}
             <div className="space-y-6">
-              <OrderStatusPanel orderId={activeOrder} />
+              <ClientOnly
+                fallback={
+                  <div className="animate-pulse">
+                    <div className="h-64 bg-card rounded-lg border border-border"></div>
+                  </div>
+                }
+              >
+                <OrderStatusPanel orderId={activeOrder} />
+              </ClientOnly>
 
               {/* Stats Cards */}
               <div className="grid grid-cols-2 gap-4">

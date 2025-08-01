@@ -12,6 +12,7 @@ const nextConfig = {
   // Add timeout configurations
   experimental: {
     // Remove ethers from serverExternalPackages to fix the error
+    optimizePackageImports: ['@tonconnect/ui-react'],
   },
   // Increase timeout for development
   ...(process.env.NODE_ENV === 'development' && {
