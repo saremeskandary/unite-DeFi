@@ -215,13 +215,9 @@ const SECRET_ALREADY_USED: Int = 104;
 // BRIDGE AND ORACLE ERRORS (110-119)
 // ============================================================================
 
-/// @notice Invalid bridge configuration error
-/// @dev Used when bridge configuration is invalid or missing
-const INVALID_BRIDGE_CONFIG: Int = 110;
 
-/// @notice Invalid oracle configuration error
-/// @dev Used when oracle configuration is invalid or missing
-const INVALID_ORACLE_CONFIG: Int = 111;
+
+
 
 /// @notice Invalid transaction error
 /// @dev Used when transaction is not found or invalid
@@ -247,9 +243,7 @@ const INVALID_RETRY_ATTEMPT: Int = 116;
 /// @dev Used when EVM chain is not active
 const CHAIN_NOT_ACTIVE: Int = 117;
 
-/// @notice EVM gas limit exceeded error
-/// @dev Used when EVM gas limit is exceeded
-const EVM_GAS_LIMIT_EXCEEDED: Int = 118;
+
 
 /// @notice Invalid bridge fee error
 /// @dev Used when bridge fee is invalid

@@ -968,7 +968,7 @@ contract TonFusion with Deployable {
         }
         
         // 7. Send enhanced message to bridge contract with retry logic
-        self.sendCrossChainMessage(transaction.chainId, crossChainMsg.toCell(), 0);
+        sendCrossChainMessage(transaction.chainId, crossChainMsg.toCell(), 0);
         
         // 8. Log the cross-chain transfer for monitoring
         // In a real implementation, this would trigger bridge execution and monitoring
@@ -1409,6 +1409,23 @@ contract TonFusion with Deployable {
             mode: SendRemainingValue,
             body: retryMsg,
         });
+    }
+
+    // Getter methods for EVM integration
+    fun getGetEVMBridge(bridgeId: Int): EVMBridgeData? {
+        return self.evmBridges.get(bridgeId);
+    }
+
+    fun getGetEVMOracle(oracleId: Int): EVMOracleData? {
+        return self.evmOracles.get(oracleId);
+    }
+
+    fun getGetEVMTransaction(transactionNonce: Int): EVMTransaction? {
+        return self.evmTransactions.get(transactionNonce);
+    }
+
+    fun getGetEVMChainConfig(chainId: Int): EVMChainConfig? {
+        return self.evmChainConfigs.get(chainId);
     }
 }
 

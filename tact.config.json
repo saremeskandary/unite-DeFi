@@ -10,6 +10,16 @@
         "external": false
       },
       "mode": "full"
+    },
+    {
+      "name": "TestJettonMaster",
+      "path": "contracts/test_jetton_master.tact",
+      "output": "build/TestJettonMaster",
+      "options": {
+        "debug": false,
+        "external": false
+      },
+      "mode": "full"
     }
   ]
 }

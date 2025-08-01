@@ -1,9 +1,9 @@
 # Tact compilation report
 Contract: TonFusion
-BoC Size: 7802 bytes
+BoC Size: 9859 bytes
 
 ## Structures (Structs and Messages)
-Total structures: 48
+Total structures: 66
 
 ### DataSize
 TL-B: `_ cells:int257 bits:int257 refs:int257 = DataSize`
@@ -141,6 +141,30 @@ Signature: `JettonNotifyWithActionRequest{queryId:uint64,amount:coins,sender:add
 TL-B: `get_wallet_address#2fcb26a2 queryId:int257 owner:address = GetWalletAddress`
 Signature: `GetWalletAddress{queryId:int257,owner:address}`
 
+### RegisterEVMBridge
+TL-B: `register_evm_bridge#8a9b0c1d bridgeId:uint32 sourceChainId:uint32 targetChainId:uint32 bridgeContract:address bridgeFee:uint64 minTransferAmount:uint64 maxTransferAmount:uint64 customPayload:Maybe ^cell = RegisterEVMBridge`
+Signature: `RegisterEVMBridge{bridgeId:uint32,sourceChainId:uint32,targetChainId:uint32,bridgeContract:address,bridgeFee:uint64,minTransferAmount:uint64,maxTransferAmount:uint64,customPayload:Maybe ^cell}`
+
+### UpdateEVMBridge
+TL-B: `update_evm_bridge#9b0c1d2e bridgeId:uint32 bridgeFee:uint64 minTransferAmount:uint64 maxTransferAmount:uint64 isActive:bool customPayload:Maybe ^cell = UpdateEVMBridge`
+Signature: `UpdateEVMBridge{bridgeId:uint32,bridgeFee:uint64,minTransferAmount:uint64,maxTransferAmount:uint64,isActive:bool,customPayload:Maybe ^cell}`
+
+### RegisterEVMOracle
+TL-B: `register_evm_oracle#0c1d2e3f oracleId:uint32 chainId:uint32 oracleContract:address tokenAddress:address priceDecimals:uint8 heartbeatInterval:uint32 customPayload:Maybe ^cell = RegisterEVMOracle`
+Signature: `RegisterEVMOracle{oracleId:uint32,chainId:uint32,oracleContract:address,tokenAddress:address,priceDecimals:uint8,heartbeatInterval:uint32,customPayload:Maybe ^cell}`
+
+### UpdateEVMOracle
+TL-B: `update_evm_oracle#1d2e3f4a oracleId:uint32 heartbeatInterval:uint32 isActive:bool customPayload:Maybe ^cell = UpdateEVMOracle`
+Signature: `UpdateEVMOracle{oracleId:uint32,heartbeatInterval:uint32,isActive:bool,customPayload:Maybe ^cell}`
+
+### EVMBridgeTimeout
+TL-B: `evm_bridge_timeout#2e3f4a5b bridgeId:uint32 transactionNonce:uint64 customPayload:Maybe ^cell = EVMBridgeTimeout`
+Signature: `EVMBridgeTimeout{bridgeId:uint32,transactionNonce:uint64,customPayload:Maybe ^cell}`
+
+### RetryEVMTransaction
+TL-B: `retry_evm_transaction#3f4a5b6c transactionNonce:uint64 newGasPrice:uint64 customPayload:Maybe ^cell = RetryEVMTransaction`
+Signature: `RetryEVMTransaction{transactionNonce:uint64,newGasPrice:uint64,customPayload:Maybe ^cell}`
+
 ### CalculateOutput
 TL-B: `_ protocolFeeAmount:uint64 integratorFeeAmount:uint64 outputAmount:uint64 = CalculateOutput`
 Signature: `CalculateOutput{protocolFeeAmount:uint64,integratorFeeAmount:uint64,outputAmount:uint64}`
@@ -188,6 +212,54 @@ Signature: `EVMOracleData{oracleId:uint32,chainId:uint32,oracleContract:address,
 ### CrossChainMessage
 TL-B: `_ sourceChain:uint32 targetChain:uint32 orderHash:uint256 amount:uint64 secret:uint256 timestamp:uint32 nonce:uint64 = CrossChainMessage`
 Signature: `CrossChainMessage{sourceChain:uint32,targetChain:uint32,orderHash:uint256,amount:uint64,secret:uint256,timestamp:uint32,nonce:uint64}`
+
+### ValidationResult
+TL-B: `_ isValid:bool errorCode:uint32 errorMessage:^cell chainId:uint32 isEscrowDeployed:bool isChainConnected:bool = ValidationResult`
+Signature: `ValidationResult{isValid:bool,errorCode:uint32,errorMessage:^cell,chainId:uint32,isEscrowDeployed:bool,isChainConnected:bool}`
+
+### EscrowValidationResult
+TL-B: `_ isDeployed:bool contractAddress:^cell totalOrders:uint32 isActive:bool errorCode:uint32 errorMessage:^cell = EscrowValidationResult`
+Signature: `EscrowValidationResult{isDeployed:bool,contractAddress:^cell,totalOrders:uint32,isActive:bool,errorCode:uint32,errorMessage:^cell}`
+
+### ChainConnectivityStatus
+TL-B: `_ chainId:uint32 isConnected:bool lastPingTimestamp:uint32 responseTime:uint32 errorCount:uint32 isActive:bool = ChainConnectivityStatus`
+Signature: `ChainConnectivityStatus{chainId:uint32,isConnected:bool,lastPingTimestamp:uint32,responseTime:uint32,errorCount:uint32,isActive:bool}`
+
+### BridgeStatus
+TL-B: `_ isActive:bool lastHeartbeat:uint32 failureCount:uint32 totalTransactions:uint32 successRate:uint8 = BridgeStatus`
+Signature: `BridgeStatus{isActive:bool,lastHeartbeat:uint32,failureCount:uint32,totalTransactions:uint32,successRate:uint8}`
+
+### RetryResult
+TL-B: `_ shouldRetry:bool delaySeconds:uint32 errorCode:uint32 reason:^string = RetryResult`
+Signature: `RetryResult{shouldRetry:bool,delaySeconds:uint32,errorCode:uint32,reason:^string}`
+
+### TimeoutResult
+TL-B: `_ hasTimeout:bool timeoutType:^string severity:^string actions:^cell timeRemaining:uint32 = TimeoutResult`
+Signature: `TimeoutResult{hasTimeout:bool,timeoutType:^string,severity:^string,actions:^cell,timeRemaining:uint32}`
+
+### CircuitBreakerResult
+TL-B: `_ state:^string failureCount:uint32 lastFailureTime:uint32 resetTime:uint32 = CircuitBreakerResult`
+Signature: `CircuitBreakerResult{state:^string,failureCount:uint32,lastFailureTime:uint32,resetTime:uint32}`
+
+### EVMErrorResult
+TL-B: `_ errorCode:uint32 category:^string gasUsageRatio:uint8 recoveryActions:^cell isRetryable:bool estimatedCost:uint64 = EVMErrorResult`
+Signature: `EVMErrorResult{errorCode:uint32,category:^string,gasUsageRatio:uint8,recoveryActions:^cell,isRetryable:bool,estimatedCost:uint64}`
+
+### ErrorReport
+TL-B: `_ errorCode:uint32 category:^string severity:^string timestamp:uint32 transactionId:uint32 context:^cell recommendedActions:^cell isRetryable:bool = ErrorReport`
+Signature: `ErrorReport{errorCode:uint32,category:^string,severity:^string,timestamp:uint32,transactionId:uint32,context:^cell,recommendedActions:^cell,isRetryable:bool}`
+
+### BridgeFailureTracking
+TL-B: `_ bridgeId:uint32 failureCount:uint32 lastFailureTime:uint32 lastFailureCode:uint32 recoveryAttempts:uint32 isInRecovery:bool circuitBreakerState:^string = BridgeFailureTracking`
+Signature: `BridgeFailureTracking{bridgeId:uint32,failureCount:uint32,lastFailureTime:uint32,lastFailureCode:uint32,recoveryAttempts:uint32,isInRecovery:bool,circuitBreakerState:^string}`
+
+### OrderTimeoutTracking
+TL-B: `_ orderId:uint32 timelock:uint32 bridgeTimeout:uint32 lastCheckTime:uint32 timeoutStatus:^string escalationLevel:uint8 notifiedParties:^cell = OrderTimeoutTracking`
+Signature: `OrderTimeoutTracking{orderId:uint32,timelock:uint32,bridgeTimeout:uint32,lastCheckTime:uint32,timeoutStatus:^string,escalationLevel:uint8,notifiedParties:^cell}`
+
+### RetryConfig
+TL-B: `_ maxRetries:uint8 baseDelay:uint32 maxDelay:uint32 backoffMultiplier:uint8 jitterPercentage:uint8 retryableErrors:^cell = RetryConfig`
+Signature: `RetryConfig{maxRetries:uint8,baseDelay:uint32,maxDelay:uint32,backoffMultiplier:uint8,jitterPercentage:uint8,retryableErrors:^cell}`
 
 ### SendViaJettonTransfer
 TL-B: `send_via_jetton_transfer#0f8a7ea5 queryId:uint64 amount:coins destination:address responseDestination:address customPayload:Maybe ^cell forwardTonAmount:coins forwardPayload:remainder<slice> = SendViaJettonTransfer`
