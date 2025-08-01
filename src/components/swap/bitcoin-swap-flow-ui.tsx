@@ -18,12 +18,15 @@ import {
     Bitcoin,
     ArrowRight,
     Info,
-    Code
+    Code,
+    Download,
+    QrCode
 } from "lucide-react"
 import { toast } from "sonner"
 import { BitcoinSwapFlow, BitcoinSwapFlowParams, BitcoinSwapFlowResult } from "@/lib/blockchains/bitcoin/bitcoin-swap-flow"
 import { BitcoinTransactionBuilder, BitcoinTransactionData } from "@/lib/blockchains/bitcoin/bitcoin-transaction-builder"
 import { BitcoinTransactionViewer } from "./bitcoin-transaction-viewer"
+import { BitcoinTransactionBuilderUI } from "./bitcoin-transaction-builder-ui"
 
 interface BitcoinSwapFlowUIProps {
     fromToken: string
@@ -54,6 +57,9 @@ export function BitcoinSwapFlowUI({
     const [currentStep, setCurrentStep] = useState(1)
     const [transactionData, setTransactionData] = useState<BitcoinTransactionData | null>(null)
     const [showTransactionViewer, setShowTransactionViewer] = useState(false)
+    const [manualTransactionData, setManualTransactionData] = useState<any>(null)
+    const [showManualTransaction, setShowManualTransaction] = useState(false)
+    const [showTransactionBuilder, setShowTransactionBuilder] = useState(false)
 
     // Initialize Bitcoin swap flow
     const bitcoinSwapFlow = new BitcoinSwapFlow(
@@ -103,6 +109,69 @@ export function BitcoinSwapFlowUI({
             toast.success("Copied to clipboard")
         } catch (error) {
             toast.error("Failed to copy")
+        }
+    }
+
+    const downloadTransactionFile = (data: any, filename: string) => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        toast.success("Transaction file downloaded")
+    }
+
+    const generateManualTransaction = async () => {
+        if (!swapResult?.htlcAddress || !swapResult?.secretHash) {
+            toast.error("Missing swap data for transaction generation")
+            return
+        }
+
+        try {
+            // Generate a manual transaction for the user to sign
+            const manualTx = {
+                version: 1,
+                locktime: Math.floor(Date.now() / 1000) + 3600, // 1 hour
+                inputs: [
+                    {
+                        // This is a template - user needs to replace with their actual UTXOs
+                        txid: "USER_UTXO_TXID_HERE",
+                        vout: 0,
+                        sequence: 0xffffffff,
+                        scriptSig: "",
+                        witness: []
+                    }
+                ],
+                outputs: [
+                    {
+                        address: swapResult.htlcAddress,
+                        value: parseFloat(fromAmount) * 100000000, // Convert to satoshis
+                        scriptPubKey: "HTLC_SCRIPT_PUBKEY"
+                    }
+                ],
+                fee: 1000, // Estimated fee in satoshis
+                totalAmount: parseFloat(fromAmount) * 100000000 + 1000,
+                instructions: [
+                    "1. Replace USER_UTXO_TXID_HERE with your actual UTXO transaction ID",
+                    "2. Add your UTXO details (vout, scriptPubKey, etc.)",
+                    "3. Sign the transaction with your private key",
+                    "4. Broadcast the signed transaction to the Bitcoin network"
+                ],
+                htlcAddress: swapResult.htlcAddress,
+                secretHash: swapResult.secretHash,
+                amount: fromAmount,
+                network: "bitcoin-testnet"
+            }
+
+            setManualTransactionData(manualTx)
+            setShowManualTransaction(true)
+        } catch (error) {
+            console.error('Failed to generate manual transaction:', error)
+            toast.error("Failed to generate transaction template")
         }
     }
 
@@ -197,7 +266,10 @@ export function BitcoinSwapFlowUI({
                     )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                    This is where you'll receive Bitcoin (for ERC20→BTC) or where you'll send Bitcoin from (for BTC→ERC20)
+                    {swapDirection === 'btc-to-erc20' 
+                        ? "This is where you'll send Bitcoin from to fund the HTLC"
+                        : "This is where you'll receive Bitcoin after the swap"
+                    }
                 </p>
             </div>
 
@@ -328,6 +400,79 @@ export function BitcoinSwapFlowUI({
                     </CardContent>
                 </Card>
 
+                {/* Manual Transaction Section for BTC to ERC20 */}
+                {swapDirection === 'btc-to-erc20' && swapResult.htlcAddress && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm flex items-center space-x-2">
+                                <Bitcoin className="w-4 h-4" />
+                                <span>Manual Bitcoin Transaction</span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <Alert>
+                                <Info className="h-4 w-4" />
+                                <AlertDescription>
+                                    Since you're swapping from Bitcoin, you need to manually create and broadcast a Bitcoin transaction to fund the HTLC.
+                                </AlertDescription>
+                            </Alert>
+
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Amount to send:</span>
+                                    <span className="font-medium">{fromAmount} BTC</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">To address:</span>
+                                    <span className="font-mono text-xs">{swapResult.htlcAddress.slice(0, 8)}...</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Network:</span>
+                                    <span className="font-medium">{getNetworkInfo().network}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex space-x-2">
+                                <Button
+                                    onClick={generateManualTransaction}
+                                    className="flex-1"
+                                    variant="outline"
+                                >
+                                    <Code className="w-4 h-4 mr-2" />
+                                    Generate Transaction
+                                </Button>
+                                <Button
+                                    onClick={() => setShowTransactionBuilder(true)}
+                                    className="flex-1"
+                                    variant="outline"
+                                >
+                                    <Bitcoin className="w-4 h-4 mr-2" />
+                                    Build Transaction
+                                </Button>
+                                <Button
+                                    onClick={() => downloadTransactionFile({
+                                        htlcAddress: swapResult.htlcAddress,
+                                        amount: fromAmount,
+                                        secretHash: swapResult.secretHash,
+                                        network: getNetworkInfo().network,
+                                        instructions: [
+                                            "1. Use a Bitcoin wallet that supports raw transaction signing",
+                                            "2. Create a transaction sending exactly " + fromAmount + " BTC to the HTLC address",
+                                            "3. Include the secret hash in the transaction data",
+                                            "4. Broadcast the transaction to the Bitcoin network"
+                                        ]
+                                    }, `bitcoin-swap-${swapResult.orderHash}.json`)}
+                                    className="flex-1"
+                                    variant="outline"
+                                >
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Download Details
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {swapResult.instructions && (
                     <Card>
                         <CardHeader>
@@ -408,6 +553,92 @@ export function BitcoinSwapFlowUI({
                                 console.log('Transaction signed:', signedTx)
                                 toast.success("Transaction signed successfully!")
                                 setShowTransactionViewer(false)
+                            }}
+                        />
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {/* Manual Transaction Dialog */}
+            {manualTransactionData && (
+                <Dialog open={showManualTransaction} onOpenChange={setShowManualTransaction}>
+                    <DialogContent className="bg-card border-border w-[95vw] max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="text-foreground">Manual Bitcoin Transaction</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                            <Alert>
+                                <Info className="h-4 w-4" />
+                                <AlertDescription>
+                                    This is a transaction template. You need to modify it with your actual UTXOs and sign it with your private key.
+                                </AlertDescription>
+                            </Alert>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-sm">Transaction Template</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="bg-muted p-4 rounded-lg">
+                                        <pre className="text-xs overflow-x-auto">
+                                            {JSON.stringify(manualTransactionData, null, 2)}
+                                        </pre>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-sm">Instructions</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <ol className="space-y-2 text-sm">
+                                        {manualTransactionData.instructions?.map((instruction: string, index: number) => (
+                                            <li key={index} className="flex items-start space-x-2">
+                                                <span className="text-muted-foreground">{index + 1}.</span>
+                                                <span>{instruction}</span>
+                                            </li>
+                                        ))}
+                                    </ol>
+                                </CardContent>
+                            </Card>
+
+                            <div className="flex space-x-2">
+                                <Button
+                                    onClick={() => downloadTransactionFile(manualTransactionData, `bitcoin-transaction-${Date.now()}.json`)}
+                                    className="flex-1"
+                                >
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Download Template
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setShowManualTransaction(false)}
+                                    className="flex-1"
+                                >
+                                    Close
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {/* Transaction Builder Dialog */}
+            {swapDirection === 'btc-to-erc20' && swapResult?.htlcAddress && (
+                <Dialog open={showTransactionBuilder} onOpenChange={setShowTransactionBuilder}>
+                    <DialogContent className="bg-card border-border w-[95vw] max-w-6xl mx-auto max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="text-foreground">Bitcoin Transaction Builder</DialogTitle>
+                        </DialogHeader>
+                        <BitcoinTransactionBuilderUI
+                            htlcAddress={swapResult.htlcAddress}
+                            amount={fromAmount}
+                            secretHash={swapResult.secretHash || ''}
+                            network={getNetworkInfo().network}
+                            onTransactionBuilt={(transaction) => {
+                                console.log('Transaction built:', transaction)
+                                toast.success("Transaction built successfully!")
                             }}
                         />
                     </DialogContent>

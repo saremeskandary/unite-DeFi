@@ -17,18 +17,18 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">Cross-Chain Bitcoin Swaps</h1>
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">Cross-Chain DeFi Swaps</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Seamlessly swap between Bitcoin and ERC20 tokens using atomic swaps powered by 1inch Fusion+
+              Seamlessly swap between TON, TRON, Bitcoin and Ethereum tokens using atomic swaps powered by 1inch Fusion+
             </p>
-            <div className="mt-6 flex justify-center gap-4">
+            {/* <div className="mt-6 flex justify-center gap-4">
               <Link href="/1inch-style-swap-demo">
                 <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                   Try 1inch-Style Interface
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
-            </div>
+            </div> */}
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8">

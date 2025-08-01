@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Slider } from "@/components/ui/slider"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { TokenSelector } from "./token-selector"
 import { BitcoinAddressInput } from "./bitcoin-address-input"
 import { BitcoinSwapFlowUI } from "./bitcoin-swap-flow-ui"
@@ -592,9 +593,8 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
 
   // Bitcoin address for "from" token (when swapping from Bitcoin)
   const [fromBitcoinAddress, setFromBitcoinAddress] = useState("")
-  const [isFromBitcoinAddressValid, setIsFromBitcoinAddressValid] = useState<boolean | null>(null)
 
-  // Validate Bitcoin address
+  // Validate Bitcoin address (for "to" token validation)
   const validateBitcoinAddress = (address: string): boolean => {
     if (!address) return false
 
@@ -610,13 +610,10 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
 
   // Handle Bitcoin address validation for "from" token
   useEffect(() => {
-    if (isBitcoinFrom && fromBitcoinAddress) {
-      setIsFromBitcoinAddressValid(validateBitcoinAddress(fromBitcoinAddress))
-    } else if (!isBitcoinFrom) {
+    if (!isBitcoinFrom) {
       setFromBitcoinAddress("")
-      setIsFromBitcoinAddressValid(null)
     }
-  }, [fromBitcoinAddress, isBitcoinFrom])
+  }, [isBitcoinFrom])
 
   // Handle Bitcoin address validation for "to" token
   useEffect(() => {
@@ -642,7 +639,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
     walletConnected &&
     currentQuote &&
     // For Bitcoin as "from" token, require valid Bitcoin address
-    (!isBitcoinFrom || (fromBitcoinAddress && isFromBitcoinAddressValid === true)) &&
+    (!isBitcoinFrom || (fromBitcoinAddress && validateBitcoinAddress(fromBitcoinAddress))) &&
     // For Bitcoin as "to" token, require valid Bitcoin address
     (!isBitcoinTo || (bitcoinAddress && validateBitcoinAddress(bitcoinAddress)))
 
@@ -772,26 +769,20 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
         {isBitcoinFrom && (
           <div className="space-y-2">
             <Label className="text-muted-foreground text-sm">Bitcoin Source Address</Label>
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Enter your Bitcoin address"
-                value={fromBitcoinAddress}
-                onChange={(e) => setFromBitcoinAddress(e.target.value)}
-                className={`bg-muted/50 border-border text-foreground h-12 ${isFromBitcoinAddressValid === true ? 'border-green-500' :
-                  isFromBitcoinAddressValid === false ? 'border-red-500' : ''
-                  }`}
-              />
-            </div>
-            {isFromBitcoinAddressValid === false && (
-              <p className="text-xs text-red-500">Please enter a valid Bitcoin address</p>
-            )}
-            {isFromBitcoinAddressValid === true && (
-              <p className="text-xs text-green-500">✓ Valid Bitcoin address</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              This is the Bitcoin address where you'll send your BTC from. The swap will be initiated once the funds are received.
-            </p>
+            <BitcoinAddressInput value={fromBitcoinAddress} onChange={setFromBitcoinAddress} />
+            <Alert className="mt-2">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                <strong>Bitcoin to ERC20 Swap Process:</strong>
+                <ol className="mt-1 space-y-1 list-decimal list-inside">
+                  <li>Enter your Bitcoin address (where you'll send BTC from)</li>
+                  <li>Create the swap order to get an HTLC address</li>
+                  <li>Manually create and broadcast a Bitcoin transaction to the HTLC address</li>
+                  <li>Wait for Bitcoin confirmation (1-6 blocks)</li>
+                  <li>Receive your ERC20 tokens on Ethereum</li>
+                </ol>
+              </AlertDescription>
+            </Alert>
           </div>
         )}
 

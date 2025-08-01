@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -24,9 +24,16 @@ export function BitcoinAddressInput({ value, onChange }: BitcoinAddressInputProp
   const [isValid, setIsValid] = useState<boolean | null>(null)
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
+  const [cameraError, setCameraError] = useState<string | null>(null)
+  const [isCameraAvailable, setIsCameraAvailable] = useState<boolean | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+
+  // Check camera availability on component mount
+  useEffect(() => {
+    checkCameraAvailability()
+  }, [])
 
   const validateBitcoinAddress = (address: string) => {
     // Enhanced Bitcoin address validation
@@ -82,11 +89,51 @@ export function BitcoinAddressInput({ value, onChange }: BitcoinAddressInputProp
     }
   }
 
+  const checkCameraAvailability = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setIsCameraAvailable(false)
+        setCameraError('Camera access is not supported in this browser')
+        return false
+      }
+
+      // Check if we can enumerate devices
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const videoDevices = devices.filter(device => device.kind === 'videoinput')
+
+      if (videoDevices.length === 0) {
+        setIsCameraAvailable(false)
+        setCameraError('No camera found on this device')
+        return false
+      }
+
+      setIsCameraAvailable(true)
+      setCameraError(null)
+      return true
+    } catch (error) {
+      setIsCameraAvailable(false)
+      setCameraError('Unable to check camera availability')
+      return false
+    }
+  }
+
   const startQRScan = async () => {
     try {
       setIsScanning(true)
+      setCameraError(null)
+
+      // Check camera availability first
+      const isAvailable = await checkCameraAvailability()
+      if (!isAvailable) {
+        throw new Error(cameraError || 'Camera not available')
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
       })
 
       if (videoRef.current) {
@@ -99,8 +146,34 @@ export function BitcoinAddressInput({ value, onChange }: BitcoinAddressInputProp
       }
     } catch (error) {
       console.error('Error accessing camera:', error)
-      toast.error('Unable to access camera. Please check permissions.')
       setIsScanning(false)
+
+      // Provide specific error messages based on the error type
+      let errorMessage = 'Unable to access camera. Please check permissions.'
+
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          errorMessage = 'Camera access denied. Please allow camera permissions and try again.'
+        } else if (error.name === 'NotFoundError') {
+          errorMessage = 'No camera found on this device. Please use a device with a camera.'
+        } else if (error.name === 'NotReadableError') {
+          errorMessage = 'Camera is already in use by another application. Please close other camera apps and try again.'
+        } else if (error.name === 'OverconstrainedError') {
+          errorMessage = 'Camera does not meet the required specifications. Please try a different camera.'
+        } else if (error.name === 'TypeError') {
+          errorMessage = 'Camera access is not supported in this browser. Please use a modern browser.'
+        } else if (error.message.includes('not supported')) {
+          errorMessage = 'Camera access is not supported in this browser. Please use a modern browser.'
+        } else {
+          errorMessage = error.message || errorMessage
+        }
+      }
+
+      setCameraError(errorMessage)
+      toast.error(errorMessage, {
+        description: 'You can still manually enter the Bitcoin address below.',
+        duration: 5000
+      })
     }
   }
 
@@ -167,10 +240,17 @@ export function BitcoinAddressInput({ value, onChange }: BitcoinAddressInputProp
               onClick={handleQRScan}
               variant="ghost"
               size="sm"
-              className="text-blue-400 hover:text-blue-300 h-auto p-0"
+              className={`h-auto p-0 ${isCameraAvailable === false
+                  ? 'text-orange-400 hover:text-orange-300'
+                  : 'text-blue-400 hover:text-blue-300'
+                }`}
+              title={isCameraAvailable === false ? 'Camera not available - you can still manually enter the address' : 'Scan QR code with camera'}
             >
               <QrCode className="w-4 h-4 mr-1" />
               Scan QR
+              {isCameraAvailable === false && (
+                <AlertCircle className="w-3 h-3 ml-1 text-orange-400" />
+              )}
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-slate-800 border-slate-700 text-white">
@@ -197,7 +277,38 @@ export function BitcoinAddressInput({ value, onChange }: BitcoinAddressInputProp
                     </div>
                   </div>
                 )}
+                {cameraError && !isScanning && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+                    <div className="bg-red-500/20 border-2 border-red-500 rounded-lg p-4 text-center">
+                      <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                      <p className="text-red-400 text-sm">{cameraError}</p>
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {cameraError && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm">
+                      <p className="text-red-400 font-medium">Camera Error</p>
+                      <p className="text-slate-300 text-xs mt-1">{cameraError}</p>
+                      <div className="mt-2 space-y-1">
+                        <p className="text-slate-400 text-xs">Troubleshooting:</p>
+                        <ul className="text-slate-400 text-xs list-disc list-inside space-y-1">
+                          <li>Check if your device has a camera</li>
+                          <li>Allow camera permissions in your browser</li>
+                          <li>Close other applications using the camera</li>
+                          <li>Try refreshing the page</li>
+                          <li>Use a different browser if the issue persists</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex space-x-2">
                 <Button
                   onClick={startQRScan}
@@ -205,7 +316,7 @@ export function BitcoinAddressInput({ value, onChange }: BitcoinAddressInputProp
                   className="flex-1"
                 >
                   <Camera className="w-4 h-4 mr-2" />
-                  Start Scanning
+                  {cameraError ? 'Retry Camera' : 'Start Scanning'}
                 </Button>
                 <Button
                   onClick={stopQRScan}
@@ -215,6 +326,20 @@ export function BitcoinAddressInput({ value, onChange }: BitcoinAddressInputProp
                   <X className="w-4 h-4" />
                 </Button>
               </div>
+
+              {cameraError && (
+                <div className="text-center">
+                  <p className="text-slate-400 text-xs mb-2">Or manually enter the address below:</p>
+                  <Button
+                    onClick={() => setIsQRDialogOpen(false)}
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
+                  >
+                    Enter Address Manually
+                  </Button>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
