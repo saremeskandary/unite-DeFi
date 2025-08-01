@@ -257,13 +257,21 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
   }
 
   // Filter tokens based on search and network
-  const filteredTokens = TOKENS_DATA.filter(token => {
-    const matchesSearch = token.symbol.toLowerCase().includes(tokenSearch.toLowerCase()) ||
-      token.name.toLowerCase().includes(tokenSearch.toLowerCase())
-    const matchesNetwork = selectedNetworkFilter === 'all' ||
-      (token.networks && token.networks.includes(selectedNetworkFilter))
-    return matchesSearch && matchesNetwork
-  })
+  const getFilteredTokens = (type: 'from' | 'to') => {
+    return TOKENS_DATA.filter(token => {
+      const matchesSearch = token.symbol.toLowerCase().includes(tokenSearch.toLowerCase()) ||
+        token.name.toLowerCase().includes(tokenSearch.toLowerCase())
+      const matchesNetwork = selectedNetworkFilter === 'all' ||
+        (token.networks && token.networks.includes(selectedNetworkFilter))
+
+      // Exclude the token that's already selected in the other position
+      const isExcluded = type === 'from'
+        ? (token.symbol === toToken.symbol && (selectedNetworkFilter === 'all' || selectedNetworkFilter === toNetwork.id))
+        : (token.symbol === fromToken.symbol && (selectedNetworkFilter === 'all' || selectedNetworkFilter === fromNetwork.id))
+
+      return matchesSearch && matchesNetwork && !isExcluded
+    })
+  }
 
   // Render network icon
   const renderNetworkIcon = (networkId: string, size: number = 20) => {
@@ -389,66 +397,99 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
 
           {/* Token List */}
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {filteredTokens.map((token) => (
-              <div key={token.symbol}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-between p-3 h-auto"
-                  onClick={() => {
-                    const defaultNetwork = NETWORKS.find(n => token.networks?.includes(n.id)) || NETWORKS[0]
-                    onSelect(token, defaultNetwork)
-                    onClose()
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                      {token.symbol.slice(0, 2)}
-                    </div>
-                    <div className="text-left">
-                      <div className="font-medium">{token.symbol}</div>
-                      <div className="text-sm text-muted-foreground">{token.name}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {token.networkCount && token.networkCount > 1 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {token.networkCount}
-                      </Badge>
-                    )}
-                    <div className="text-right">
-                      <div className="text-sm">{token.balance}</div>
-                      <div className="text-xs text-muted-foreground">
-                        ${(token as any).value ? (token as any).value.toFixed(2) : '0.00'}
+            {getFilteredTokens(type).length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No available tokens found.</p>
+                <p className="text-xs mt-1">Try changing the network filter or search terms.</p>
+              </div>
+            ) : (
+              getFilteredTokens(type).map((token) => (
+                <div key={token.symbol}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-between p-3 h-auto"
+                    onClick={() => {
+                      // Find a non-conflicting default network
+                      const availableNetworks = token.networks?.filter(networkId => {
+                        const isConflicting = type === 'from'
+                          ? (token.symbol === toToken.symbol && networkId === toNetwork.id)
+                          : (token.symbol === fromToken.symbol && networkId === fromNetwork.id)
+                        return !isConflicting
+                      }) || []
+
+                      const defaultNetwork = availableNetworks.length > 0
+                        ? NETWORKS.find(n => n.id === availableNetworks[0])
+                        : NETWORKS.find(n => token.networks?.includes(n.id)) || NETWORKS[0]
+
+                      if (defaultNetwork) {
+                        onSelect(token, defaultNetwork)
+                        onClose()
+                      } else {
+                        // Fallback to first available network if no non-conflicting network found
+                        const fallbackNetwork = NETWORKS.find(n => token.networks?.includes(n.id)) || NETWORKS[0]
+                        onSelect(token, fallbackNetwork)
+                        onClose()
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                        {token.symbol.slice(0, 2)}
+                      </div>
+                      <div className="text-left">
+                        <div className="font-medium">{token.symbol}</div>
+                        <div className="text-sm text-muted-foreground">{token.name}</div>
                       </div>
                     </div>
-                  </div>
-                </Button>
-
-                {/* Show networks if token has multiple */}
-                {token.networks && token.networks.length > 1 && (
-                  <div className="ml-12 mb-2 flex flex-wrap gap-1">
-                    {token.networks.map(networkId => {
-                      const network = NETWORKS.find(n => n.id === networkId)
-                      if (!network) return null
-                      return (
-                        <Badge
-                          key={networkId}
-                          variant="outline"
-                          className="text-xs cursor-pointer hover:bg-primary/10"
-                          onClick={() => {
-                            onSelect(token, network)
-                            onClose()
-                          }}
-                        >
-                          {renderNetworkIcon(networkId, 12)}
-                          <span className="ml-1">{network.name}</span>
+                    <div className="flex items-center gap-2">
+                      {token.networkCount && token.networkCount > 1 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {token.networkCount}
                         </Badge>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
+                      )}
+                      <div className="text-right">
+                        <div className="text-sm">{token.balance}</div>
+                        <div className="text-xs text-muted-foreground">
+                          ${(token as any).value ? (token as any).value.toFixed(2) : '0.00'}
+                        </div>
+                      </div>
+                    </div>
+                  </Button>
+
+                  {/* Show networks if token has multiple */}
+                  {token.networks && token.networks.length > 1 && (
+                    <div className="ml-12 mb-2 flex flex-wrap gap-1">
+                      {token.networks.map(networkId => {
+                        const network = NETWORKS.find(n => n.id === networkId)
+                        if (!network) return null
+
+                        // Check if this network would conflict with the other token selection
+                        const isConflicting = type === 'from'
+                          ? (token.symbol === toToken.symbol && networkId === toNetwork.id)
+                          : (token.symbol === fromToken.symbol && networkId === fromNetwork.id)
+
+                        if (isConflicting) return null
+
+                        return (
+                          <Badge
+                            key={networkId}
+                            variant="outline"
+                            className="text-xs cursor-pointer hover:bg-primary/10"
+                            onClick={() => {
+                              onSelect(token, network)
+                              onClose()
+                            }}
+                          >
+                            {renderNetworkIcon(networkId, 12)}
+                            <span className="ml-1">{network.name}</span>
+                          </Badge>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </DialogContent>
       </Dialog>
