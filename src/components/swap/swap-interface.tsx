@@ -75,6 +75,19 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
   const [tokenSearch, setTokenSearch] = useState("")
   const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false)
 
+  // Helper functions for token restrictions
+  const isSpecialToken = (tokenSymbol: string) => ['TON', 'BTC', 'TRX'].includes(tokenSymbol)
+  const isEthereumTestnetToken = (tokenSymbol: string) => ['ETH', 'WETH'].includes(tokenSymbol)
+
+  // Check if restriction should be applied
+  const isRestrictedToEthereum = (type: 'from' | 'to') => {
+    if (type === 'from') {
+      return isSpecialToken(toToken.symbol)
+    } else {
+      return isSpecialToken(fromToken.symbol)
+    }
+  }
+
   // Initialize wallet connection and load token balances
   useEffect(() => {
     const initializeWallet = async () => {
@@ -271,19 +284,8 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
 
       // Special restriction: If TON, BTC, or TRX is selected in one field, 
       // the other field should only show Ethereum testnet tokens
-      const isSpecialToken = (tokenSymbol: string) => ['TON', 'BTC', 'TRX'].includes(tokenSymbol)
-      const isEthereumTestnetToken = (tokenSymbol: string) => ['ETH', 'WETH'].includes(tokenSymbol)
-      
-      let shouldRestrictToEthereum = false
-      
-      if (type === 'from') {
-        // If "to" field has a special token, restrict "from" field to Ethereum testnet only
-        shouldRestrictToEthereum = isSpecialToken(toToken.symbol)
-      } else {
-        // If "from" field has a special token, restrict "to" field to Ethereum testnet only
-        shouldRestrictToEthereum = isSpecialToken(fromToken.symbol)
-      }
-      
+      const shouldRestrictToEthereum = isRestrictedToEthereum(type)
+
       // Apply restriction: if special token is selected in other field, only show Ethereum testnet tokens
       if (shouldRestrictToEthereum && !isEthereumTestnetToken(token.symbol)) {
         return false
@@ -351,18 +353,35 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
                 variant="outline"
                 className="w-full justify-between"
                 onClick={() => setIsNetworkDropdownOpen(!isNetworkDropdownOpen)}
+                disabled={isRestrictedToEthereum(type)}
               >
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
                     <span className="text-white text-xs font-bold">N</span>
                   </div>
-                  <span>{selectedNetworkFilter === 'all' ? 'All Networks' : NETWORKS.find(n => n.id === selectedNetworkFilter)?.name}</span>
+                  <span>
+                    {isRestrictedToEthereum(type)
+                      ? 'Ethereum Testnet Only'
+                      : selectedNetworkFilter === 'all'
+                        ? 'All Networks'
+                        : NETWORKS.find(n => n.id === selectedNetworkFilter)?.name
+                    }
+                  </span>
                 </div>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isNetworkDropdownOpen ? 'rotate-180' : ''}`} />
               </Button>
 
+              {/* Show restriction notice */}
+              {isRestrictedToEthereum(type) && (
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-xs text-blue-700">
+                    ⚠️ Restricted to Ethereum testnet tokens only due to {type === 'from' ? toToken.symbol : fromToken.symbol} selection
+                  </p>
+                </div>
+              )}
+
               {/* Network Dropdown */}
-              {isNetworkDropdownOpen && (
+              {isNetworkDropdownOpen && !isRestrictedToEthereum(type) && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                   <div className="p-2">
                     <Button
@@ -429,6 +448,29 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
                     variant="ghost"
                     className="w-full justify-between p-3 h-auto"
                     onClick={() => {
+                      // If this is a special token (TON, BTC, TRX), automatically set the other field to Ethereum testnet
+                      if (isSpecialToken(token.symbol)) {
+                        const ethereumTestnet = NETWORKS.find(n => n.id === 'ethereum-testnet')
+                        if (ethereumTestnet) {
+                          // Set the other field to Ethereum testnet
+                          if (type === 'from') {
+                            setToNetwork(ethereumTestnet)
+                            // Find ETH or WETH token for the other field
+                            const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
+                            if (ethereumToken) {
+                              setToToken(ethereumToken)
+                            }
+                          } else {
+                            setFromNetwork(ethereumTestnet)
+                            // Find ETH or WETH token for the other field
+                            const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
+                            if (ethereumToken) {
+                              setFromToken(ethereumToken)
+                            }
+                          }
+                        }
+                      }
+
                       // Find a non-conflicting default network
                       const availableNetworks = token.networks?.filter(networkId => {
                         const isConflicting = type === 'from'
@@ -496,6 +538,26 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
                             variant="outline"
                             className="text-xs cursor-pointer hover:bg-primary/10"
                             onClick={() => {
+                              // If this is a special token, automatically set the other field to Ethereum testnet
+                              if (isSpecialToken(token.symbol)) {
+                                const ethereumTestnet = NETWORKS.find(n => n.id === 'ethereum-testnet')
+                                if (ethereumTestnet) {
+                                  if (type === 'from') {
+                                    setToNetwork(ethereumTestnet)
+                                    const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
+                                    if (ethereumToken) {
+                                      setToToken(ethereumToken)
+                                    }
+                                  } else {
+                                    setFromNetwork(ethereumTestnet)
+                                    const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
+                                    if (ethereumToken) {
+                                      setFromToken(ethereumToken)
+                                    }
+                                  }
+                                }
+                              }
+
                               onSelect(token, network)
                               onClose()
                             }}
@@ -564,6 +626,15 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
       setBitcoinAddress("")
     }
   }, [bitcoinAddress, isBitcoinTo])
+
+  // Clear amounts when special token restriction changes to prevent invalid states
+  useEffect(() => {
+    if (isSpecialToken(fromToken.symbol) || isSpecialToken(toToken.symbol)) {
+      setFromAmount("")
+      setToAmount("")
+      setCurrentQuote(null)
+    }
+  }, [fromToken.symbol, toToken.symbol])
 
   // Update validation logic to handle Bitcoin as "from" token
   const isValidSwap = fromAmount && toAmount &&
@@ -735,6 +806,16 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
             <ArrowUpDown className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Cross-chain restriction notice */}
+        {(isSpecialToken(fromToken.symbol) || isSpecialToken(toToken.symbol)) && (
+          <div className="flex items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-md">
+            <Info className="w-4 h-4 text-blue-600 mr-2" />
+            <p className="text-xs text-blue-700">
+              Cross-chain swap: {isSpecialToken(fromToken.symbol) ? fromToken.symbol : toToken.symbol} ↔ Ethereum Testnet
+            </p>
+          </div>
+        )}
 
         {/* To Token */}
         <div className="space-y-2">
