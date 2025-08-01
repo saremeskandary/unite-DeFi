@@ -1,7 +1,10 @@
 {
-  "name": "uinit",
+  "name": "fusion-swap",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "contracts/*"
+  ],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -19,7 +22,17 @@
     "test:frontend-backend:watch": "jest tests/integration/frontend-backend/ --watch",
     "test:integration:runner": "tsx tests/integration/frontend-backend/run-integration-tests.ts",
     "websocket": "node scripts/start-websocket-server.js",
-    "websocket:dev": "nodemon scripts/start-websocket-server.js"
+    "websocket:dev": "nodemon scripts/start-websocket-server.js",
+    "ton:build": "pnpm --filter ton-fusion build",
+    "ton:test": "pnpm --filter ton-fusion test",
+    "ton:start": "pnpm --filter ton-fusion start",
+    "ton:release": "pnpm --filter ton-fusion release",
+    "contracts:build": "pnpm --filter=./contracts/* build",
+    "contracts:test": "pnpm --filter=./contracts/* test",
+    "workspace:install": "pnpm install",
+    "workspace:clean": "pnpm -r exec rm -rf node_modules && rm -rf node_modules",
+    "workspace:build": "pnpm -r build",
+    "workspace:test": "pnpm -r test"
   },
   "dependencies": {
     "@1inch/cross-chain-sdk": "^0.2.1-rc.47",

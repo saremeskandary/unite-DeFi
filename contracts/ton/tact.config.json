@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tact-lang/tact/main/src/config/configSchema.json",
+  "projects": [
+    {
+      "name": "TonFusion",
+      "path": "contracts/ton_fusion.tact",
+      "output": "build/TonFusion",
+      "options": {
+        "debug": false,
+        "external": false
+      },
+      "mode": "full"
+    },
+    {
+      "name": "TestJettonMaster",
+      "path": "contracts/test_jetton_master.tact",
+      "output": "build/TestJettonMaster",
+      "options": {
+        "debug": false,
+        "external": false
+      },
+      "mode": "full"
+    }
+  ]
+}
