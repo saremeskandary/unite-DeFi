@@ -68,35 +68,64 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const symbols = searchParams.get('symbols');
+    const currency = searchParams.get('currency') || 'usd';
+    const include24hChange = searchParams.get('include24hChange') === 'true';
+    const includeMarketCap = searchParams.get('includeMarketCap') === 'true';
 
     if (!symbols) {
       return NextResponse.json(
-        { error: 'Symbols parameter is required' },
+        { error: 'Missing required parameter: symbols' },
         { status: 400 }
       );
     }
 
-    const symbolList = symbols.split(',').map(s => s.toUpperCase());
+    const symbolList = symbols.split(',').map(s => s.toUpperCase()).filter(s => s.length > 0);
+
+    if (symbolList.length === 0) {
+      return NextResponse.json(
+        { error: 'Missing required parameter: symbols' },
+        { status: 400 }
+      );
+    }
+
+    if (symbolList.length > 20) {
+      return NextResponse.json(
+        { error: 'Maximum 20 symbols allowed per request' },
+        { status: 400 }
+      );
+    }
+
     const prices: Record<string, any> = {};
+    let availableCount = 0;
 
     symbolList.forEach(symbol => {
       if (MOCK_PRICES[symbol as keyof typeof MOCK_PRICES]) {
-        prices[symbol] = MOCK_PRICES[symbol as keyof typeof MOCK_PRICES];
-      } else {
-        // Generate mock data for unknown symbols
+        const priceData = MOCK_PRICES[symbol as keyof typeof MOCK_PRICES];
         prices[symbol] = {
-          price: 10 + Math.random() * 100,
-          change24h: -5 + Math.random() * 20,
-          volume24h: 100000000 + Math.random() * 1000000000,
-          marketCap: 1000000000 + Math.random() * 10000000000,
+          price: priceData.price,
+          ...(include24hChange && { change24h: priceData.change24h }),
+          ...(includeMarketCap && { marketCap: priceData.marketCap }),
+          volume24h: priceData.volume24h
         };
+        availableCount++;
+      } else {
+        prices[symbol] = { error: 'Price not available' };
       }
     });
 
     // Add a small delay to simulate API latency
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    return NextResponse.json(prices);
+    const response = {
+      currency,
+      prices,
+      summary: {
+        totalRequested: symbolList.length,
+        available: availableCount
+      }
+    };
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Error fetching prices:', error);
@@ -110,36 +139,61 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { symbols } = body;
+    const { symbols, currency = 'usd', include24hChange = false, includeMarketCap = false } = body;
 
     if (!symbols || !Array.isArray(symbols)) {
       return NextResponse.json(
-        { error: 'Symbols array is required' },
+        { error: 'Missing or invalid symbols array' },
+        { status: 400 }
+      );
+    }
+
+    if (symbols.length === 0) {
+      return NextResponse.json(
+        { error: 'Missing or invalid symbols array' },
+        { status: 400 }
+      );
+    }
+
+    if (symbols.length > 20) {
+      return NextResponse.json(
+        { error: 'Maximum 20 symbols allowed per request' },
         { status: 400 }
       );
     }
 
     const symbolList = symbols.map((s: string) => s.toUpperCase());
     const prices: Record<string, any> = {};
+    let availableCount = 0;
 
     symbolList.forEach(symbol => {
       if (MOCK_PRICES[symbol as keyof typeof MOCK_PRICES]) {
-        prices[symbol] = MOCK_PRICES[symbol as keyof typeof MOCK_PRICES];
-      } else {
-        // Generate mock data for unknown symbols
+        const priceData = MOCK_PRICES[symbol as keyof typeof MOCK_PRICES];
         prices[symbol] = {
-          price: 10 + Math.random() * 100,
-          change24h: -5 + Math.random() * 20,
-          volume24h: 100000000 + Math.random() * 1000000000,
-          marketCap: 1000000000 + Math.random() * 10000000000,
+          price: priceData.price,
+          ...(include24hChange && { change24h: priceData.change24h }),
+          ...(includeMarketCap && { marketCap: priceData.marketCap }),
+          volume24h: priceData.volume24h
         };
+        availableCount++;
+      } else {
+        prices[symbol] = { error: 'Price not available' };
       }
     });
 
     // Add a small delay to simulate API latency
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    return NextResponse.json(prices);
+    const response = {
+      currency,
+      prices,
+      summary: {
+        totalRequested: symbolList.length,
+        available: availableCount
+      }
+    };
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Error fetching prices:', error);

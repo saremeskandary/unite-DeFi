@@ -43,7 +43,7 @@ export default function SettingsPage() {
           {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-            <p className="text-slate-400">Customize your BitSwap experience</p>
+            <p className="text-slate-400">Customize your FusionSwap experience</p>
           </div>
 
           <div className="space-y-6">
@@ -145,7 +145,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="text-slate-300">Newsletter</Label>
-                      <p className="text-sm text-slate-400">Stay updated with BitSwap news and features</p>
+                      <p className="text-sm text-slate-400">Stay updated with FusionSwap news and features</p>
                     </div>
                     <Switch
                       checked={settings.notifications.newsletter}
@@ -174,7 +174,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="text-slate-300">Analytics</Label>
-                      <p className="text-sm text-slate-400">Help improve BitSwap by sharing usage data</p>
+                      <p className="text-sm text-slate-400">Help improve FusionSwap by sharing usage data</p>
                     </div>
                     <Switch
                       checked={settings.privacy.analytics}

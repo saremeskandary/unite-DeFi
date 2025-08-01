@@ -21,7 +21,7 @@ export function Header() {
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
             </div>
-            <span className="text-xl font-bold text-white">BitSwap</span>
+            <span className="text-xl font-bold text-white">FusionSwap</span>
             <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
               Beta
             </Badge>

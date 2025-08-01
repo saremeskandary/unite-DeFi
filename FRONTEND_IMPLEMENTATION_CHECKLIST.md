@@ -347,20 +347,21 @@ This checklist identifies all mock data, hardcoded values, and simulated functio
   - [x] Test multi-chain support
   - [x] Test error handling for wallet failures
 
-- [ ] **Swap Logic Tests**
+- [x] **Swap Logic Tests**
 
-  - [ ] Test price calculation and slippage
-  - [ ] Test order validation
-  - [ ] Test fee calculation
-  - [ ] Test cross-chain transaction monitoring
-  - [ ] Test HTLC contract interactions
+  - [x] Test price calculation and slippage
+  - [x] Test order validation
+  - [x] Test fee calculation
+  - [x] Test cross-chain transaction monitoring
+  - [x] Test HTLC contract interactions
 
-- [ ] **Component Tests**
-  - [ ] Test portfolio page components
-  - [ ] Test orders page components
-  - [ ] Test swap interface components
-  - [ ] Test token selector components
-  - [ ] Test order status components
+- [x] **Component Tests**
+
+  - [x] Test portfolio page components
+  - [x] Test orders page components
+  - [x] Test swap interface components
+  - [x] Test token selector components
+  - [x] Test order status components
 
 ### Integration Tests
 
@@ -581,11 +582,11 @@ global.testUtils = {
 ### Testing Infrastructure
 
 - [x] **Test Setup**: 100% (Jest, Testing Library, utilities configured)
-- [x] **Unit Tests**: 40% (Example components, Bitcoin logic)
+- [x] **Unit Tests**: 90% (All major logic and components tested)
 - [x] **Integration Tests**: 60% (Bitcoin operations, E2E swaps)
 - [ ] **E2E Tests**: 0% (No E2E tests)
 - [ ] **API Tests**: 0% (No API endpoints to test)
-- [ ] **Component Tests**: 30% (Example component, partial fill interface)
+- [x] **Component Tests**: 100% (All major components tested)
 
 ## 🎯 Success Criteria
 

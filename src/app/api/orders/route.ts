@@ -205,7 +205,7 @@ async function processBitcoinTransaction(tx: any, walletAddress: string, network
       toAmountFormatted: toAmount > 0 ? `${toAmount.toFixed(8)} BTC` : '',
       price: btcPrice,
       value: Math.max(fromAmount, toAmount) * btcPrice,
-      timestamp: new Date(tx.status?.block_time * 1000).toISOString(),
+      timestamp: tx.status?.block_time ? new Date(tx.status.block_time * 1000).toISOString() : new Date().toISOString(),
       transactionHash: tx.txid,
       network: 'bitcoin',
       fee: tx.fee ? tx.fee / 100000000 : undefined
@@ -246,7 +246,7 @@ async function processEthereumTransaction(tx: any, walletAddress: string, networ
       toAmountFormatted: isIncoming ? `${value.toFixed(6)} ETH` : '',
       price: ethPrice,
       value: value * ethPrice,
-      timestamp: new Date(parseInt(tx.timeStamp) * 1000).toISOString(),
+      timestamp: tx.timeStamp ? new Date(parseInt(tx.timeStamp) * 1000).toISOString() : new Date().toISOString(),
       transactionHash: tx.hash,
       network: 'ethereum',
       fee: tx.gasUsed ? (parseInt(tx.gasUsed) * parseInt(tx.gasPrice)) / Math.pow(10, 18) : undefined
