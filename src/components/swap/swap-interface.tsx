@@ -29,6 +29,303 @@ interface SwapInterfaceProps {
   onOrderCreated: (orderId: string) => void
 }
 
+// Token Selector Component - moved outside to prevent recreation
+const TokenSelectorWithNetwork = ({
+  isOpen,
+  onClose,
+  onSelect,
+  currentToken,
+  currentNetwork,
+  type,
+  networkFilter,
+  setNetworkFilter,
+  searchTerm,
+  setSearchTerm,
+  isNetworkDropdownOpen,
+  setIsNetworkDropdownOpen,
+  isRestrictedToEthereum,
+  getFilteredTokens,
+  renderNetworkIcon,
+  fromToken,
+  toToken,
+  fromNetwork,
+  toNetwork,
+  setFromToken,
+  setToToken,
+  setFromNetwork,
+  setToNetwork
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onSelect: (token: Token, network: Network) => void
+  currentToken: Token
+  currentNetwork: Network
+  type: 'from' | 'to'
+  networkFilter: string
+  setNetworkFilter: (filter: string) => void
+  searchTerm: string
+  setSearchTerm: (term: string) => void
+  isNetworkDropdownOpen: boolean
+  setIsNetworkDropdownOpen: (open: boolean) => void
+  isRestrictedToEthereum: (type: 'from' | 'to') => boolean
+  getFilteredTokens: (type: 'from' | 'to', networkFilter: string, searchTerm: string) => Token[]
+  renderNetworkIcon: (networkId: string, size?: number) => JSX.Element | null
+  fromToken: Token
+  toToken: Token
+  fromNetwork: Network
+  toNetwork: Network
+  setFromToken: (token: Token) => void
+  setToToken: (token: Token) => void
+  setFromNetwork: (network: Network) => void
+  setToNetwork: (network: Network) => void
+}) => {
+  if (!isOpen) return null
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        onClose()
+      }
+    }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Select {type === 'from' ? 'You Pay' : 'You Receive'}</DialogTitle>
+        </DialogHeader>
+
+        {/* Network Selection */}
+        <div className="mb-4">
+          <div className="relative">
+            <Button
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => setIsNetworkDropdownOpen(!isNetworkDropdownOpen)}
+              disabled={isRestrictedToEthereum(type)}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">N</span>
+                </div>
+                <span>
+                  {isRestrictedToEthereum(type)
+                    ? 'Ethereum Testnet Only'
+                    : networkFilter === 'all'
+                      ? 'All Networks'
+                      : NETWORKS.find(n => n.id === networkFilter)?.name
+                  }
+                </span>
+              </div>
+              <ChevronDown className={`w-4 h-4 transition-transform ${isNetworkDropdownOpen ? 'rotate-180' : ''}`} />
+            </Button>
+
+            {/* Show restriction notice */}
+            {isRestrictedToEthereum(type) && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-xs text-blue-700">
+                  ⚠️ Restricted to Ethereum testnet tokens only due to {type === 'from' ? toToken.symbol : fromToken.symbol} selection
+                </p>
+              </div>
+            )}
+
+            {/* Network Dropdown */}
+            {isNetworkDropdownOpen && !isRestrictedToEthereum(type) && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                <div className="p-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setNetworkFilter('all')
+                      setIsNetworkDropdownOpen(false)
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">N</span>
+                      </div>
+                      <span>All Networks</span>
+                      {networkFilter === 'all' && <Check className="w-4 h-4 ml-auto" />}
+                    </div>
+                  </Button>
+                  {NETWORKS.map((network) => (
+                    <Button
+                      key={network.id}
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setNetworkFilter(network.id)
+                        setIsNetworkDropdownOpen(false)
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        {renderNetworkIcon(network.id, 16)}
+                        <span>{network.name}</span>
+                        {networkFilter === network.id && <Check className="w-4 h-4 ml-auto" />}
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-4">
+          <Input
+            placeholder="Search tokens..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        </div>
+
+        {/* Token List */}
+        <div className="space-y-2 max-h-96 overflow-y-auto">
+          {getFilteredTokens(type, networkFilter, searchTerm).length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No available tokens found.</p>
+              <p className="text-xs mt-1">Try changing the network filter or search terms.</p>
+            </div>
+          ) : (
+            getFilteredTokens(type, networkFilter, searchTerm).map((token) => (
+              <div key={token.symbol}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between p-3 h-auto"
+                  onClick={() => {
+                    // If this is a special token (TON, BTC, TRX), automatically set the other field to Ethereum testnet
+                    const isSpecialToken = (tokenSymbol: string) => ['TON', 'BTC', 'TRX'].includes(tokenSymbol)
+                    if (isSpecialToken(token.symbol)) {
+                      const ethereumTestnet = NETWORKS.find(n => n.id === 'ethereum-testnet')
+                      if (ethereumTestnet) {
+                        // Set the other field to Ethereum testnet
+                        if (type === 'from') {
+                          setToNetwork(ethereumTestnet)
+                          // Find ETH or WETH token for the other field
+                          const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
+                          if (ethereumToken) {
+                            setToToken(ethereumToken)
+                          }
+                        } else {
+                          setFromNetwork(ethereumTestnet)
+                          // Find ETH or WETH token for the other field
+                          const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
+                          if (ethereumToken) {
+                            setFromToken(ethereumToken)
+                          }
+                        }
+                      }
+                    }
+
+                    // Find a non-conflicting default network
+                    const availableNetworks = token.networks?.filter(networkId => {
+                      const isConflicting = type === 'from'
+                        ? (token.symbol === toToken.symbol && networkId === toNetwork.id)
+                        : (token.symbol === fromToken.symbol && networkId === fromNetwork.id)
+                      return !isConflicting
+                    }) || []
+
+                    const defaultNetwork = availableNetworks.length > 0
+                      ? NETWORKS.find(n => n.id === availableNetworks[0])
+                      : NETWORKS.find(n => token.networks?.includes(n.id)) || NETWORKS[0]
+
+                    if (defaultNetwork) {
+                      onSelect(token, defaultNetwork)
+                      onClose()
+                    } else {
+                      // Fallback to first available network if no non-conflicting network found
+                      const fallbackNetwork = NETWORKS.find(n => token.networks?.includes(n.id)) || NETWORKS[0]
+                      onSelect(token, fallbackNetwork)
+                      onClose()
+                    }
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      {token.symbol.slice(0, 2)}
+                    </div>
+                    <div className="text-left">
+                      <div className="font-medium">{token.symbol}</div>
+                      <div className="text-sm text-muted-foreground">{token.name}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {token.networkCount && token.networkCount > 1 && (
+                      <Badge variant="secondary" className="text-xs">
+                        {token.networkCount}
+                      </Badge>
+                    )}
+                    <div className="text-right">
+                      <div className="text-sm">{token.balance}</div>
+                      <div className="text-xs text-muted-foreground">
+                        ${(token as any).value ? (token as any).value.toFixed(2) : '0.00'}
+                      </div>
+                    </div>
+                  </div>
+                </Button>
+
+                {/* Show networks if token has multiple */}
+                {token.networks && token.networks.length > 1 && (
+                  <div className="ml-12 mb-2 flex flex-wrap gap-1">
+                    {token.networks.map(networkId => {
+                      const network = NETWORKS.find(n => n.id === networkId)
+                      if (!network) return null
+
+                      // Check if this network would conflict with the other token selection
+                      const isConflicting = type === 'from'
+                        ? (token.symbol === toToken.symbol && networkId === toNetwork.id)
+                        : (token.symbol === fromToken.symbol && networkId === fromNetwork.id)
+
+                      if (isConflicting) return null
+
+                      return (
+                        <Badge
+                          key={networkId}
+                          variant="outline"
+                          className="text-xs cursor-pointer hover:bg-primary/10"
+                          onClick={() => {
+                            // If this is a special token, automatically set the other field to Ethereum testnet
+                            const isSpecialToken = (tokenSymbol: string) => ['TON', 'BTC', 'TRX'].includes(tokenSymbol)
+                            if (isSpecialToken(token.symbol)) {
+                              const ethereumTestnet = NETWORKS.find(n => n.id === 'ethereum-testnet')
+                              if (ethereumTestnet) {
+                                if (type === 'from') {
+                                  setToNetwork(ethereumTestnet)
+                                  const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
+                                  if (ethereumToken) {
+                                    setToToken(ethereumToken)
+                                  }
+                                } else {
+                                  setFromNetwork(ethereumTestnet)
+                                  const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
+                                  if (ethereumToken) {
+                                    setFromToken(ethereumToken)
+                                  }
+                                }
+                              }
+                            }
+
+                            onSelect(token, network)
+                            onClose()
+                          }}
+                        >
+                          {renderNetworkIcon(networkId, 12)}
+                          <span className="ml-1">{network.name}</span>
+                        </Badge>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 interface SwapQuote {
   fromToken: string
   toToken: string
@@ -72,9 +369,12 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
   // Token selection state
   const [isFromTokenSelectorOpen, setIsFromTokenSelectorOpen] = useState(false)
   const [isToTokenSelectorOpen, setIsToTokenSelectorOpen] = useState(false)
-  const [selectedNetworkFilter, setSelectedNetworkFilter] = useState<string>('all')
-  const [tokenSearch, setTokenSearch] = useState("")
-  const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false)
+  const [fromNetworkFilter, setFromNetworkFilter] = useState<string>('all')
+  const [toNetworkFilter, setToNetworkFilter] = useState<string>('all')
+  const [fromTokenSearch, setFromTokenSearch] = useState("")
+  const [toTokenSearch, setToTokenSearch] = useState("")
+  const [isFromNetworkDropdownOpen, setIsFromNetworkDropdownOpen] = useState(false)
+  const [isToNetworkDropdownOpen, setIsToNetworkDropdownOpen] = useState(false)
 
   // Helper functions for token restrictions
   const isSpecialToken = (tokenSymbol: string) => ['TON', 'BTC', 'TRX'].includes(tokenSymbol)
@@ -271,17 +571,17 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
   }
 
   // Filter tokens based on search and network
-  const getFilteredTokens = (type: 'from' | 'to') => {
+  const getFilteredTokens = (type: 'from' | 'to', networkFilter: string, searchTerm: string) => {
     return TOKENS_DATA.filter(token => {
-      const matchesSearch = token.symbol.toLowerCase().includes(tokenSearch.toLowerCase()) ||
-        token.name.toLowerCase().includes(tokenSearch.toLowerCase())
-      const matchesNetwork = selectedNetworkFilter === 'all' ||
-        (token.networks && token.networks.includes(selectedNetworkFilter))
+      const matchesSearch = token.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        token.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesNetwork = networkFilter === 'all' ||
+        (token.networks && token.networks.includes(networkFilter))
 
       // Exclude the token that's already selected in the other position
       const isExcluded = type === 'from'
-        ? (token.symbol === toToken.symbol && (selectedNetworkFilter === 'all' || selectedNetworkFilter === toNetwork.id))
-        : (token.symbol === fromToken.symbol && (selectedNetworkFilter === 'all' || selectedNetworkFilter === fromNetwork.id))
+        ? (token.symbol === toToken.symbol && (networkFilter === 'all' || networkFilter === toNetwork.id))
+        : (token.symbol === fromToken.symbol && (networkFilter === 'all' || networkFilter === fromNetwork.id))
 
       // Special restriction: If TON, BTC, or TRX is selected in one field, 
       // the other field should only show Ethereum testnet tokens
@@ -318,266 +618,7 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
     )
   }
 
-  // Token Selector Component
-  const TokenSelectorWithNetwork = ({
-    isOpen,
-    onClose,
-    onSelect,
-    currentToken,
-    currentNetwork,
-    type
-  }: {
-    isOpen: boolean
-    onClose: () => void
-    onSelect: (token: Token, network: Network) => void
-    currentToken: Token
-    currentNetwork: Network
-    type: 'from' | 'to'
-  }) => {
-    if (!isOpen) return null
 
-    return (
-      <Dialog open={isOpen} onOpenChange={(open) => {
-        if (!open) {
-          onClose()
-        }
-      }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Select {type === 'from' ? 'You Pay' : 'You Receive'}</DialogTitle>
-          </DialogHeader>
-
-          {/* Network Selection */}
-          <div className="mb-4">
-            <div className="relative">
-              <Button
-                variant="outline"
-                className="w-full justify-between"
-                onClick={() => setIsNetworkDropdownOpen(!isNetworkDropdownOpen)}
-                disabled={isRestrictedToEthereum(type)}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">N</span>
-                  </div>
-                  <span>
-                    {isRestrictedToEthereum(type)
-                      ? 'Ethereum Testnet Only'
-                      : selectedNetworkFilter === 'all'
-                        ? 'All Networks'
-                        : NETWORKS.find(n => n.id === selectedNetworkFilter)?.name
-                    }
-                  </span>
-                </div>
-                <ChevronDown className={`w-4 h-4 transition-transform ${isNetworkDropdownOpen ? 'rotate-180' : ''}`} />
-              </Button>
-
-              {/* Show restriction notice */}
-              {isRestrictedToEthereum(type) && (
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-xs text-blue-700">
-                    ⚠️ Restricted to Ethereum testnet tokens only due to {type === 'from' ? toToken.symbol : fromToken.symbol} selection
-                  </p>
-                </div>
-              )}
-
-              {/* Network Dropdown */}
-              {isNetworkDropdownOpen && !isRestrictedToEthereum(type) && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                  <div className="p-2">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setSelectedNetworkFilter('all')
-                        setIsNetworkDropdownOpen(false)
-                      }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">N</span>
-                        </div>
-                        <span>All Networks</span>
-                        {selectedNetworkFilter === 'all' && <Check className="w-4 h-4 ml-auto" />}
-                      </div>
-                    </Button>
-                    {NETWORKS.map((network) => (
-                      <Button
-                        key={network.id}
-                        variant="ghost"
-                        className="w-full justify-start"
-                        onClick={() => {
-                          setSelectedNetworkFilter(network.id)
-                          setIsNetworkDropdownOpen(false)
-                        }}
-                      >
-                        <div className="flex items-center gap-2">
-                          {renderNetworkIcon(network.id, 16)}
-                          <span>{network.name}</span>
-                          {selectedNetworkFilter === network.id && <Check className="w-4 h-4 ml-auto" />}
-                        </div>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="relative mb-4">
-            <Input
-              placeholder="Search tokens..."
-              value={tokenSearch}
-              onChange={(e) => setTokenSearch(e.target.value)}
-              className="pl-10"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          </div>
-
-          {/* Token List */}
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {getFilteredTokens(type).length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No available tokens found.</p>
-                <p className="text-xs mt-1">Try changing the network filter or search terms.</p>
-              </div>
-            ) : (
-              getFilteredTokens(type).map((token) => (
-                <div key={token.symbol}>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-between p-3 h-auto"
-                    onClick={() => {
-                      // If this is a special token (TON, BTC, TRX), automatically set the other field to Ethereum testnet
-                      if (isSpecialToken(token.symbol)) {
-                        const ethereumTestnet = NETWORKS.find(n => n.id === 'ethereum-testnet')
-                        if (ethereumTestnet) {
-                          // Set the other field to Ethereum testnet
-                          if (type === 'from') {
-                            setToNetwork(ethereumTestnet)
-                            // Find ETH or WETH token for the other field
-                            const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
-                            if (ethereumToken) {
-                              setToToken(ethereumToken)
-                            }
-                          } else {
-                            setFromNetwork(ethereumTestnet)
-                            // Find ETH or WETH token for the other field
-                            const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
-                            if (ethereumToken) {
-                              setFromToken(ethereumToken)
-                            }
-                          }
-                        }
-                      }
-
-                      // Find a non-conflicting default network
-                      const availableNetworks = token.networks?.filter(networkId => {
-                        const isConflicting = type === 'from'
-                          ? (token.symbol === toToken.symbol && networkId === toNetwork.id)
-                          : (token.symbol === fromToken.symbol && networkId === fromNetwork.id)
-                        return !isConflicting
-                      }) || []
-
-                      const defaultNetwork = availableNetworks.length > 0
-                        ? NETWORKS.find(n => n.id === availableNetworks[0])
-                        : NETWORKS.find(n => token.networks?.includes(n.id)) || NETWORKS[0]
-
-                      if (defaultNetwork) {
-                        onSelect(token, defaultNetwork)
-                        onClose()
-                      } else {
-                        // Fallback to first available network if no non-conflicting network found
-                        const fallbackNetwork = NETWORKS.find(n => token.networks?.includes(n.id)) || NETWORKS[0]
-                        onSelect(token, fallbackNetwork)
-                        onClose()
-                      }
-                    }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                        {token.symbol.slice(0, 2)}
-                      </div>
-                      <div className="text-left">
-                        <div className="font-medium">{token.symbol}</div>
-                        <div className="text-sm text-muted-foreground">{token.name}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {token.networkCount && token.networkCount > 1 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {token.networkCount}
-                        </Badge>
-                      )}
-                      <div className="text-right">
-                        <div className="text-sm">{token.balance}</div>
-                        <div className="text-xs text-muted-foreground">
-                          ${(token as any).value ? (token as any).value.toFixed(2) : '0.00'}
-                        </div>
-                      </div>
-                    </div>
-                  </Button>
-
-                  {/* Show networks if token has multiple */}
-                  {token.networks && token.networks.length > 1 && (
-                    <div className="ml-12 mb-2 flex flex-wrap gap-1">
-                      {token.networks.map(networkId => {
-                        const network = NETWORKS.find(n => n.id === networkId)
-                        if (!network) return null
-
-                        // Check if this network would conflict with the other token selection
-                        const isConflicting = type === 'from'
-                          ? (token.symbol === toToken.symbol && networkId === toNetwork.id)
-                          : (token.symbol === fromToken.symbol && networkId === fromNetwork.id)
-
-                        if (isConflicting) return null
-
-                        return (
-                          <Badge
-                            key={networkId}
-                            variant="outline"
-                            className="text-xs cursor-pointer hover:bg-primary/10"
-                            onClick={() => {
-                              // If this is a special token, automatically set the other field to Ethereum testnet
-                              if (isSpecialToken(token.symbol)) {
-                                const ethereumTestnet = NETWORKS.find(n => n.id === 'ethereum-testnet')
-                                if (ethereumTestnet) {
-                                  if (type === 'from') {
-                                    setToNetwork(ethereumTestnet)
-                                    const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
-                                    if (ethereumToken) {
-                                      setToToken(ethereumToken)
-                                    }
-                                  } else {
-                                    setFromNetwork(ethereumTestnet)
-                                    const ethereumToken = TOKENS_DATA.find(t => t.symbol === 'ETH' || t.symbol === 'WETH')
-                                    if (ethereumToken) {
-                                      setFromToken(ethereumToken)
-                                    }
-                                  }
-                                }
-                              }
-
-                              onSelect(token, network)
-                              onClose()
-                            }}
-                          >
-                            {renderNetworkIcon(networkId, 12)}
-                            <span className="ml-1">{network.name}</span>
-                          </Badge>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-    )
-  }
 
   // Check if this is a Bitcoin swap
   const isBitcoinSwap = fromToken.symbol === "BTC" || toToken.symbol === "BTC"
@@ -632,6 +673,19 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
       setCurrentQuote(null)
     }
   }, [fromToken.symbol, toToken.symbol])
+
+  // Reset search terms when modals close
+  useEffect(() => {
+    if (!isFromTokenSelectorOpen) {
+      setFromTokenSearch("")
+    }
+  }, [isFromTokenSelectorOpen])
+
+  useEffect(() => {
+    if (!isToTokenSelectorOpen) {
+      setToTokenSearch("")
+    }
+  }, [isToTokenSelectorOpen])
 
   // Update validation logic to handle Bitcoin as "from" token
   const isValidSwap = fromAmount && toAmount &&
@@ -944,6 +998,23 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
         currentToken={fromToken}
         currentNetwork={fromNetwork}
         type="from"
+        networkFilter={fromNetworkFilter}
+        setNetworkFilter={setFromNetworkFilter}
+        searchTerm={fromTokenSearch}
+        setSearchTerm={setFromTokenSearch}
+        isNetworkDropdownOpen={isFromNetworkDropdownOpen}
+        setIsNetworkDropdownOpen={setIsFromNetworkDropdownOpen}
+        isRestrictedToEthereum={isRestrictedToEthereum}
+        getFilteredTokens={getFilteredTokens}
+        renderNetworkIcon={renderNetworkIcon}
+        fromToken={fromToken}
+        toToken={toToken}
+        fromNetwork={fromNetwork}
+        toNetwork={toNetwork}
+        setFromToken={setFromToken}
+        setToToken={setToToken}
+        setFromNetwork={setFromNetwork}
+        setToNetwork={setToNetwork}
       />
 
       <TokenSelectorWithNetwork
@@ -956,6 +1027,23 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
         currentToken={toToken}
         currentNetwork={toNetwork}
         type="to"
+        networkFilter={toNetworkFilter}
+        setNetworkFilter={setToNetworkFilter}
+        searchTerm={toTokenSearch}
+        setSearchTerm={setToTokenSearch}
+        isNetworkDropdownOpen={isToNetworkDropdownOpen}
+        setIsNetworkDropdownOpen={setIsToNetworkDropdownOpen}
+        isRestrictedToEthereum={isRestrictedToEthereum}
+        getFilteredTokens={getFilteredTokens}
+        renderNetworkIcon={renderNetworkIcon}
+        fromToken={fromToken}
+        toToken={toToken}
+        fromNetwork={fromNetwork}
+        toNetwork={toNetwork}
+        setFromToken={setFromToken}
+        setToToken={setToToken}
+        setFromNetwork={setFromNetwork}
+        setToNetwork={setToNetwork}
       />
 
       {/* Bitcoin Swap Flow Dialog */}
