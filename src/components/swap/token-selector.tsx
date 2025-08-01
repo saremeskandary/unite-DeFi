@@ -26,6 +26,8 @@ interface TokenSelectorProps {
   token: Token;
   onSelect: (token: Token) => void;
   type: "from" | "to";
+  availableTokens?: Token[];
+  chainType?: string;
 }
 
 const TOKENS: Token[] = [
@@ -42,16 +44,23 @@ const TOKENS: Token[] = [
   { symbol: "MATIC", name: "Polygon", balance: "0.00" },
 ];
 
-export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
+export function TokenSelector({ token, onSelect, type, availableTokens, chainType }: TokenSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [tokens, setTokens] = useState<Token[]>(TOKENS);
+  const [tokens, setTokens] = useState<Token[]>(availableTokens || TOKENS);
   const [isLoading, setIsLoading] = useState(false);
 
   // Load real token data when component mounts and when wallet changes
   useEffect(() => {
     loadTokenData();
   }, []);
+
+  // Update tokens when availableTokens prop changes
+  useEffect(() => {
+    if (availableTokens) {
+      setTokens(availableTokens);
+    }
+  }, [availableTokens]);
 
   // Refresh token data when wallet connection changes
   useEffect(() => {
@@ -199,22 +208,19 @@ export function TokenSelector({ token, onSelect, type }: TokenSelectorProps) {
           {/* Popular Tokens */}
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground mb-2">
-              Popular Tokens
+              {chainType === 'simple' ? 'Available Token' : 'Popular Tokens'}
             </div>
             <div className="flex flex-wrap gap-2">
-              {["USDC", "USDT", "WETH", "BTC", "ETH"].map((symbol) => (
+              {tokens.slice(0, 5).map((token) => (
                 <Badge
-                  key={symbol}
+                  key={token.symbol}
                   variant="secondary"
                   className="bg-muted hover:bg-accent cursor-pointer text-xs"
-                  onClick={() => {
-                    const tokenData = tokens.find((t) => t.symbol === symbol);
-                    if (tokenData) handleSelect(tokenData);
-                  }}
+                  onClick={() => handleSelect(token)}
                 >
                   <div className="flex items-center space-x-1">
-                    {renderTokenIcon(symbol, 16)}
-                    <span>{symbol}</span>
+                    {renderTokenIcon(token.symbol, 16)}
+                    <span>{token.symbol}</span>
                   </div>
                 </Badge>
               ))}

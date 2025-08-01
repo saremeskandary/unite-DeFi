@@ -284,6 +284,7 @@ This checklist identifies all mock data, hardcoded values, and simulated functio
 1. **WebSocket Integration** - Add real-time updates
 2. **Transaction Monitoring** - Implement live transaction tracking
 3. **Portfolio Updates** - Real-time portfolio data
+3. **Portfolio Updates** - Real-time portfolio data
 4. **Order Status** - Live order status updates
 
 ### Phase 3: Enhanced UX (Lower Priority)
@@ -353,6 +354,7 @@ This checklist identifies all mock data, hardcoded values, and simulated functio
   - [x] Test order validation
   - [x] Test fee calculation
   - [x] Test cross-chain transaction monitoring
+  - [x] Test HTLC contract interactions
   - [x] Test HTLC contract interactions
 
 - [x] **Component Tests**

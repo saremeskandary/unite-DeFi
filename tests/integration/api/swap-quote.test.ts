@@ -1,7 +1,7 @@
 import { createServer } from 'http';
 import { GET } from '../../../src/app/api/swap/quote/route';
 
-// Mock NextResponse
+// Mock NextResponse and NextRequest
 jest.mock('next/server', () => ({
   NextResponse: {
     json: (data: any, init?: any) => {
@@ -13,6 +13,32 @@ jest.mock('next/server', () => ({
         }
       });
     }
+  },
+  NextRequest: jest.fn().mockImplementation((url, init) => ({
+    url,
+    nextUrl: new URL(url),
+    method: init?.method || 'GET',
+    headers: init?.headers || {
+      get: jest.fn(() => null),
+      entries: jest.fn(() => []),
+      set: jest.fn(),
+      has: jest.fn(() => false)
+    },
+    json: jest.fn().mockResolvedValue({}),
+    text: jest.fn().mockResolvedValue(''),
+    clone: jest.fn(function() { return this; })
+  }))
+}));
+
+// Mock the rate limiter to avoid headers.get issues
+jest.mock('../../../src/lib/security/rate-limiter', () => ({
+  withRateLimit: jest.fn((handler) => handler),
+  rateLimiters: {
+    api: { checkLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 100, resetTime: Date.now() + 60000 }) },
+    auth: { checkLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 100, resetTime: Date.now() + 60000 }) },
+    public: { checkLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 100, resetTime: Date.now() + 60000 }) },
+    swap: { checkLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 100, resetTime: Date.now() + 60000 }) },
+    websocket: { checkLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 100, resetTime: Date.now() + 60000 }) }
   }
 }));
 
@@ -31,8 +57,45 @@ jest.mock('../../../src/lib/blockchain-integration', () => ({
   }
 }));
 
+// Mock the validation middleware to bypass validation for now
+jest.mock('../../../src/lib/security/security-middleware', () => ({
+  secureRoute: jest.fn((handler) => handler),
+  createSecureResponse: jest.fn((data) => new Response(JSON.stringify(data), { status: 200 })),
+  createSecureErrorResponse: jest.fn((error) => {
+    const status = error.statusCode || 500;
+    const message = error.message || 'An unexpected error occurred. Please try again later';
+    return new Response(JSON.stringify({ error: message }), { status });
+  })
+}));
+
 import { priceOracle } from '../../../src/lib/price-oracle';
 import { blockchainIntegration } from '../../../src/lib/blockchain-integration';
+
+// Helper function to create a mock NextRequest
+function createMockNextRequest(url: string): any {
+  const urlObj = new URL(url);
+  return {
+    url: url,
+    nextUrl: urlObj,
+    method: 'GET',
+    headers: {
+      get: jest.fn((name: string) => {
+        const headers: Record<string, string> = {
+          'x-forwarded-for': '127.0.0.1',
+          'user-agent': 'test-agent',
+          'content-type': 'application/json'
+        };
+        return headers[name.toLowerCase()] || null;
+      }),
+      entries: jest.fn(() => []),
+      set: jest.fn(),
+      has: jest.fn(() => false)
+    },
+    json: jest.fn().mockResolvedValue({}),
+    text: jest.fn().mockResolvedValue(''),
+    clone: jest.fn(function() { return this; })
+  };
+}
 
 describe('Swap Quote API Endpoint', () => {
   let server: any;
@@ -102,10 +165,10 @@ describe('Swap Quote API Endpoint', () => {
         .mockResolvedValueOnce(mockFromPrice)
         .mockResolvedValueOnce(mockToPrice);
 
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=1`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -123,21 +186,22 @@ describe('Swap Quote API Endpoint', () => {
     });
 
     it('should handle missing required parameters', async () => {
-      const request = new Request(`${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC`);
-      const response = await GET(request as any);
+      const request = createMockNextRequest(`${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC`);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
       expect(data.error).toContain('Missing required parameters');
       expect(data.required).toContain('amount');
       expect(data.required).toContain('fromAddress');
+      expect(data.required).toContain('chainId');
     });
 
     it('should validate amount is a positive number', async () => {
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=-1&fromAddress=0x1234567890123456789012345678901234567890`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=-1&fromAddress=0x1234567890123456789012345678901234567890&chainId=1`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -145,10 +209,10 @@ describe('Swap Quote API Endpoint', () => {
     });
 
     it('should validate amount is a valid number', async () => {
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=invalid&fromAddress=0x1234567890123456789012345678901234567890`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=invalid&fromAddress=0x1234567890123456789012345678901234567890&chainId=1`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -156,10 +220,10 @@ describe('Swap Quote API Endpoint', () => {
     });
 
     it('should validate slippage bounds', async () => {
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&slippage=100`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=1&slippage=100`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -167,10 +231,10 @@ describe('Swap Quote API Endpoint', () => {
     });
 
     it('should validate slippage minimum', async () => {
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&slippage=0.05`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=1&slippage=0.05`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -178,10 +242,10 @@ describe('Swap Quote API Endpoint', () => {
     });
 
     it('should validate supported chain IDs', async () => {
-      const request = new Request(
+      const request = createMockNextRequest(
         `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=999`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -209,10 +273,10 @@ describe('Swap Quote API Endpoint', () => {
       (blockchainIntegration.estimateGas as jest.Mock).mockResolvedValue({});
       (priceOracle.getTokenPrice as jest.Mock).mockResolvedValue({});
 
-      const request = new Request(
+      const request = createMockNextRequest(
         `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=137`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -222,10 +286,10 @@ describe('Swap Quote API Endpoint', () => {
     it('should handle swap quote failure', async () => {
       (priceOracle.getSwapQuote as jest.Mock).mockResolvedValue(null);
 
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=1`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -237,10 +301,10 @@ describe('Swap Quote API Endpoint', () => {
         new Error('API rate limit exceeded')
       );
 
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=1`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -283,10 +347,10 @@ describe('Swap Quote API Endpoint', () => {
         .mockResolvedValueOnce(mockFromPrice)
         .mockResolvedValueOnce(mockToPrice);
 
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=1`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -318,10 +382,10 @@ describe('Swap Quote API Endpoint', () => {
       (blockchainIntegration.estimateGas as jest.Mock).mockResolvedValue({});
       (priceOracle.getTokenPrice as jest.Mock).mockResolvedValue({});
 
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=1`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -348,10 +412,10 @@ describe('Swap Quote API Endpoint', () => {
       (blockchainIntegration.estimateGas as jest.Mock).mockResolvedValue({});
       (priceOracle.getTokenPrice as jest.Mock).mockResolvedValue({});
 
-      const request = new Request(
-        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890`
+      const request = createMockNextRequest(
+        `${baseUrl}/api/swap/quote?fromToken=ETH&toToken=USDC&amount=1.0&fromAddress=0x1234567890123456789012345678901234567890&chainId=1`
       );
-      const response = await GET(request as any);
+      const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);

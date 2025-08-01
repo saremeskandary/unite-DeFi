@@ -1,5 +1,35 @@
 import { z } from 'zod';
 
+// Chain type definitions
+export const CHAIN_TYPES = {
+  SIMPLE: 'simple',      // Bitcoin, Dogecoin, etc. - only native token
+  SMART_CONTRACT: 'smart_contract'  // Ethereum, Tron, Cardano, etc. - multiple tokens
+} as const;
+
+export const CHAIN_CONFIG = {
+  // Simple chains - only allow native token swaps
+  BTC: { type: CHAIN_TYPES.SIMPLE, nativeToken: 'BTC', name: 'Bitcoin' },
+  DOGE: { type: CHAIN_TYPES.SIMPLE, nativeToken: 'DOGE', name: 'Dogecoin' },
+  LTC: { type: CHAIN_TYPES.SIMPLE, nativeToken: 'LTC', name: 'Litecoin' },
+  BCH: { type: CHAIN_TYPES.SIMPLE, nativeToken: 'BCH', name: 'Bitcoin Cash' },
+
+  // Smart contract chains - allow multiple tokens
+  ETH: { type: CHAIN_TYPES.SMART_CONTRACT, nativeToken: 'ETH', name: 'Ethereum' },
+  TRON: { type: CHAIN_TYPES.SMART_CONTRACT, nativeToken: 'TRX', name: 'Tron' },
+  ADA: { type: CHAIN_TYPES.SMART_CONTRACT, nativeToken: 'ADA', name: 'Cardano' },
+  SOL: { type: CHAIN_TYPES.SMART_CONTRACT, nativeToken: 'SOL', name: 'Solana' },
+  MATIC: { type: CHAIN_TYPES.SMART_CONTRACT, nativeToken: 'MATIC', name: 'Polygon' },
+  BSC: { type: CHAIN_TYPES.SMART_CONTRACT, nativeToken: 'BNB', name: 'Binance Smart Chain' }
+} as const;
+
+// Chain pair validation
+export const chainPairSchema = z.object({
+  fromChain: z.enum(['BTC', 'DOGE', 'LTC', 'BCH', 'ETH', 'TRON', 'ADA', 'SOL', 'MATIC', 'BSC']),
+  toChain: z.enum(['BTC', 'DOGE', 'LTC', 'BCH', 'ETH', 'TRON', 'ADA', 'SOL', 'MATIC', 'BSC'])
+}).refine((data) => data.fromChain !== data.toChain, {
+  message: 'From and to chains must be different'
+});
+
 // Base schemas for common validation patterns
 export const addressSchema = z.string().regex(/^[2mn][1-9A-HJ-NP-Za-km-z]{25,34}$/, {
   message: 'Invalid Bitcoin address format'
@@ -7,6 +37,46 @@ export const addressSchema = z.string().regex(/^[2mn][1-9A-HJ-NP-Za-km-z]{25,34}
 
 export const ethereumAddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
   message: 'Invalid Ethereum address format'
+});
+
+export const tronAddressSchema = z.string().regex(/^T[A-Za-z1-9]{33}$/, {
+  message: 'Invalid Tron address format'
+});
+
+export const cardanoAddressSchema = z.string().regex(/^addr1[a-z0-9]{98}$/, {
+  message: 'Invalid Cardano address format'
+});
+
+export const solanaAddressSchema = z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, {
+  message: 'Invalid Solana address format'
+});
+
+// Dynamic address validation based on chain
+export const chainAddressSchema = z.object({
+  chain: z.enum(['BTC', 'DOGE', 'LTC', 'BCH', 'ETH', 'TRON', 'ADA', 'SOL', 'MATIC', 'BSC']),
+  address: z.string()
+}).refine((data) => {
+  switch (data.chain) {
+    case 'BTC':
+    case 'DOGE':
+    case 'LTC':
+    case 'BCH':
+      return /^[2mn][1-9A-HJ-NP-Za-km-z]{25,34}$/.test(data.address);
+    case 'ETH':
+    case 'MATIC':
+    case 'BSC':
+      return /^0x[a-fA-F0-9]{40}$/.test(data.address);
+    case 'TRON':
+      return /^T[A-Za-z1-9]{33}$/.test(data.address);
+    case 'ADA':
+      return /^addr1[a-z0-9]{98}$/.test(data.address);
+    case 'SOL':
+      return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(data.address);
+    default:
+      return false;
+  }
+}, {
+  message: 'Invalid address format for selected chain'
 });
 
 export const amountSchema = z.string().refine(
@@ -17,16 +87,52 @@ export const amountSchema = z.string().refine(
   { message: 'Amount must be a positive number' }
 );
 
-export const slippageSchema = z.number().min(0.1).max(50).default(0.5);
+export const slippageSchema = z.preprocess(
+  (val) => typeof val === 'string' ? parseFloat(val) : val,
+  z.number().min(0.1).max(50).default(0.5)
+);
 
-export const chainIdSchema = z.number().int().refine(
-  (val) => [1, 137, 56, 42161].includes(val), // Ethereum, Polygon, BSC, Arbitrum
-  { message: 'Unsupported chain ID' }
+export const chainIdSchema = z.preprocess(
+  (val) => typeof val === 'string' ? parseInt(val, 10) : val,
+  z.number().int().refine(
+    (val) => [1, 137, 56, 42161].includes(val), // Ethereum, Polygon, BSC, Arbitrum
+    { message: 'Unsupported chain ID' }
+  )
 );
 
 export const feePrioritySchema = z.enum(['slow', 'standard', 'fast']).default('standard');
 
-// Swap-related schemas
+// Enhanced swap validation schemas
+export const multiChainSwapQuoteSchema = z.object({
+  fromChain: z.enum(['BTC', 'DOGE', 'LTC', 'BCH', 'ETH', 'TRON', 'ADA', 'SOL', 'MATIC', 'BSC']),
+  toChain: z.enum(['BTC', 'DOGE', 'LTC', 'BCH', 'ETH', 'TRON', 'ADA', 'SOL', 'MATIC', 'BSC']),
+  fromToken: z.string().min(1, 'From token is required'),
+  toToken: z.string().min(1, 'To token is required'),
+  amount: amountSchema,
+  fromAddress: z.union([addressSchema, ethereumAddressSchema, tronAddressSchema, cardanoAddressSchema, solanaAddressSchema]),
+  chainId: chainIdSchema,
+  slippage: slippageSchema
+}).refine((data) => {
+  // Validate token restrictions based on chain type
+  const fromChainConfig = CHAIN_CONFIG[data.fromChain as keyof typeof CHAIN_CONFIG];
+  const toChainConfig = CHAIN_CONFIG[data.toChain as keyof typeof CHAIN_CONFIG];
+
+  if (!fromChainConfig || !toChainConfig) return false;
+
+  // For simple chains, only allow native token
+  if (fromChainConfig.type === CHAIN_TYPES.SIMPLE && data.fromToken !== fromChainConfig.nativeToken) {
+    return false;
+  }
+  if (toChainConfig.type === CHAIN_TYPES.SIMPLE && data.toToken !== toChainConfig.nativeToken) {
+    return false;
+  }
+
+  return true;
+}, {
+  message: 'Invalid token selection for selected chain type'
+});
+
+// Legacy swap schema for backward compatibility
 export const swapQuoteSchema = z.object({
   fromToken: z.string().min(1, 'From token is required'),
   toToken: z.string().min(1, 'To token is required'),

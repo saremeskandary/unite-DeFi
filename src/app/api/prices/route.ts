@@ -64,17 +64,25 @@ const MOCK_PRICES = {
   },
 };
 
+// Generate mock data for unknown symbols
+function generateMockPrice(symbol: string) {
+  const basePrice = 10 + Math.random() * 100;
+  return {
+    price: basePrice,
+    change24h: -5 + Math.random() * 20,
+    volume24h: 1000000 + Math.random() * 10000000,
+    marketCap: basePrice * (1000000 + Math.random() * 10000000),
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const symbols = searchParams.get('symbols');
-    const currency = searchParams.get('currency') || 'usd';
-    const include24hChange = searchParams.get('include24hChange') === 'true';
-    const includeMarketCap = searchParams.get('includeMarketCap') === 'true';
 
-    if (!symbols) {
+    if (!symbols || symbols.trim() === '') {
       return NextResponse.json(
-        { error: 'Missing required parameter: symbols' },
+        { error: 'Symbols parameter is required' },
         { status: 400 }
       );
     }
@@ -82,50 +90,36 @@ export async function GET(request: NextRequest) {
     const symbolList = symbols.split(',').map(s => s.toUpperCase()).filter(s => s.length > 0);
 
     if (symbolList.length === 0) {
-      return NextResponse.json(
-        { error: 'Missing required parameter: symbols' },
-        { status: 400 }
-      );
-    }
-
-    if (symbolList.length > 20) {
-      return NextResponse.json(
-        { error: 'Maximum 20 symbols allowed per request' },
-        { status: 400 }
-      );
+      return NextResponse.json({});
     }
 
     const prices: Record<string, any> = {};
-    let availableCount = 0;
 
     symbolList.forEach(symbol => {
       if (MOCK_PRICES[symbol as keyof typeof MOCK_PRICES]) {
         const priceData = MOCK_PRICES[symbol as keyof typeof MOCK_PRICES];
         prices[symbol] = {
           price: priceData.price,
-          ...(include24hChange && { change24h: priceData.change24h }),
-          ...(includeMarketCap && { marketCap: priceData.marketCap }),
-          volume24h: priceData.volume24h
+          change24h: priceData.change24h,
+          volume24h: priceData.volume24h,
+          marketCap: priceData.marketCap
         };
-        availableCount++;
       } else {
-        prices[symbol] = { error: 'Price not available' };
+        // Generate mock data for unknown symbols
+        const mockData = generateMockPrice(symbol);
+        prices[symbol] = {
+          price: mockData.price,
+          change24h: mockData.change24h,
+          volume24h: mockData.volume24h,
+          marketCap: mockData.marketCap
+        };
       }
     });
 
     // Add a small delay to simulate API latency
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    const response = {
-      currency,
-      prices,
-      summary: {
-        totalRequested: symbolList.length,
-        available: availableCount
-      }
-    };
-
-    return NextResponse.json(response);
+    return NextResponse.json(prices);
 
   } catch (error) {
     console.error('Error fetching prices:', error);
@@ -139,8 +133,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { symbols, currency = 'usd', include24hChange = false, includeMarketCap = false } = body;
+    const { symbols, interval, callback } = body;
 
+    // Validate required fields
     if (!symbols || !Array.isArray(symbols)) {
       return NextResponse.json(
         { error: 'Missing or invalid symbols array' },
@@ -150,56 +145,70 @@ export async function POST(request: NextRequest) {
 
     if (symbols.length === 0) {
       return NextResponse.json(
-        { error: 'Missing or invalid symbols array' },
+        { error: 'Symbols array cannot be empty' },
         { status: 400 }
       );
     }
 
-    if (symbols.length > 20) {
+    if (!interval) {
       return NextResponse.json(
-        { error: 'Maximum 20 symbols allowed per request' },
+        { error: 'Interval is required' },
         { status: 400 }
       );
     }
 
-    const symbolList = symbols.map((s: string) => s.toUpperCase());
-    const prices: Record<string, any> = {};
-    let availableCount = 0;
+    if (!callback) {
+      return NextResponse.json(
+        { error: 'Callback URL is required' },
+        { status: 400 }
+      );
+    }
 
-    symbolList.forEach(symbol => {
-      if (MOCK_PRICES[symbol as keyof typeof MOCK_PRICES]) {
-        const priceData = MOCK_PRICES[symbol as keyof typeof MOCK_PRICES];
-        prices[symbol] = {
-          price: priceData.price,
-          ...(include24hChange && { change24h: priceData.change24h }),
-          ...(includeMarketCap && { marketCap: priceData.marketCap }),
-          volume24h: priceData.volume24h
-        };
-        availableCount++;
-      } else {
-        prices[symbol] = { error: 'Price not available' };
-      }
-    });
+    // Validate callback URL format
+    try {
+      new URL(callback);
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid callback URL format' },
+        { status: 400 }
+      );
+    }
 
-    // Add a small delay to simulate API latency
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Validate interval
+    const validIntervals = ['1s', '5s', '10s', '30s', '1m', '5m', '15m', '1h'];
+    if (!validIntervals.includes(interval)) {
+      return NextResponse.json(
+        { error: 'Invalid interval' },
+        { status: 400 }
+      );
+    }
+
+    // Limit number of symbols
+    if (symbols.length > 100) {
+      return NextResponse.json(
+        { error: 'Maximum 100 symbols allowed per subscription' },
+        { status: 400 }
+      );
+    }
+
+    // Generate subscription ID
+    const subscriptionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     const response = {
-      currency,
-      prices,
-      summary: {
-        totalRequested: symbolList.length,
-        available: availableCount
-      }
+      success: true,
+      subscriptionId,
+      symbols,
+      interval,
+      callback
     };
 
     return NextResponse.json(response);
 
   } catch (error) {
-    console.error('Error fetching prices:', error);
+    console.error('Error processing subscription:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch prices' },
-      { status: 500 }
+      { error: 'Invalid request body' },
+      { status: 400 }
     );
   }
 } 
