@@ -35,8 +35,15 @@ PROGRAM{
   DECLPROC $CreateEVMToTONOrder$_load_not_mut
   DECLPROC $CreateTONToEVMOrder$_load
   DECLPROC $CreateTONToEVMOrder$_load_not_mut
+  DECLPROC $EVMCrossChainMessage$_store
+  DECLPROC $EVMCrossChainMessage$_store_cell
+  DECLPROC $EVMContractDeploy$_store
+  DECLPROC $EVMContractDeploy$_store_cell
   DECLPROC $EscrowContract$_store
   DECLPROC $EscrowContract$_store_cell
+  DECLPROC $EscrowContract$_load
+  DECLPROC $EscrowContract$_as_optional
+  DECLPROC $EscrowContract$_load_opt
   DECLPROC $RelayerData$_store
   DECLPROC $RelayerData$_store_cell
   DECLPROC $RelayerData$_load
@@ -44,6 +51,21 @@ PROGRAM{
   DECLPROC $RelayerData$_load_opt
   DECLPROC $JettonWalletData$_store
   DECLPROC $JettonWalletData$_store_cell
+  DECLPROC $EVMChainConfig$_store
+  DECLPROC $EVMChainConfig$_store_cell
+  DECLPROC $EVMChainConfig$_load
+  DECLPROC $EVMChainConfig$_as_optional
+  DECLPROC $EVMChainConfig$_load_opt
+  DECLPROC $EVMTransaction$_store
+  DECLPROC $EVMTransaction$_store_cell
+  DECLPROC $EVMBridgeData$_load
+  DECLPROC $EVMBridgeData$_as_optional
+  DECLPROC $EVMBridgeData$_load_opt
+  DECLPROC $EVMOracleData$_load
+  DECLPROC $EVMOracleData$_as_optional
+  DECLPROC $EVMOracleData$_load_opt
+  DECLPROC $CrossChainMessage$_store
+  DECLPROC $CrossChainMessage$_store_cell
   DECLPROC $SendViaJettonTransfer$_store
   DECLPROC $SendViaJettonTransfer$_store_cell
   DECLPROC $TonFusion$_store
@@ -51,11 +73,17 @@ PROGRAM{
   DECLPROC $Context$_get_value
   DECLPROC $OrderConfig$_not_null
   DECLPROC $Order$_not_null
+  DECLPROC $EscrowContract$_get_deployed
+  DECLPROC $EscrowContract$_not_null
   DECLPROC $RelayerData$_get_address
   DECLPROC $RelayerData$_get_whitelisted
   DECLPROC $RelayerData$_get_totalResolves
   DECLPROC $RelayerData$_get_successRate
   DECLPROC $RelayerData$_not_null
+  DECLPROC $EVMChainConfig$_not_null
+  DECLPROC $EVMBridgeData$_get_bridgeContract
+  DECLPROC $EVMBridgeData$_get_isActive
+  DECLPROC $EVMBridgeData$_not_null
   DECLPROC $TonFusion$_contract_init
   DECLPROC $TonFusion$_contract_load
   DECLPROC $TonFusion$_contract_store
@@ -67,9 +95,22 @@ PROGRAM{
   DECLPROC $StateInit$_constructor_code_data
   DECLPROC $global_calculateJettonWalletAddress
   DECLPROC $global_keccakBytes32
+  DECLPROC $global_isValidEVMChainId
+  DECLPROC $global_isValidTONChainId
+  DECLPROC $EVMChainConfig$_constructor_chainId_rpcEndpoint_blockTime_gasLimit_isActive_bridgeAddress_oracleAddress
+  DECLPROC $global_getEVMChainConfig
+  DECLPROC $CrossChainMessage$_constructor_sourceChain_targetChain_orderHash_amount_secret_timestamp_nonce
+  DECLPROC $global_createEVMCrossChainMessage
+  DECLPROC $global_calculateEVMGasPrice
+  DECLPROC $global_calculateEVMBridgeFee
   DECLPROC $global_priceOfJettonForward
   DECLPROC $global_serializeOrderConfig
   DECLPROC $global_serializeOrder
+  DECLPROC $global_findBridgeForChain
+  DECLPROC $global_validateCrossChainMessage
+  DECLPROC $global_buildEVMTransferMessage
+  DECLPROC $global_isEscrowDeployed
+  DECLPROC $global_validateEVMMessageFormat
   DECLPROC $TonFusion$_fun_create
   DECLPROC $TonFusion$_fun_makeOrder
   DECLPROC $TonFusion$_fun_createEVMToTONOrder
@@ -79,6 +120,8 @@ PROGRAM{
   DECLPROC $MessageParameters$_constructor_to_value_mode_body
   DECLPROC $SendViaJettonTransfer$_constructor_queryId_amount_responseDestination_destination_forwardTonAmount_forwardPayload_customPayload
   DECLPROC $TonFusion$_fun_processJettonTransfer
+  DECLPROC $EVMTransaction$_constructor_chainId_toContract_functionSelector_parameters_gasLimit_gasPrice_value_nonce_status_transactionHash_blockNumber_confirmations
+  DECLPROC $TonFusion$_fun_sendEVMCrossChainMessage
   DECLPROC $TonFusion$_fun_processEVMTransfer
   DECLPROC $TonFusion$_fun_processJettonTransferOrder
   DECLPROC $TonFusion$_fun_completePartialFill
@@ -90,6 +133,14 @@ PROGRAM{
   DECLPROC $EscrowContract$_constructor_chainId_contractAddress_deployed_totalOrders
   DECLPROC $TonFusion$_fun_deployEscrow
   DECLPROC $TonFusion$_fun_updateRelayerStats
+  DECLPROC $TonFusion$_fun_findBridgeForChain
+  DECLPROC $TonFusion$_fun_handleEVMBridgeConfirmation
+  DECLPROC $TonFusion$_fun_handleEVMOraclePriceUpdate
+  DECLPROC $TonFusion$_fun_handleEVMChainValidation
+  DECLPROC $TonFusion$_fun_sendEVMCrossChainMessageToBridge
+  DECLPROC $TonFusion$_fun_processEVMCrossChainMessage
+  DECLPROC $TonFusion$_fun_sendEVMContractDeployToBridge
+  DECLPROC $TonFusion$_fun_processEVMContractDeploy
   DECLPROC $MessageParameters$_constructor_bounce_to_value_mode_body
   DECLPROC $TonFusion$_fun_notify
   DECLPROC $DeployOk$_constructor_queryId
@@ -474,6 +525,44 @@ PROGRAM{
     ENDS
     12 ROLL
   }>
+  $EVMCrossChainMessage$_store PROCINLINE:<{
+    2592832621 PUSHINT
+    s0 s8 XCHG2
+    32 STU
+    s1 s6 XCHG
+    32 STU
+    s1 s4 XCHG
+    STREF
+    s1 s2 XCHG
+    32 STU
+    STREF
+    32 STU
+    64 STU
+    STOPTREF
+  }>
+  $EVMCrossChainMessage$_store_cell PROCINLINE:<{
+    7 -ROLL
+    $EVMCrossChainMessage$_store INLINECALLDICT
+    ENDC
+  }>
+  $EVMContractDeploy$_store PROCINLINE:<{
+    1582251308 PUSHINT
+    s0 s7 XCHG2
+    32 STU
+    s1 s5 XCHG
+    32 STU
+    s1 s3 XCHG
+    STREF
+    STREF
+    32 STU
+    64 STU
+    STOPTREF
+  }>
+  $EVMContractDeploy$_store_cell PROCINLINE:<{
+    6 -ROLL
+    $EVMContractDeploy$_store INLINECALLDICT
+    ENDC
+  }>
   $EscrowContract$_store PROCINLINE:<{
     s3 s4 XCHG2
     32 STU
@@ -485,6 +574,29 @@ PROGRAM{
     4 -ROLL
     $EscrowContract$_store INLINECALLDICT
     ENDC
+  }>
+  $EscrowContract$_load PROCINLINE:<{
+    32 LDU
+    LDMSGADDR
+    1 LDI
+    32 LDU
+    4 -ROLL
+  }>
+  $EscrowContract$_as_optional PROCINLINE:<{
+        4 TUPLE
+  }>
+  $EscrowContract$_load_opt PROCINLINE:<{
+    DUP
+    ISNULL
+    IF:<{
+      DROP
+      PUSHNULL
+    }>ELSE<{
+      CTOS
+      $EscrowContract$_load INLINECALLDICT
+      1 4 BLKDROP2
+      $EscrowContract$_as_optional INLINECALLDICT
+    }>
   }>
   $RelayerData$_store PROCINLINE:<{
     s3 s4 XCHG2
@@ -534,6 +646,145 @@ PROGRAM{
     $JettonWalletData$_store INLINECALLDICT
     ENDC
   }>
+  $EVMChainConfig$_store PROCINLINE:<{
+    s6 s7 XCHG2
+    32 STU
+    s1 s4 XCHG
+    STREF
+    s1 s2 XCHG
+    32 STU
+    32 STU
+    1 STI
+    STREF
+    STREF
+  }>
+  $EVMChainConfig$_store_cell PROCINLINE:<{
+    7 -ROLL
+    $EVMChainConfig$_store INLINECALLDICT
+    ENDC
+  }>
+  $EVMChainConfig$_load PROCINLINE:<{
+    32 LDU
+    LDREF
+    32 LDU
+    32 LDU
+    1 LDI
+    LDREF
+    LDREF
+    7 -ROLL
+  }>
+  $EVMChainConfig$_as_optional PROCINLINE:<{
+        7 TUPLE
+  }>
+  $EVMChainConfig$_load_opt PROCINLINE:<{
+    DUP
+    ISNULL
+    IF:<{
+      DROP
+      PUSHNULL
+    }>ELSE<{
+      CTOS
+      $EVMChainConfig$_load INLINECALLDICT
+      1 7 BLKDROP2
+      $EVMChainConfig$_as_optional INLINECALLDICT
+    }>
+  }>
+  $EVMTransaction$_store PROCREF:<{
+    s11 s12 XCHG2
+    32 STU
+    s1 s9 XCHG
+    STREF
+    s1 s7 XCHG
+    32 STU
+    s1 s5 XCHG
+    STREF
+    s1 s3 XCHG
+    32 STU
+    64 STU
+    64 STU
+    64 STU
+    8 STU
+    STREF
+    64 STU
+    32 STU
+  }>
+  $EVMTransaction$_store_cell PROCINLINE:<{
+    12 -ROLL
+    $EVMTransaction$_store INLINECALLDICT
+    ENDC
+  }>
+  $EVMBridgeData$_load PROCINLINE:<{
+    32 LDU
+    32 LDU
+    32 LDU
+    LDMSGADDR
+    64 LDU
+    64 LDU
+    64 LDU
+    1 LDI
+    32 LDU
+    9 -ROLL
+  }>
+  $EVMBridgeData$_as_optional PROCINLINE:<{
+        9 TUPLE
+  }>
+  $EVMBridgeData$_load_opt PROCINLINE:<{
+    DUP
+    ISNULL
+    IF:<{
+      DROP
+      PUSHNULL
+    }>ELSE<{
+      CTOS
+      $EVMBridgeData$_load INLINECALLDICT
+      1 9 BLKDROP2
+      $EVMBridgeData$_as_optional INLINECALLDICT
+    }>
+  }>
+  $EVMOracleData$_load PROCINLINE:<{
+    32 LDU
+    32 LDU
+    LDMSGADDR
+    LDMSGADDR
+    8 LDU
+    32 LDU
+    1 LDI
+    32 LDU
+    8 -ROLL
+  }>
+  $EVMOracleData$_as_optional PROCINLINE:<{
+        8 TUPLE
+  }>
+  $EVMOracleData$_load_opt PROCINLINE:<{
+    DUP
+    ISNULL
+    IF:<{
+      DROP
+      PUSHNULL
+    }>ELSE<{
+      CTOS
+      $EVMOracleData$_load INLINECALLDICT
+      1 8 BLKDROP2
+      $EVMOracleData$_as_optional INLINECALLDICT
+    }>
+  }>
+  $CrossChainMessage$_store PROCINLINE:<{
+    s6 s7 XCHG2
+    32 STU
+    s1 s4 XCHG
+    32 STU
+    s1 s2 XCHG
+    256 STU
+    64 STU
+    256 STU
+    32 STU
+    64 STU
+  }>
+  $CrossChainMessage$_store_cell PROCINLINE:<{
+    7 -ROLL
+    $CrossChainMessage$_store INLINECALLDICT
+    ENDC
+  }>
   $SendViaJettonTransfer$_store PROCINLINE:<{
     260734629 PUSHINT
     s0 s8 XCHG2
@@ -557,31 +808,43 @@ PROGRAM{
     ENDC
   }>
   $TonFusion$_store PROCINLINE:<{
-    s10 s11 XCHG2
+    s1 16 s() XCHG
+    s0 17 s() XCHG
     STSLICE
-    s1 s8 XCHG
+    s1 s14 XCHG
     STDICT
-    s0 s6 XCHG
+    s0 s12 XCHG
     NEWC
     STDICT
-    s1 s5 XCHG
+    s1 s11 XCHG
     STDICT
-    s1 s3 XCHG
+    s1 s9 XCHG
     STDICT
+    s0 s7 XCHG
+    NEWC
+    STDICT
+    s1 s6 XCHG
+    STDICT
+    s1 s4 XCHG
+    STDICT
+    s1 s2 XCHG
+    32 STU
+    64 STU
+    32 STU
     SWAP
     NEWC
     STDICT
-    s1 s2 XCHG
-    STDICT
-    s1 s2 XCHG
+    s1 s3 XCHG
     STDICT
     s1 s3 XCHG
-    32 STU
-    s1 s3 XCHG
+    STDICT
+    s1 s4 XCHG
+    STDICT
+    s1 s4 XCHG
     64 STU
-    s1 s3 XCHG
-    32 STU
-    s1 s2 XCHG
+    s1 s4 XCHG
+    64 STU
+    STBREFR
     STBREFR
     STBREFR
   }>
@@ -603,9 +866,18 @@ PROGRAM{
     32 LDU
     64 LDU
     32 LDU
+    LDREF
     DROP
-    s9 s11 XCHG
-    s9 s10 XCHG
+    CTOS
+    LDDICT
+    LDDICT
+    LDDICT
+    LDDICT
+    64 LDU
+    64 LDU
+    DROP
+    s15 17 s() XCHG
+    s15 16 s() XCHG
   }>
   $Context$_get_value PROCINLINE:<{
     s1 s3 XCHG
@@ -622,6 +894,16 @@ PROGRAM{
     ISNULL
     128 THROWIF
         10 UNTUPLE
+  }>
+  $EscrowContract$_get_deployed PROCINLINE:<{
+    s1 s3 XCHG
+    3 BLKDROP
+  }>
+  $EscrowContract$_not_null PROCINLINE:<{
+    DUP
+    ISNULL
+    128 THROWIF
+        4 UNTUPLE
   }>
   $RelayerData$_get_address PROCINLINE:<{
     3 BLKDROP
@@ -643,6 +925,26 @@ PROGRAM{
     128 THROWIF
         4 UNTUPLE
   }>
+  $EVMChainConfig$_not_null PROCINLINE:<{
+    DUP
+    ISNULL
+    128 THROWIF
+        7 UNTUPLE
+  }>
+  $EVMBridgeData$_get_bridgeContract PROCINLINE:<{
+    s5 s8 XCHG
+    8 BLKDROP
+  }>
+  $EVMBridgeData$_get_isActive PROCINLINE:<{
+    s1 s8 XCHG
+    8 BLKDROP
+  }>
+  $EVMBridgeData$_not_null PROCINLINE:<{
+    DUP
+    ISNULL
+    128 THROWIF
+        9 UNTUPLE
+  }>
   $TonFusion$_contract_init PROCINLINE:<{
     PUSHNULL
     PUSHNULL
@@ -653,8 +955,14 @@ PROGRAM{
     PUSHNULL
     0 PUSHINT
     s0 s0 PUSH2
+    PUSHNULL
+    PUSHNULL
+    PUSHNULL
+    PUSHNULL
+    s4 s4 PUSH2
     __tact_context_get_sender INLINECALLDICT
-    10 -ROLL
+    s0 16 s() XCHG
+    15 -ROLL
   }>
   $TonFusion$_contract_load PROCINLINE:<{
     c4 PUSH
@@ -663,7 +971,9 @@ PROGRAM{
     SWAP
     IF:<{
       $TonFusion$_load INLINECALLDICT
-      1 11 BLKDROP2
+      17 s() POP
+      s15 16 s() XCHG
+      15 ROLL
     }>ELSE<{
       DROP
       $TonFusion$_contract_init INLINECALLDICT
@@ -674,7 +984,9 @@ PROGRAM{
     TRUE
     SWAP
     1 STI
-    11 -ROLL
+    s0 17 s() XCHG
+    s0 16 s() XCHG
+    15 -ROLL
     $TonFusion$_store INLINECALLDICT
     ENDC
     c4 POP
@@ -735,6 +1047,246 @@ PROGRAM{
     256 STU
         ENDC
         HASHCU
+  }>
+  $global_isValidEVMChainId PROCREF:<{
+    DUP
+    1 EQINT
+    IF:<{
+      TRUE
+    }>ELSE<{
+      DUP
+      137 PUSHINT
+      EQUAL
+    }>
+    IF:<{
+      TRUE
+    }>ELSE<{
+      DUP
+      56 EQINT
+    }>
+    IF:<{
+      TRUE
+    }>ELSE<{
+      DUP
+      8453 PUSHINT
+      EQUAL
+    }>
+    IF:<{
+      DROP
+      TRUE
+    }>ELSE<{
+      42161 PUSHINT
+      EQUAL
+    }>
+  }>
+  $global_isValidTONChainId PROCREF:<{
+    DUP
+    -3 EQINT
+    IF:<{
+      DROP
+      TRUE
+    }>ELSE<{
+      -239 PUSHINT
+      EQUAL
+    }>
+  }>
+  $EVMChainConfig$_constructor_chainId_rpcEndpoint_blockTime_gasLimit_isActive_bridgeAddress_oracleAddress PROCINLINE:<{
+  }>
+  $global_getEVMChainConfig PROCREF:<{
+    c2 SAVE
+    SAMEALTSAVE
+    DUP
+    1 EQINT
+    IFJMP:<{
+      DROP
+      1 PUSHINT
+          NEWC
+          ENDC
+      12 PUSHINT
+      300000 PUSHINT
+      TRUE
+          NEWC
+          ENDC
+          NEWC
+          ENDC
+      $EVMChainConfig$_constructor_chainId_rpcEndpoint_blockTime_gasLimit_isActive_bridgeAddress_oracleAddress INLINECALLDICT
+      $EVMChainConfig$_as_optional INLINECALLDICT
+    }>
+    DUP
+    137 PUSHINT
+    EQUAL
+    IFJMP:<{
+      DROP
+      137 PUSHINT
+          NEWC
+          ENDC
+      2 PUSHINT
+      300000 PUSHINT
+      TRUE
+          NEWC
+          ENDC
+          NEWC
+          ENDC
+      $EVMChainConfig$_constructor_chainId_rpcEndpoint_blockTime_gasLimit_isActive_bridgeAddress_oracleAddress INLINECALLDICT
+      $EVMChainConfig$_as_optional INLINECALLDICT
+      RETALT
+    }>
+    DUP
+    56 EQINT
+    IFJMP:<{
+      DROP
+      56 PUSHINT
+          NEWC
+          ENDC
+      3 PUSHINT
+      300000 PUSHINT
+      TRUE
+          NEWC
+          ENDC
+          NEWC
+          ENDC
+      $EVMChainConfig$_constructor_chainId_rpcEndpoint_blockTime_gasLimit_isActive_bridgeAddress_oracleAddress INLINECALLDICT
+      $EVMChainConfig$_as_optional INLINECALLDICT
+      RETALT
+    }>
+    DUP
+    8453 PUSHINT
+    EQUAL
+    IFJMP:<{
+      DROP
+      8453 PUSHINT
+          NEWC
+          ENDC
+      2 PUSHINT
+      300000 PUSHINT
+      TRUE
+          NEWC
+          ENDC
+          NEWC
+          ENDC
+      $EVMChainConfig$_constructor_chainId_rpcEndpoint_blockTime_gasLimit_isActive_bridgeAddress_oracleAddress INLINECALLDICT
+      $EVMChainConfig$_as_optional INLINECALLDICT
+      RETALT
+    }>
+    42161 PUSHINT
+    EQUAL
+    IFJMP:<{
+      42161 PUSHINT
+          NEWC
+          ENDC
+      1 PUSHINT
+      300000 PUSHINT
+      TRUE
+          NEWC
+          ENDC
+          NEWC
+          ENDC
+      $EVMChainConfig$_constructor_chainId_rpcEndpoint_blockTime_gasLimit_isActive_bridgeAddress_oracleAddress INLINECALLDICT
+      $EVMChainConfig$_as_optional INLINECALLDICT
+      RETALT
+    }>
+    PUSHNULL
+  }>
+  $CrossChainMessage$_constructor_sourceChain_targetChain_orderHash_amount_secret_timestamp_nonce PROCINLINE:<{
+  }>
+  $global_createEVMCrossChainMessage PROCREF:<{
+    5 BLKDROP
+    -3 PUSHINT
+    0 PUSHINT
+    s0 s0 s0 PUSH3
+    DUP
+    s5 s6 XCHG
+    $CrossChainMessage$_constructor_sourceChain_targetChain_orderHash_amount_secret_timestamp_nonce INLINECALLDICT
+  }>
+  $global_calculateEVMGasPrice PROCREF:<{
+    c2 SAVE
+    SAMEALTSAVE
+    DUP
+    1 EQINT
+    IFJMP:<{
+      DROP
+      20000000000 PUSHINT
+    }>
+    DUP
+    137 PUSHINT
+    EQUAL
+    IFJMP:<{
+      DROP
+      30000000000 PUSHINT
+      RETALT
+    }>
+    DUP
+    56 EQINT
+    IFJMP:<{
+      DROP
+      5000000000 PUSHINT
+      RETALT
+    }>
+    DUP
+    8453 PUSHINT
+    EQUAL
+    IFJMP:<{
+      DROP
+      1000000000 PUSHINT
+      RETALT
+    }>
+    42161 PUSHINT
+    EQUAL
+    IFJMP:<{
+      100000000 PUSHINT
+      RETALT
+    }>
+    20000000000 PUSHINT
+  }>
+  $global_calculateEVMBridgeFee PROCREF:<{
+    c2 SAVE
+    SAMEALTSAVE
+    1000000 PUSHINT
+    s0 s3 XCHG
+    10000 PUSHINT
+    DIV
+    s2 PUSH
+    -3 EQINT
+    IF:<{
+      TRUE
+    }>ELSE<{
+      s2 PUSH
+      -239 PUSHINT
+      EQUAL
+    }>
+    IF:<{
+      s2 POP
+      $global_isValidEVMChainId INLINECALLDICT
+      IFJMP:<{
+        ADD
+        5000000 PUSHINT
+        ADD
+        RETALT
+      }>
+    }>ELSE<{
+      s0 s2 XCHG
+      $global_isValidEVMChainId INLINECALLDICT
+      IF:<{
+        DUP
+        -3 EQINT
+        IF:<{
+          DROP
+          TRUE
+        }>ELSE<{
+          -239 PUSHINT
+          EQUAL
+        }>
+        IFJMP:<{
+          ADD
+          3000000 PUSHINT
+          ADD
+          RETALT
+        }>
+      }>ELSE<{
+        DROP
+      }>
+    }>
+    ADD
   }>
   $global_priceOfJettonForward PROCINLINE:<{
     SWAP
@@ -798,6 +1350,78 @@ PROGRAM{
     256 STU
         ENDC
   }>
+  $global_findBridgeForChain PROCREF:<{
+    $global_isValidEVMChainId INLINECALLDICT
+    IFJMP:<{
+      1 PUSHINT
+    }>
+    PUSHNULL
+  }>
+  $global_validateCrossChainMessage PROCREF:<{
+    s4 POP
+    s5 POP
+    2DROP
+    OVER
+    $global_isValidEVMChainId INLINECALLDICT
+    NOT
+    IF:<{
+      SWAP
+      $global_isValidTONChainId INLINECALLDICT
+      NOT
+    }>ELSE<{
+      NIP
+      FALSE
+    }>
+    IFJMP:<{
+      2DROP
+      FALSE
+    }>
+    SWAP
+    -3600 PUSHINT
+    LESS
+    IFJMP:<{
+      DROP
+      FALSE
+    }>
+    IFNOTJMP:<{
+      FALSE
+    }>
+    TRUE
+  }>
+  $global_buildEVMTransferMessage PROCREF:<{
+    s10 s11 XCHG2
+    7 BLKDROP
+        NEWC
+    s1 s6 XCHG
+    32 STU
+    ROT
+        STSLICER
+    s1 s2 XCHG
+    256 STU
+    s1 s2 XCHG
+    256 STU
+    256 STU
+    32 STU
+        ENDC
+  }>
+  $global_isEscrowDeployed PROCREF:<{
+    32 PUSHINT
+    ROT
+    __tact_dict_get_uint_cell INLINECALLDICT
+    $EscrowContract$_load_opt INLINECALLDICT
+    DUP
+    ISNULL
+    IFJMP:<{
+      DROP
+      FALSE
+    }>
+    $EscrowContract$_not_null INLINECALLDICT
+    $EscrowContract$_get_deployed INLINECALLDICT
+  }>
+  $global_validateEVMMessageFormat PROCREF:<{
+    DROP
+    TRUE
+  }>
   $TonFusion$_fun_create PROCREF:<{
     CTOS
     $LockJetton$_load_not_mut INLINECALLDICT
@@ -805,7 +1429,7 @@ PROGRAM{
     NIP
     267 PUSHINT
     __tact_context_get_sender INLINECALLDICT
-    18 s() PUSH
+    24 s() PUSH
     -ROT
     1 PUSHINT
     __tact_dict_get_slice_int INLINECALLDICT
@@ -816,7 +1440,7 @@ PROGRAM{
     s6 PUSH
     GEQ
     75 THROWIF
-    20 s() PUSH
+    26 s() PUSH
     8 PUSHPOW2
     s8 PUSH
     __tact_dict_get_uint_cell INLINECALLDICT
@@ -824,15 +1448,15 @@ PROGRAM{
     ISNULL
     NOT
     90 THROWIF
-    s0 18 s() XCHG
+    s0 24 s() XCHG
     0 PUSHINT
     267 PUSHINT
     s11 s1 PUXC
-    s0 21 s() XCHG
+    s0 27 s() XCHG
     __tact_dict_set_slice_cell INLINECALLDICT
     267 PUSHINT
     __tact_context_get_sender INLINECALLDICT
-    s2 19 s() XCHG
+    s2 25 s() XCHG
     s11 s(-1) PUXC
     __tact_dict_set_slice_slice INLINECALLDICT
     s7 s10 XCHG
@@ -847,18 +1471,19 @@ PROGRAM{
     s4 s5 XCHG2
     s3 s12 XCHG
     s0 s2 XCHG
-    s1 22 s() XCHG
+    s1 28 s() XCHG
     $OrderConfig$_store_cell INLINECALLDICT
-    s3 s13 XCHG
+    s3 19 s() XCHG
     s1 s2 XCHG
     __tact_dict_set_uint_cell INLINECALLDICT
-    s0 s3 XCHG
+    s0 s9 XCHG
     INC
-    s2 s10 XCHG2
+    s0 16 s() XCHG
+    s1 s8 XCHG
     ADD
-    s2 s9 XCHG
-    s6 s7 XCHG
-    SWAP
+    s8 s15 XCHG
+    s12 s13 XCHG
+    s0 s7 XCHG
   }>
   $TonFusion$_fun_makeOrder PROCREF:<{
     CTOS
@@ -867,7 +1492,7 @@ PROGRAM{
     NIP
     267 PUSHINT
     __tact_context_get_sender INLINECALLDICT
-    17 s() PUSH
+    23 s() PUSH
     -ROT
     1 PUSHINT
     __tact_dict_get_slice_int INLINECALLDICT
@@ -878,7 +1503,7 @@ PROGRAM{
     s6 PUSH
     GEQ
     75 THROWIF
-    18 s() PUSH
+    24 s() PUSH
     8 PUSHPOW2
     s8 PUSH
     __tact_dict_get_uint_cell INLINECALLDICT
@@ -886,15 +1511,15 @@ PROGRAM{
     ISNULL
     NOT
     90 THROWIF
-    s0 17 s() XCHG
+    s0 23 s() XCHG
     2 PUSHINT
     267 PUSHINT
     s10 s1 PUXC
-    s0 20 s() XCHG
+    s0 26 s() XCHG
     __tact_dict_set_slice_cell INLINECALLDICT
     267 PUSHINT
     __tact_context_get_sender INLINECALLDICT
-    s2 18 s() XCHG
+    s2 24 s() XCHG
     s10 s(-1) PUXC
     __tact_dict_set_slice_slice INLINECALLDICT
     s6 s9 XCHG
@@ -908,18 +1533,18 @@ PROGRAM{
     s4 s5 XCHG2
     s3 s12 XCHG
     s0 s2 XCHG
-    s1 21 s() XCHG
+    s1 27 s() XCHG
     $Order$_store_cell INLINECALLDICT
-    s1 s12 XCHG
-    s1 s3 XCHG
+    s3 18 s() XCHG
+    s1 18 s() XCHG
     __tact_dict_set_uint_cell INLINECALLDICT
-    s0 s3 XCHG
+    s0 s9 XCHG
     INC
-    s2 s9 XCHG2
+    s8 s15 XCHG2
     ADD
-    s2 s8 XCHG
-    s6 s7 XCHG
-    SWAP
+    s8 s14 XCHG
+    s12 s13 XCHG
+    s0 s7 XCHG
   }>
   $TonFusion$_fun_createEVMToTONOrder PROCREF:<{
     CTOS
@@ -927,7 +1552,7 @@ PROGRAM{
     3 BLKDROP
     267 PUSHINT
     __tact_context_get_sender INLINECALLDICT
-    17 s() PUSH
+    23 s() PUSH
     -ROT
     1 PUSHINT
     __tact_dict_get_slice_int INLINECALLDICT
@@ -938,7 +1563,7 @@ PROGRAM{
     s5 PUSH
     GEQ
     75 THROWIF
-    19 s() PUSH
+    25 s() PUSH
     8 PUSHPOW2
     s7 PUSH
     __tact_dict_get_uint_cell INLINECALLDICT
@@ -960,14 +1585,16 @@ PROGRAM{
     s3 s12 XCHG
     s0 s2 XCHG
     $OrderConfig$_store_cell INLINECALLDICT
-    s3 s13 XCHG
+    s3 19 s() XCHG
     s1 s2 XCHG
     __tact_dict_set_uint_cell INLINECALLDICT
-    s0 s3 XCHG
+    s0 s9 XCHG
     INC
-    s2 s10 XCHG2
+    s0 16 s() XCHG
+    s1 s8 XCHG
     ADD
-    s9 s0 s0 XCHG3
+    s8 s15 XCHG
+    s0 s7 XCHG
   }>
   $TonFusion$_fun_createTONToEVMOrder PROCREF:<{
     CTOS
@@ -975,7 +1602,7 @@ PROGRAM{
     3 BLKDROP
     267 PUSHINT
     __tact_context_get_sender INLINECALLDICT
-    17 s() PUSH
+    23 s() PUSH
     -ROT
     1 PUSHINT
     __tact_dict_get_slice_int INLINECALLDICT
@@ -986,7 +1613,7 @@ PROGRAM{
     s5 PUSH
     GEQ
     75 THROWIF
-    19 s() PUSH
+    25 s() PUSH
     8 PUSHPOW2
     s7 PUSH
     __tact_dict_get_uint_cell INLINECALLDICT
@@ -1008,20 +1635,22 @@ PROGRAM{
     s3 s12 XCHG
     s0 s2 XCHG
     $OrderConfig$_store_cell INLINECALLDICT
-    s3 s13 XCHG
+    s3 19 s() XCHG
     s1 s2 XCHG
     __tact_dict_set_uint_cell INLINECALLDICT
-    s0 s3 XCHG
+    s0 s9 XCHG
     INC
-    s2 s10 XCHG2
+    s0 16 s() XCHG
+    s1 s8 XCHG
     ADD
-    s9 s0 s0 XCHG3
+    s8 s15 XCHG
+    s0 s7 XCHG
   }>
   $RelayerData$_constructor_address_whitelisted_totalResolves_successRate PROCINLINE:<{
   }>
   $TonFusion$_fun_partialFill PROCREF:<{
     DROP
-    s13 PUSH
+    19 s() PUSH
     8 PUSHPOW2
     s5 PUSH
     __tact_dict_get_uint_cell INLINECALLDICT
@@ -1054,7 +1683,7 @@ PROGRAM{
       ISNULL
       NOT
       104 THROWIF
-      s5 PUSH
+      s11 PUSH
       267 PUSHINT
       s2 PUSH
       __tact_dict_get_slice_cell INLINECALLDICT
@@ -1083,18 +1712,21 @@ PROGRAM{
         s2 s4 XCHG2
         NEWC
         $RelayerData$_store_cell INLINECALLDICT
-        s3 s7 XCHG
+        s3 s13 XCHG
         s1 s2 XCHG
         __tact_dict_set_slice_cell INLINECALLDICT
-        s0 s4 XCHG
+        s0 s10 XCHG
       }>ELSE<{
         2DROP
       }>
+      s0 s6 XCHG
       INC
+      s0 s6 XCHG
     }>
     DROP
     8 PUSHPOW2
-    s13 s0 s4 PUXC2
+    19 s() PUSH
+    s0 s1 s5 XCHG3
     __tact_dict_get_uint_cell INLINECALLDICT
     $Order$_load_opt INLINECALLDICT
     DUP
@@ -1123,7 +1755,7 @@ PROGRAM{
       ISNULL
       NOT
       104 THROWIF
-      s5 PUSH
+      s11 PUSH
       267 PUSHINT
       s2 PUSH
       __tact_dict_get_slice_cell INLINECALLDICT
@@ -1152,14 +1784,16 @@ PROGRAM{
         s2 s4 XCHG2
         NEWC
         $RelayerData$_store_cell INLINECALLDICT
-        s3 s7 XCHG
+        s3 s13 XCHG
         s1 s2 XCHG
         __tact_dict_set_slice_cell INLINECALLDICT
-        s0 s4 XCHG
+        s0 s10 XCHG
       }>ELSE<{
         2DROP
       }>
+      s0 s6 XCHG
       INC
+      s0 s6 XCHG
     }>
     4 BLKDROP
     88 THROW
@@ -1173,7 +1807,7 @@ PROGRAM{
     -ROT
   }>
   $TonFusion$_fun_processJettonTransfer PROCREF:<{
-    19 s() PUSH
+    25 s() PUSH
     267 PUSHINT
     s13 PUSH
     __tact_dict_get_slice_slice INLINECALLDICT
@@ -1249,11 +1883,238 @@ PROGRAM{
         SWAP
         SENDRAWMSG
   }>
+  $EVMTransaction$_constructor_chainId_toContract_functionSelector_parameters_gasLimit_gasPrice_value_nonce_status_transactionHash_blockNumber_confirmations PROCINLINE:<{
+  }>
+  $TonFusion$_fun_sendEVMCrossChainMessage PROCREF:<{
+    15 BLKDROP
+    s2 s3 XCHG
+    3 BLKDROP
+    s5 PUSH
+    5 -ROLL
+    $global_createEVMCrossChainMessage INLINECALLDICT
+    s6 s5 s4 PUSH3
+    s6 s5 s4 PUSH3
+    s6 PUSH
+    $global_validateCrossChainMessage INLINECALLDICT
+    109 THROWIFNOT
+    s0 s7 XCHG
+    $global_findBridgeForChain INLINECALLDICT
+    DUP
+    ISNULL
+    89 THROWIF
+    32 PUSHINT
+    SWAP
+    __tact_not_null INLINECALLDICT
+    s12 PUSH
+    -ROT
+    __tact_dict_get_uint_cell INLINECALLDICT
+    $EVMBridgeData$_load_opt INLINECALLDICT
+    DUP
+    ISNULL
+    89 THROWIF
+    DUP
+    $EVMBridgeData$_not_null INLINECALLDICT
+    $EVMBridgeData$_get_isActive INLINECALLDICT
+    107 THROWIFNOT
+    $EVMBridgeData$_not_null INLINECALLDICT
+    $EVMBridgeData$_get_bridgeContract INLINECALLDICT
+    s4 s6 XCHG
+    s3 s5 XCHG
+    s6 s5 s6 XCHG3
+    100000000 PUSHINT
+    64 PUSHINT
+    s7 s9 XCHG2
+    NEWC
+    $CrossChainMessage$_store_cell INLINECALLDICT
+    s1 s3 s0 XCHG3
+    $MessageParameters$_constructor_to_value_mode_body INLINECALLDICT
+        NEWC
+        b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+        1 STI               // store `bounce`
+        b{000} STSLICECONST // store bounced = false and src = addr_none
+        STSLICE             // store `to`
+        SWAP
+        STGRAMS             // store `value`
+        106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+        STZEROES
+        // → Stack state
+        // s0: Builder
+        // s1: `body`
+        // s2: `mode`
+        STDICT
+        ENDC
+        SWAP
+        SENDRAWMSG
+  }>
   $TonFusion$_fun_processEVMTransfer PROCREF:<{
-    13 BLKDROP
+    s12 PUSH
+    $global_isValidEVMChainId INLINECALLDICT
+    88 THROWIFNOT
+    s12 PUSH
+    23 s() PUSH
+    $global_isEscrowDeployed INLINECALLDICT
+    106 THROWIFNOT
+    18 s() PUSH
+    32 PUSHINT
+    s14 PUSH
+    __tact_dict_get_uint_cell INLINECALLDICT
+    $EVMChainConfig$_load_opt INLINECALLDICT
+    ISNULL
+    IF:<{
+      s12 PUSH
+      $global_getEVMChainConfig INLINECALLDICT
+      DUP
+      ISNULL
+      88 THROWIF
+      32 PUSHINT
+      SWAP
+      $EVMChainConfig$_not_null INLINECALLDICT
+      NEWC
+      $EVMChainConfig$_store_cell INLINECALLDICT
+      s2 20 s() XCHG
+      s14 s(-1) PUXC
+      __tact_dict_set_uint_cell INLINECALLDICT
+      s0 18 s() XCHG
+    }>
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 PUSH
+    $global_buildEVMTransferMessage INLINECALLDICT
+    $global_validateEVMMessageFormat INLINECALLDICT
+    109 THROWIFNOT
+    OVER
+    -3 PUSHINT
+    s14 PUSH
+    $global_calculateEVMBridgeFee INLINECALLDICT
+    s1 s14 XCHG
+    ADD
+        NEWC
+        ENDC
+    2835717307 PUSHINT
+        NEWC
+    s12 PUSH
+        STSLICER
+    s1 s4 XCHG
+    256 STU
+        ENDC
+    300000 PUSHINT
+    s15 PUSH
+    $global_calculateEVMGasPrice INLINECALLDICT
+    0 PUSHINT
+    DUP
+        NEWC
+        ENDC
+    s1 s1 PUSH2
+    21 s() PUSH
+    s0 s10 XCHG
+    s8 s11 XCHG
+    s7 s11 XCHG
+    s6 s11 XCHG
+    s5 s11 XCHG
+    s4 s11 XCHG
+    24 s() PUSH
+    s0 s4 XCHG
+    s3 s12 XCHG
+    s12 s2 XCHG2
+    $EVMTransaction$_constructor_chainId_toContract_functionSelector_parameters_gasLimit_gasPrice_value_nonce_status_transactionHash_blockNumber_confirmations INLINECALLDICT
+    s0 25 s() XCHG
+    INC
+    64 PUSHINT
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 s11 s10 PUSH3
+    s12 s11 PUSH2
+    37 s() PUSH
+    NEWC
+    $EVMTransaction$_store_cell INLINECALLDICT
+    s2 30 s() XCHG
+    s6 s(-1) PUXC
+    __tact_dict_set_uint_cell INLINECALLDICT
+    30 s() 40 s() XCHG
+    29 s() 39 s() XCHG
+    28 s() 38 s() XCHG
+    27 s() 37 s() XCHG
+    26 s() 36 s() XCHG
+    25 s() 35 s() XCHG
+    24 s() 34 s() XCHG
+    23 s() 33 s() XCHG
+    22 s() 32 s() XCHG
+    21 s() 31 s() XCHG
+    20 s() 40 s() XCHG
+    19 s() 39 s() XCHG
+    s0 18 s() XCHG
+    17 s() 37 s() XCHG
+    16 s() 36 s() XCHG
+    s15 38 s() XCHG
+    s12 s14 XCHG
+    s11 s13 XCHG
+    s10 s12 XCHG
+    s9 s11 XCHG
+    s8 s10 XCHG
+    s7 s9 XCHG
+    s6 s8 XCHG
+    s5 s7 XCHG
+    s4 s6 XCHG
+    s3 s5 XCHG
+    s4 s3 s0 XCHG3
+    s2 35 s() XCHG
+    33 s() PUSH
+    s0 s2 XCHG
+    33 s() PUSH
+    s0 s2 XCHG
+    33 s() PUSH
+    s0 s2 XCHG
+    43 s() PUSH
+    s0 s2 XCHG
+    43 s() PUSH
+    s2 s1 XCPU
+    43 s() PUSH
+    s0 s2 XCHG
+    s1 43 s() XCHG
+    45 s() PUSH
+    SWAP
+    43 s() PUSH
+    s1 s0 XCPU
+    s0 44 s() XCHG
+    $TonFusion$_fun_sendEVMCrossChainMessage INLINECALLDICT
+    s7 19 s() XCHG
+    s6 18 s() XCHG
+    s5 17 s() XCHG
+    s4 26 s() XCHG
+    TRUE
+    8 PUSHPOW2
+    27 s() PUSH
+    s0 s6 XCHG
+    s5 25 s() XCHG
+    s4 26 s() XCHG
+    s2 s3 XCHG
+    s2 27 s() XCHG
+    s1 24 s() XCHG
+    s0 23 s() XCHG
+    NEWC
+    $OrderConfig$_store_cell INLINECALLDICT
+    s3 s8 XCHG
+    s2 s14 XCHG
+    s1 18 s() XCHG
+    __tact_dict_set_uint_cell INLINECALLDICT
+    s0 s8 XCHG
+    INC
+    s6 16 s() XCHG
+    s8 s15 XCHG
+    s4 s14 XCHG
+    s3 s13 XCHG
+    s12 s11 s0 XCHG3
+    s5 s10 XCHG
+    s0 s6 XCHG
+    s9 s4 XCHG2
+    s1 s7 XCHG
+    s1 s5 XCHG
+    s1 s3 XCHG
   }>
   $TonFusion$_fun_processJettonTransferOrder PROCREF:<{
-    18 s() PUSH
+    24 s() PUSH
     267 PUSHINT
     s12 PUSH
     __tact_dict_get_slice_slice INLINECALLDICT
@@ -1330,8 +2191,7 @@ PROGRAM{
         SENDRAWMSG
   }>
   $TonFusion$_fun_completePartialFill PROCREF:<{
-    DROP
-    s11 PUSH
+    17 s() PUSH
     8 PUSHPOW2
     s3 PUSH
     __tact_dict_get_uint_cell INLINECALLDICT
@@ -1370,7 +2230,8 @@ PROGRAM{
     }>
     DROP
     8 PUSHPOW2
-    s11 s0 s2 PUXC2
+    17 s() PUSH
+    s0 s1 s3 XCHG3
     __tact_dict_get_uint_cell INLINECALLDICT
     $Order$_load_opt INLINECALLDICT
     DUP
@@ -1396,7 +2257,7 @@ PROGRAM{
   $TonFusion$_fun_getFund PROCREF:<{
     DROP
     8 PUSHPOW2
-    s12 PUSH
+    18 s() PUSH
     s0 s2 XCHG
     __tact_dict_get_uint_cell INLINECALLDICT
     $OrderConfig$_load_opt INLINECALLDICT
@@ -1429,7 +2290,7 @@ PROGRAM{
     $TonFusion$_fun_processJettonTransfer INLINECALLDICT
   }>
   $TonFusion$_fun_processJettonRefund PROCREF:<{
-    17 s() PUSH
+    23 s() PUSH
     267 PUSHINT
     s11 PUSH
     __tact_dict_get_slice_slice INLINECALLDICT
@@ -1509,7 +2370,7 @@ PROGRAM{
   $TonFusion$_fun_refund PROCREF:<{
     DROP
     8 PUSHPOW2
-    s11 PUSH
+    17 s() PUSH
     s0 s2 XCHG
     __tact_dict_get_uint_cell INLINECALLDICT
     $OrderConfig$_load_opt INLINECALLDICT
@@ -1528,7 +2389,7 @@ PROGRAM{
     $TonFusion$_fun_processJettonRefund INLINECALLDICT
   }>
   $TonFusion$_fun_processJettonRefundOrder PROCREF:<{
-    16 s() PUSH
+    22 s() PUSH
     267 PUSHINT
     s10 PUSH
     __tact_dict_get_slice_slice INLINECALLDICT
@@ -1608,7 +2469,7 @@ PROGRAM{
   $TonFusion$_fun_refundOrder PROCREF:<{
     DROP
     8 PUSHPOW2
-    s10 PUSH
+    16 s() PUSH
     s0 s2 XCHG
     __tact_dict_get_uint_cell INLINECALLDICT
     $Order$_load_opt INLINECALLDICT
@@ -1631,7 +2492,8 @@ PROGRAM{
   $TonFusion$_fun_deployEscrow PROCREF:<{
     DROP
     __tact_context_get_sender INLINECALLDICT
-    s13 s(-1) PUXC
+    19 s() PUSH
+    SWAP
     SDEQ
     NOT
     86 THROWIF
@@ -1644,14 +2506,14 @@ PROGRAM{
     s2 s4 XCHG2
     NEWC
     $EscrowContract$_store_cell INLINECALLDICT
-    s3 s6 XCHG
+    s3 s12 XCHG
     s1 s2 XCHG
     __tact_dict_set_uint_cell INLINECALLDICT
-    s0 s3 XCHG
+    s0 s9 XCHG
   }>
   $TonFusion$_fun_updateRelayerStats PROCREF:<{
     DROP
-    s6 PUSH
+    s12 PUSH
     267 PUSHINT
     s3 PUSH
     __tact_dict_get_slice_cell INLINECALLDICT
@@ -1692,10 +2554,317 @@ PROGRAM{
     s2 s4 XCHG2
     NEWC
     $RelayerData$_store_cell INLINECALLDICT
-    s3 s7 XCHG
+    s3 s13 XCHG
     s1 s2 XCHG
     __tact_dict_set_slice_cell INLINECALLDICT
+    s0 s10 XCHG
+  }>
+  $TonFusion$_fun_findBridgeForChain PROCREF:<{
+    c2 SAVE
+    SAMEALTSAVE
+    DUP
+    1 EQINT
+    IFJMP:<{
+      DROP
+      1 PUSHINT
+    }>
+    DUP
+    137 PUSHINT
+    EQUAL
+    IFJMP:<{
+      DROP
+      2 PUSHINT
+      RETALT
+    }>
+    DUP
+    56 EQINT
+    IFJMP:<{
+      DROP
+      3 PUSHINT
+      RETALT
+    }>
+    DUP
+    8453 PUSHINT
+    EQUAL
+    IFJMP:<{
+      DROP
+      4 PUSHINT
+      RETALT
+    }>
+    42161 PUSHINT
+    EQUAL
+    IFJMP:<{
+      5 PUSHINT
+      RETALT
+    }>
+    PUSHNULL
+  }>
+  $TonFusion$_fun_handleEVMBridgeConfirmation PROCREF:<{
+    s1 s3 XCHG
+    3 BLKDROP
+    32 PUSHINT
+    s6 s0 s2 PUXC2
+    __tact_dict_get_uint_cell INLINECALLDICT
+    $EVMBridgeData$_load_opt INLINECALLDICT
+    ISNULL
+    89 THROWIF
+    11 GTINT
+    DROP
+  }>
+  $TonFusion$_fun_handleEVMOraclePriceUpdate PROCREF:<{
+    4 BLKDROP
+    32 PUSHINT
+    s4 PUSH
+    s0 s2 XCHG
+    __tact_dict_get_uint_cell INLINECALLDICT
+    $EVMOracleData$_load_opt INLINECALLDICT
+    ISNULL
+    90 THROWIF
+  }>
+  $TonFusion$_fun_handleEVMChainValidation PROCREF:<{
+    3 BLKDROP
+    DUP
+    $global_isValidEVMChainId INLINECALLDICT
+    88 THROWIFNOT
+    32 PUSHINT
+    s7 PUSH
+    s0 s2 XCHG
+    __tact_dict_get_uint_cell INLINECALLDICT
+    $EVMChainConfig$_load_opt INLINECALLDICT
+    ISNULL
+    NOT
+    DROP
+  }>
+  $TonFusion$_fun_sendEVMCrossChainMessageToBridge PROCREF:<{
+    16 s() 23 s() XCHG
+    s15 22 s() XCHG
+    s14 21 s() XCHG
+    s13 20 s() XCHG
+    s12 19 s() XCHG
+    s11 18 s() XCHG
+    s10 17 s() XCHG
+    s9 23 s() XCHG
+    s8 22 s() XCHG
+    s7 21 s() XCHG
+    s6 20 s() XCHG
+    s5 19 s() XCHG
+    s4 18 s() XCHG
+    s3 17 s() XCHG
+    s2 23 s() XCHG
+    s1 22 s() XCHG
+    s0 21 s() XCHG
+    20 s() PUSH
+    $TonFusion$_fun_findBridgeForChain INLINECALLDICT
+    DUP
+    ISNULL
+    89 THROWIF
+    32 PUSHINT
+    SWAP
+    __tact_not_null INLINECALLDICT
+    s5 PUSH
+    -ROT
+    __tact_dict_get_uint_cell INLINECALLDICT
+    $EVMBridgeData$_load_opt INLINECALLDICT
+    DUP
+    ISNULL
+    89 THROWIF
+    $EVMBridgeData$_not_null INLINECALLDICT
+    $EVMBridgeData$_get_bridgeContract INLINECALLDICT
+    s4 21 s() XCHG
+    s3 20 s() XCHG
+    s2 19 s() XCHG
+    s1 18 s() XCHG
+    s0 24 s() XCHG
+    100000000 PUSHINT
+    s0 24 s() XCHG
+    64 PUSHINT
+    s0 24 s() XCHG
+    NEWC
+    $EVMCrossChainMessage$_store_cell INLINECALLDICT
+    s3 20 s() XCHG
+    s2 19 s() XCHG
+    s1 18 s() XCHG
+    $MessageParameters$_constructor_to_value_mode_body INLINECALLDICT
+        NEWC
+        b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+        1 STI               // store `bounce`
+        b{000} STSLICECONST // store bounced = false and src = addr_none
+        STSLICE             // store `to`
+        SWAP
+        STGRAMS             // store `value`
+        106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+        STZEROES
+        // → Stack state
+        // s0: Builder
+        // s1: `body`
+        // s2: `mode`
+        STDICT
+        ENDC
+        SWAP
+        SENDRAWMSG
+    s9 16 s() XCHG
+    s8 s15 XCHG
+    s7 s14 XCHG
+    7 7 BLKSWAP
+    4 3 BLKSWAP
+  }>
+  $TonFusion$_fun_processEVMCrossChainMessage PROCREF:<{
+    s2 PUSH
+    300000 PUSHINT
+    GREATER
+    93 THROWIF
+    s6 PUSH
+    $global_calculateEVMGasPrice INLINECALLDICT
+    0 PUSHINT
+        NEWC
+        ENDC
+    s1 s1 s9 PUSH3
+    s5 s11 XCPU
+    s5 s11 XCPU
+    s5 s11 XCPU
+    s5 s11 XCPU
+    s5 s11 XCPU
     s0 s4 XCHG
+    19 s() PUSH
+    s4 s3 s4 XCHG3
+    $EVMTransaction$_constructor_chainId_toContract_functionSelector_parameters_gasLimit_gasPrice_value_nonce_status_transactionHash_blockNumber_confirmations INLINECALLDICT
+    s0 20 s() XCHG
+    INC
+    s9 s11 XCHG
+    5 7 REVERSE
+    s6 s10 XCHG
+    s5 s11 XCHG
+    s4 s10 XCHG
+    s3 s11 XCHG
+    64 PUSHINT
+    s11 PUSH
+    s0 s4 XCHG
+    s3 s13 XCHG
+    s0 s2 XCHG
+    s0 22 s() XCHG
+    s1 s13 XCHG
+    NEWC
+    $EVMTransaction$_store_cell INLINECALLDICT
+    s3 s14 XCHG
+    __tact_dict_set_uint_cell INLINECALLDICT
+    s0 s11 XCHG
+    $TonFusion$_fun_sendEVMCrossChainMessageToBridge INLINECALLDICT
+  }>
+  $TonFusion$_fun_sendEVMContractDeployToBridge PROCREF:<{
+    16 s() 22 s() XCHG
+    s15 21 s() XCHG
+    s14 20 s() XCHG
+    s13 19 s() XCHG
+    s12 18 s() XCHG
+    s11 17 s() XCHG
+    s10 22 s() XCHG
+    s9 21 s() XCHG
+    s8 20 s() XCHG
+    s7 19 s() XCHG
+    s6 18 s() XCHG
+    s5 17 s() XCHG
+    s4 22 s() XCHG
+    s3 21 s() XCHG
+    s2 20 s() XCHG
+    s1 19 s() XCHG
+    s0 18 s() XCHG
+    17 s() PUSH
+    $TonFusion$_fun_findBridgeForChain INLINECALLDICT
+    DUP
+    ISNULL
+    89 THROWIF
+    32 PUSHINT
+    SWAP
+    __tact_not_null INLINECALLDICT
+    s5 PUSH
+    -ROT
+    __tact_dict_get_uint_cell INLINECALLDICT
+    $EVMBridgeData$_load_opt INLINECALLDICT
+    DUP
+    ISNULL
+    89 THROWIF
+    $EVMBridgeData$_not_null INLINECALLDICT
+    $EVMBridgeData$_get_bridgeContract INLINECALLDICT
+    s3 18 s() XCHG
+    s2 23 s() XCHG
+    s1 22 s() XCHG
+    s0 21 s() XCHG
+    100000000 PUSHINT
+    s0 21 s() XCHG
+    64 PUSHINT
+    s0 21 s() XCHG
+    NEWC
+    $EVMContractDeploy$_store_cell INLINECALLDICT
+    s3 18 s() XCHG
+    s2 17 s() XCHG
+    s1 16 s() XCHG
+    $MessageParameters$_constructor_to_value_mode_body INLINECALLDICT
+        NEWC
+        b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+        1 STI               // store `bounce`
+        b{000} STSLICECONST // store bounced = false and src = addr_none
+        STSLICE             // store `to`
+        SWAP
+        STGRAMS             // store `value`
+        106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+        STZEROES
+        // → Stack state
+        // s0: Builder
+        // s1: `body`
+        // s2: `mode`
+        STDICT
+        ENDC
+        SWAP
+        SENDRAWMSG
+    s10 16 s() XCHG
+    s9 s15 XCHG
+    6 9 BLKSWAP
+  }>
+  $TonFusion$_fun_processEVMContractDeploy PROCREF:<{
+    s2 PUSH
+    500000 PUSHINT
+    GREATER
+    93 THROWIF
+        NEWC
+        ENDC
+    0 PUSHINT
+    s7 PUSH
+    $global_calculateEVMGasPrice INLINECALLDICT
+    OVER
+        NEWC
+        ENDC
+    s1 s1 s10 PUSH3
+    s0 s7 XCHG
+    s0 s6 XCHG
+    s5 s11 XCPU
+    s5 s11 XCPU
+    s4 s1 s5 XCHG3
+    s11 PUSH
+    s0 s4 XCHG
+    18 s() PUSH
+    s4 s4 XCHG2
+    $EVMTransaction$_constructor_chainId_toContract_functionSelector_parameters_gasLimit_gasPrice_value_nonce_status_transactionHash_blockNumber_confirmations INLINECALLDICT
+    s0 19 s() XCHG
+    INC
+    s9 s11 XCHG
+    5 7 REVERSE
+    s6 s10 XCHG
+    s5 s11 XCHG
+    s4 s10 XCHG
+    s3 s11 XCHG
+    64 PUSHINT
+    s11 PUSH
+    s0 s4 XCHG
+    s3 s13 XCHG
+    s0 s2 XCHG
+    s0 21 s() XCHG
+    s1 s13 XCHG
+    NEWC
+    $EVMTransaction$_store_cell INLINECALLDICT
+    s3 s13 XCHG
+    __tact_dict_set_uint_cell INLINECALLDICT
+    s0 s10 XCHG
+    $TonFusion$_fun_sendEVMContractDeployToBridge INLINECALLDICT
   }>
   $MessageParameters$_constructor_bounce_to_value_mode_body PROCINLINE:<{
     s3 s3 XCHG2
@@ -1745,47 +2914,56 @@ PROGRAM{
     s0 s2 XCHG
     __tact_context_sender SETGLOB
     $TonFusion$_contract_load INLINECALLDICT
-    s0 s12 XCHG
+    s0 18 s() XCHG
     IFJMP:<{
-      12 BLKDROP
+      15 BLKDROP
+      3 BLKDROP
     }>
     0 PUSHINT
-    s11 PUSH
+    17 s() PUSH
     SBITS
     DUP
     31 GTINT
     IF:<{
       NIP
-      s0 s11 XCHG
+      s0 17 s() XCHG
       32 LDU
-      s0 s12 XCHG
+      s0 18 s() XCHG
     }>
     OVER
     2844130808 PUSHINT
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       LDMSGADDR
       1 LDI
       DROP
       __tact_context_get_sender INLINECALLDICT
-      s11 s(-1) PUXC
+      17 s() PUSH
+      SWAP
       SDEQ
       NOT
       86 THROWIF
-      s2 s5 XCHG
+      s2 s11 XCHG
       267 PUSHINT
       -ROT
       1 PUSHINT
       __tact_dict_set_slice_int INLINECALLDICT
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
+      s0 s11 XCHG
       s8 s10 XCHG
       s7 s9 XCHG
       s6 s8 XCHG
       s5 s7 XCHG
       s4 s6 XCHG
-      s4 s5 s5 XCHG3
-      s3 s1 s3 XCHG3
+      s3 s5 XCHG
+      s4 s0 s3 XCHG3
+      s0 s2 XCHG
       $TonFusion$_contract_store INLINECALLDICT
     }>
     OVER
@@ -1793,11 +2971,12 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       LDMSGADDR
       DROP
       __tact_context_get_sender INLINECALLDICT
-      s10 s(-1) PUXC
+      16 s() PUSH
+      SWAP
       SDEQ
       NOT
       86 THROWIF
@@ -1811,16 +2990,22 @@ PROGRAM{
       s2 s4 XCHG2
       NEWC
       $RelayerData$_store_cell INLINECALLDICT
-      s3 s5 XCHG
+      s3 s11 XCHG
       s1 s2 XCHG
       __tact_dict_set_slice_cell INLINECALLDICT
-      s8 s10 XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
+      s9 s11 XCHG
+      s0 s10 XCHG
       s7 s9 XCHG
       s6 s8 XCHG
       s5 s7 XCHG
       s4 s6 XCHG
       s3 s5 XCHG
-      s3 s4 XCHG2
+      s4 s3 s0 XCHG3
       $TonFusion$_contract_store INLINECALLDICT
     }>
     OVER
@@ -1828,7 +3013,7 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       64 LDU
       NIP
       LDVARUINT16
@@ -1853,6 +3038,12 @@ PROGRAM{
         __tact_context_get_sender INLINECALLDICT
         SDEQ
         IF:<{
+          s15 17 s() XCHG
+          s14 16 s() XCHG
+          s13 s15 XCHG
+          s12 s14 XCHG
+          s11 s13 XCHG
+          s10 s12 XCHG
           s9 s11 XCHG
           s8 s10 XCHG
           s7 s9 XCHG
@@ -1875,8 +3066,8 @@ PROGRAM{
               66 PUSHINT       // SendRemainingValue | SendIgnoreErrors
               SENDRAWMSG
           86 THROW
-          s8 s10 XCHG
-          2 8 BLKSWAP
+          s14 16 s() XCHG
+          2 14 BLKSWAP
         }>
       }>ELSE<{
         OVER
@@ -1895,6 +3086,12 @@ PROGRAM{
           __tact_context_get_sender INLINECALLDICT
           SDEQ
           IF:<{
+            s15 17 s() XCHG
+            s14 16 s() XCHG
+            s13 s15 XCHG
+            s12 s14 XCHG
+            s11 s13 XCHG
+            s10 s12 XCHG
             s9 s11 XCHG
             s8 s10 XCHG
             s7 s9 XCHG
@@ -1917,8 +3114,8 @@ PROGRAM{
                 66 PUSHINT       // SendRemainingValue | SendIgnoreErrors
                 SENDRAWMSG
             86 THROW
-            s8 s10 XCHG
-            2 8 BLKSWAP
+            s14 16 s() XCHG
+            2 14 BLKSWAP
           }>
         }>ELSE<{
           s2 POP
@@ -1927,6 +3124,12 @@ PROGRAM{
           EQUAL
           IF:<{
             DROP
+            s15 17 s() XCHG
+            s14 16 s() XCHG
+            s13 s15 XCHG
+            s12 s14 XCHG
+            s11 s13 XCHG
+            s10 s12 XCHG
             s9 s11 XCHG
             s8 s10 XCHG
             s7 s9 XCHG
@@ -1940,6 +3143,12 @@ PROGRAM{
             1646500216 PUSHINT
             EQUAL
             IF:<{
+              s15 17 s() XCHG
+              s14 16 s() XCHG
+              s13 s15 XCHG
+              s12 s14 XCHG
+              s11 s13 XCHG
+              s10 s12 XCHG
               s9 s11 XCHG
               s8 s10 XCHG
               s7 s9 XCHG
@@ -1961,8 +3170,8 @@ PROGRAM{
                   ENDC
                   66 PUSHINT       // SendRemainingValue | SendIgnoreErrors
                   SENDRAWMSG
-              s8 s10 XCHG
-              2 8 BLKSWAP
+              s14 16 s() XCHG
+              2 14 BLKSWAP
             }>
           }>
         }>
@@ -1970,15 +3179,183 @@ PROGRAM{
       $TonFusion$_contract_store INLINECALLDICT
     }>
     OVER
+    2592832621 PUSHINT
+    EQUAL
+    IFJMP:<{
+      2DROP
+      s0 16 s() XCHG
+      32 LDU
+      LDREF
+      32 LDU
+      LDREF
+      32 LDU
+      64 LDU
+      LDOPTREF
+      DROP
+      s6 PUSH
+      $global_isValidEVMChainId INLINECALLDICT
+      88 THROWIFNOT
+      21 s() 23 s() XCHG
+      20 s() 22 s() XCHG
+      19 s() 21 s() XCHG
+      18 s() 20 s() XCHG
+      17 s() 19 s() XCHG
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
+      s9 s11 XCHG
+      s8 s10 XCHG
+      s7 s9 XCHG
+      $TonFusion$_fun_processEVMCrossChainMessage INLINECALLDICT
+      $TonFusion$_contract_store INLINECALLDICT
+    }>
+    OVER
+    1582251308 PUSHINT
+    EQUAL
+    IFJMP:<{
+      2DROP
+      s0 16 s() XCHG
+      32 LDU
+      LDREF
+      LDREF
+      32 LDU
+      64 LDU
+      LDOPTREF
+      DROP
+      s5 PUSH
+      $global_isValidEVMChainId INLINECALLDICT
+      88 THROWIFNOT
+      s2 PUSH
+      500000 PUSHINT
+      GREATER
+      93 THROWIF
+      20 s() 22 s() XCHG
+      19 s() 21 s() XCHG
+      18 s() 20 s() XCHG
+      17 s() 19 s() XCHG
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
+      s9 s11 XCHG
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      $TonFusion$_fun_processEVMContractDeploy INLINECALLDICT
+      $TonFusion$_contract_store INLINECALLDICT
+    }>
+    OVER
+    523124044 PUSHINT
+    EQUAL
+    IFJMP:<{
+      2DROP
+      s0 16 s() XCHG
+      32 LDU
+      LDREF
+      64 LDU
+      32 LDU
+      LDOPTREF
+      DROP
+      19 s() 21 s() XCHG
+      18 s() 20 s() XCHG
+      17 s() 19 s() XCHG
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
+      s9 s11 XCHG
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      $TonFusion$_fun_handleEVMBridgeConfirmation INLINECALLDICT
+      $TonFusion$_contract_store INLINECALLDICT
+    }>
+    OVER
+    2359103007 PUSHINT
+    EQUAL
+    IFJMP:<{
+      2DROP
+      s0 16 s() XCHG
+      32 LDU
+      LDMSGADDR
+      64 LDU
+      32 LDU
+      LDOPTREF
+      DROP
+      19 s() 21 s() XCHG
+      18 s() 20 s() XCHG
+      17 s() 19 s() XCHG
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
+      s9 s11 XCHG
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      $TonFusion$_fun_handleEVMOraclePriceUpdate INLINECALLDICT
+      $TonFusion$_contract_store INLINECALLDICT
+    }>
+    OVER
+    759058266 PUSHINT
+    EQUAL
+    IFJMP:<{
+      2DROP
+      s0 16 s() XCHG
+      32 LDU
+      64 LDU
+      64 LDU
+      LDOPTREF
+      DROP
+      18 s() 20 s() XCHG
+      17 s() 19 s() XCHG
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
+      s9 s11 XCHG
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      s4 s6 XCHG
+      $TonFusion$_fun_handleEVMChainValidation INLINECALLDICT
+      $TonFusion$_contract_store INLINECALLDICT
+    }>
+    OVER
     1348689874 PUSHINT
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       256 LDU
       256 LDU
       LDOPTREF
       DROP
+      17 s() 19 s() XCHG
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
       s11 s13 XCHG
       s10 s12 XCHG
       s9 s11 XCHG
@@ -1996,10 +3373,16 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       256 LDU
       LDOPTREF
       DROP
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
       s10 s12 XCHG
       s9 s11 XCHG
       s8 s10 XCHG
@@ -2017,10 +3400,16 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       256 LDU
       LDOPTREF
       DROP
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
       s10 s12 XCHG
       s9 s11 XCHG
       s8 s10 XCHG
@@ -2038,13 +3427,19 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       256 LDU
       256 LDU
       64 LDU
       LDMSGADDR
       LDOPTREF
       DROP
+      19 s() 21 s() XCHG
+      18 s() 20 s() XCHG
+      17 s() 19 s() XCHG
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
       s13 s15 XCHG
       s12 s14 XCHG
       s11 s13 XCHG
@@ -2058,15 +3453,19 @@ PROGRAM{
       $TonFusion$_contract_store INLINECALLDICT
     }>
     OVER
-    2335447075 PUSHINT
+    2054917277 PUSHINT
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       256 LDU
       256 LDU
-      LDOPTREF
       DROP
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
       s11 s13 XCHG
       s10 s12 XCHG
       s9 s11 XCHG
@@ -2076,6 +3475,7 @@ PROGRAM{
       s5 s7 XCHG
       s4 s6 XCHG
       s3 s5 XCHG
+      s2 s4 XCHG
       $TonFusion$_fun_completePartialFill INLINECALLDICT
       $TonFusion$_contract_store INLINECALLDICT
     }>
@@ -2084,11 +3484,17 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       32 LDU
       LDMSGADDR
       LDOPTREF
       DROP
+      17 s() 19 s() XCHG
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
       s11 s13 XCHG
       s10 s12 XCHG
       s9 s11 XCHG
@@ -2106,11 +3512,17 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       LDMSGADDR
       1 LDI
       LDOPTREF
       DROP
+      17 s() 19 s() XCHG
+      16 s() 18 s() XCHG
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
       s11 s13 XCHG
       s10 s12 XCHG
       s9 s11 XCHG
@@ -2128,12 +3540,18 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       2DROP
-      s0 s10 XCHG
+      s0 16 s() XCHG
       64 LDU
       DROP
       $DeployOk$_constructor_queryId INLINECALLDICT
       NEWC
       $DeployOk$_store_cell INLINECALLDICT
+      s15 17 s() XCHG
+      s14 16 s() XCHG
+      s13 s15 XCHG
+      s12 s14 XCHG
+      s11 s13 XCHG
+      s10 s12 XCHG
       s9 s11 XCHG
       s8 s10 XCHG
       s7 s9 XCHG
@@ -2145,11 +3563,11 @@ PROGRAM{
       $TonFusion$_fun_notify INLINECALLDICT
       $TonFusion$_contract_store INLINECALLDICT
     }>
-    s12 POP
+    18 s() POP
     0 EQINT
-    s0 s11 XCHG
+    s0 17 s() XCHG
     33 LESSINT
-    s1 s11 XCHG
+    s1 17 s() XCHG
     AND
     IFJMP:<{
       __tact_context_get_sender INLINECALLDICT
@@ -2162,11 +3580,12 @@ PROGRAM{
           ENDC
           66 PUSHINT       // SendRemainingValue | SendIgnoreErrors
           SENDRAWMSG
-      s8 s10 XCHG
-      2 8 BLKSWAP
+      s14 16 s() XCHG
+      2 14 BLKSWAP
       $TonFusion$_contract_store INLINECALLDICT
     }>
-    11 BLKDROP
+    15 BLKDROP
+    2DROP
     130 THROW
   }>
   __tact_selector_hack PROC:<{

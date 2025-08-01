@@ -1,9 +1,9 @@
 # Tact compilation report
 Contract: TonFusion
-BoC Size: 4607 bytes
+BoC Size: 7643 bytes
 
 ## Structures (Structs and Messages)
-Total structures: 38
+Total structures: 48
 
 ### DataSize
 TL-B: `_ cells:int257 bits:int257 refs:int257 = DataSize`
@@ -78,8 +78,28 @@ TL-B: `partial_fill#4ef5cb26 orderHash:uint256 secret:uint256 fillAmount:uint64 
 Signature: `PartialFill{orderHash:uint256,secret:uint256,fillAmount:uint64,resolver:address,customPayload:Maybe ^cell}`
 
 ### CompletePartialFill
-TL-B: `complete_partial_fill#8b341823 orderHash:uint256 secret:uint256 customPayload:Maybe ^cell = CompletePartialFill`
-Signature: `CompletePartialFill{orderHash:uint256,secret:uint256,customPayload:Maybe ^cell}`
+TL-B: `complete_partial_fill#7a7b8c9d orderHash:uint256 secret:uint256 = CompletePartialFill`
+Signature: `CompletePartialFill{orderHash:uint256,secret:uint256}`
+
+### EVMCrossChainMessage
+TL-B: `evm_cross_chain_message#9a8b7c6d targetChainId:uint32 targetContract:^cell functionSelector:uint32 parameters:^cell gasLimit:uint32 value:uint64 customPayload:Maybe ^cell = EVMCrossChainMessage`
+Signature: `EVMCrossChainMessage{targetChainId:uint32,targetContract:^cell,functionSelector:uint32,parameters:^cell,gasLimit:uint32,value:uint64,customPayload:Maybe ^cell}`
+
+### EVMContractDeploy
+TL-B: `evm_contract_deploy#5e4f3d2c targetChainId:uint32 contractBytecode:^cell constructorParams:^cell gasLimit:uint32 value:uint64 customPayload:Maybe ^cell = EVMContractDeploy`
+Signature: `EVMContractDeploy{targetChainId:uint32,contractBytecode:^cell,constructorParams:^cell,gasLimit:uint32,value:uint64,customPayload:Maybe ^cell}`
+
+### EVMBridgeConfirmation
+TL-B: `evm_bridge_confirmation#1f2e3d4c bridgeId:uint32 transactionHash:^cell blockNumber:uint64 confirmations:uint32 customPayload:Maybe ^cell = EVMBridgeConfirmation`
+Signature: `EVMBridgeConfirmation{bridgeId:uint32,transactionHash:^cell,blockNumber:uint64,confirmations:uint32,customPayload:Maybe ^cell}`
+
+### EVMOraclePriceUpdate
+TL-B: `evm_oracle_price_update#8c9d0e1f oracleId:uint32 tokenAddress:address price:uint64 timestamp:uint32 customPayload:Maybe ^cell = EVMOraclePriceUpdate`
+Signature: `EVMOraclePriceUpdate{oracleId:uint32,tokenAddress:address,price:uint64,timestamp:uint32,customPayload:Maybe ^cell}`
+
+### EVMChainValidation
+TL-B: `evm_chain_validation#2d3e4f5a chainId:uint32 blockNumber:uint64 gasPrice:uint64 customPayload:Maybe ^cell = EVMChainValidation`
+Signature: `EVMChainValidation{chainId:uint32,blockNumber:uint64,gasPrice:uint64,customPayload:Maybe ^cell}`
 
 ### DeployEscrow
 TL-B: `deploy_escrow#595f07bc chainId:uint32 targetAddress:address customPayload:Maybe ^cell = DeployEscrow`
@@ -149,13 +169,33 @@ Signature: `RelayerData{address:address,whitelisted:bool,totalResolves:uint32,su
 TL-B: `_ balance:coins ownerAddress:address jettonMasterAddress:address jettonWalletCode:^cell = JettonWalletData`
 Signature: `JettonWalletData{balance:coins,ownerAddress:address,jettonMasterAddress:address,jettonWalletCode:^cell}`
 
+### EVMChainConfig
+TL-B: `_ chainId:uint32 rpcEndpoint:^cell blockTime:uint32 gasLimit:uint32 isActive:bool bridgeAddress:^cell oracleAddress:^cell = EVMChainConfig`
+Signature: `EVMChainConfig{chainId:uint32,rpcEndpoint:^cell,blockTime:uint32,gasLimit:uint32,isActive:bool,bridgeAddress:^cell,oracleAddress:^cell}`
+
+### EVMTransaction
+TL-B: `_ chainId:uint32 toContract:^cell functionSelector:uint32 parameters:^cell gasLimit:uint32 gasPrice:uint64 value:uint64 nonce:uint64 status:uint8 transactionHash:^cell blockNumber:uint64 confirmations:uint32 = EVMTransaction`
+Signature: `EVMTransaction{chainId:uint32,toContract:^cell,functionSelector:uint32,parameters:^cell,gasLimit:uint32,gasPrice:uint64,value:uint64,nonce:uint64,status:uint8,transactionHash:^cell,blockNumber:uint64,confirmations:uint32}`
+
+### EVMBridgeData
+TL-B: `_ bridgeId:uint32 sourceChainId:uint32 targetChainId:uint32 bridgeContract:address bridgeFee:uint64 minTransferAmount:uint64 maxTransferAmount:uint64 isActive:bool lastUpdateTimestamp:uint32 = EVMBridgeData`
+Signature: `EVMBridgeData{bridgeId:uint32,sourceChainId:uint32,targetChainId:uint32,bridgeContract:address,bridgeFee:uint64,minTransferAmount:uint64,maxTransferAmount:uint64,isActive:bool,lastUpdateTimestamp:uint32}`
+
+### EVMOracleData
+TL-B: `_ oracleId:uint32 chainId:uint32 oracleContract:address tokenAddress:address priceDecimals:uint8 heartbeatInterval:uint32 isActive:bool lastPriceUpdate:uint32 = EVMOracleData`
+Signature: `EVMOracleData{oracleId:uint32,chainId:uint32,oracleContract:address,tokenAddress:address,priceDecimals:uint8,heartbeatInterval:uint32,isActive:bool,lastPriceUpdate:uint32}`
+
+### CrossChainMessage
+TL-B: `_ sourceChain:uint32 targetChain:uint32 orderHash:uint256 amount:uint64 secret:uint256 timestamp:uint32 nonce:uint64 = CrossChainMessage`
+Signature: `CrossChainMessage{sourceChain:uint32,targetChain:uint32,orderHash:uint256,amount:uint64,secret:uint256,timestamp:uint32,nonce:uint64}`
+
 ### SendViaJettonTransfer
 TL-B: `send_via_jetton_transfer#0f8a7ea5 queryId:uint64 amount:coins destination:address responseDestination:address customPayload:Maybe ^cell forwardTonAmount:coins forwardPayload:remainder<slice> = SendViaJettonTransfer`
 Signature: `SendViaJettonTransfer{queryId:uint64,amount:coins,destination:address,responseDestination:address,customPayload:Maybe ^cell,forwardTonAmount:coins,forwardPayload:remainder<slice>}`
 
 ### TonFusion$Data
-TL-B: `_ owner:address escrowLock:dict<uint256, ^OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}> escrowOrder:dict<uint256, ^Order{id:uint32,srcJettonAddress:address,senderPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}> jettons:dict<address, ^cell> jettonAccount:dict<address, address> whiteLists:dict<address, bool> relayers:dict<address, ^RelayerData{address:address,whitelisted:bool,totalResolves:uint32,successRate:uint16}> escrowContracts:dict<uint32, ^EscrowContract{chainId:uint32,contractAddress:address,deployed:bool,totalOrders:uint32}> totalOrders:uint32 totalVolume:uint64 totalResolves:uint32 = TonFusion`
-Signature: `TonFusion{owner:address,escrowLock:dict<uint256, ^OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}>,escrowOrder:dict<uint256, ^Order{id:uint32,srcJettonAddress:address,senderPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}>,jettons:dict<address, ^cell>,jettonAccount:dict<address, address>,whiteLists:dict<address, bool>,relayers:dict<address, ^RelayerData{address:address,whitelisted:bool,totalResolves:uint32,successRate:uint16}>,escrowContracts:dict<uint32, ^EscrowContract{chainId:uint32,contractAddress:address,deployed:bool,totalOrders:uint32}>,totalOrders:uint32,totalVolume:uint64,totalResolves:uint32}`
+TL-B: `_ owner:address escrowLock:dict<uint256, ^OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}> escrowOrder:dict<uint256, ^Order{id:uint32,srcJettonAddress:address,senderPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}> jettons:dict<address, ^cell> jettonAccount:dict<address, address> whiteLists:dict<address, bool> relayers:dict<address, ^RelayerData{address:address,whitelisted:bool,totalResolves:uint32,successRate:uint16}> escrowContracts:dict<uint32, ^EscrowContract{chainId:uint32,contractAddress:address,deployed:bool,totalOrders:uint32}> totalOrders:uint32 totalVolume:uint64 totalResolves:uint32 evmChainConfigs:dict<uint32, ^EVMChainConfig{chainId:uint32,rpcEndpoint:^cell,blockTime:uint32,gasLimit:uint32,isActive:bool,bridgeAddress:^cell,oracleAddress:^cell}> evmTransactions:dict<uint64, ^EVMTransaction{chainId:uint32,toContract:^cell,functionSelector:uint32,parameters:^cell,gasLimit:uint32,gasPrice:uint64,value:uint64,nonce:uint64,status:uint8,transactionHash:^cell,blockNumber:uint64,confirmations:uint32}> evmBridges:dict<uint32, ^EVMBridgeData{bridgeId:uint32,sourceChainId:uint32,targetChainId:uint32,bridgeContract:address,bridgeFee:uint64,minTransferAmount:uint64,maxTransferAmount:uint64,isActive:bool,lastUpdateTimestamp:uint32}> evmOracles:dict<uint32, ^EVMOracleData{oracleId:uint32,chainId:uint32,oracleContract:address,tokenAddress:address,priceDecimals:uint8,heartbeatInterval:uint32,isActive:bool,lastPriceUpdate:uint32}> evmTransactionNonce:uint64 evmBridgeFees:uint64 = TonFusion`
+Signature: `TonFusion{owner:address,escrowLock:dict<uint256, ^OrderConfig{id:uint32,srcJettonAddress:address,senderPubKey:address,receiverPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}>,escrowOrder:dict<uint256, ^Order{id:uint32,srcJettonAddress:address,senderPubKey:address,hashlock:uint256,timelock:uint32,amount:uint64,finalized:bool,partialFills:dict<uint256, uint64>,totalFilled:uint64,direction:uint8}>,jettons:dict<address, ^cell>,jettonAccount:dict<address, address>,whiteLists:dict<address, bool>,relayers:dict<address, ^RelayerData{address:address,whitelisted:bool,totalResolves:uint32,successRate:uint16}>,escrowContracts:dict<uint32, ^EscrowContract{chainId:uint32,contractAddress:address,deployed:bool,totalOrders:uint32}>,totalOrders:uint32,totalVolume:uint64,totalResolves:uint32,evmChainConfigs:dict<uint32, ^EVMChainConfig{chainId:uint32,rpcEndpoint:^cell,blockTime:uint32,gasLimit:uint32,isActive:bool,bridgeAddress:^cell,oracleAddress:^cell}>,evmTransactions:dict<uint64, ^EVMTransaction{chainId:uint32,toContract:^cell,functionSelector:uint32,parameters:^cell,gasLimit:uint32,gasPrice:uint64,value:uint64,nonce:uint64,status:uint8,transactionHash:^cell,blockNumber:uint64,confirmations:uint32}>,evmBridges:dict<uint32, ^EVMBridgeData{bridgeId:uint32,sourceChainId:uint32,targetChainId:uint32,bridgeContract:address,bridgeFee:uint64,minTransferAmount:uint64,maxTransferAmount:uint64,isActive:bool,lastUpdateTimestamp:uint32}>,evmOracles:dict<uint32, ^EVMOracleData{oracleId:uint32,chainId:uint32,oracleContract:address,tokenAddress:address,priceDecimals:uint8,heartbeatInterval:uint32,isActive:bool,lastPriceUpdate:uint32}>,evmTransactionNonce:uint64,evmBridgeFees:uint64}`
 
 ## Get methods
 Total get methods: 0

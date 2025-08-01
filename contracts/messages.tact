@@ -98,12 +98,104 @@ message(0x4ef5cb26) PartialFill {
  * @dev Transfers the partial amount to the receiver
  * @param orderHash The hashlock of the order
  * @param secret The secret for the partial fill
- * @param customPayload Optional custom payload for additional data
- * @custom:opcode 0x8b341823
+ * @custom:opcode 0x7a7b8c9d
  */
-message(0x8b341823) CompletePartialFill {
+message(0x7a7b8c9d) CompletePartialFill {
     orderHash: Int as uint256;
     secret: Int as uint256;
+}
+
+/**
+ * @notice EVM cross-chain message for contract interactions
+ * @dev Used for communicating with EVM chains via bridges/oracles
+ * @param targetChainId Target EVM chain ID
+ * @param targetContract Target EVM contract address
+ * @param functionSelector EVM function selector (4 bytes)
+ * @param parameters Function parameters encoded as bytes
+ * @param gasLimit Gas limit for the EVM call
+ * @param value ETH value to send with the call
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x9a8b7c6d
+ */
+message(0x9a8b7c6d) EVMCrossChainMessage {
+    targetChainId: Int as uint32;
+    targetContract: Cell; // Target contract address encoded as cell
+    functionSelector: Int as uint32;
+    parameters: Cell;
+    gasLimit: Int as uint32;
+    value: Int as uint64;
+    customPayload: Cell?;
+}
+
+/**
+ * @notice EVM contract deployment message
+ * @dev Used for deploying escrow contracts on EVM chains
+ * @param targetChainId Target EVM chain ID
+ * @param contractBytecode EVM contract bytecode
+ * @param constructorParams Constructor parameters encoded as bytes
+ * @param gasLimit Gas limit for contract deployment
+ * @param value ETH value to send with deployment
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x5e4f3d2c
+ */
+message(0x5e4f3d2c) EVMContractDeploy {
+    targetChainId: Int as uint32;
+    contractBytecode: Cell;
+    constructorParams: Cell;
+    gasLimit: Int as uint32;
+    value: Int as uint64;
+    customPayload: Cell?;
+}
+
+/**
+ * @notice EVM bridge confirmation message
+ * @dev Used for confirming cross-chain transfers via bridges
+ * @param bridgeId Bridge identifier
+ * @param transactionHash EVM transaction hash
+ * @param blockNumber EVM block number
+ * @param confirmations Number of confirmations received
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x1f2e3d4c
+ */
+message(0x1f2e3d4c) EVMBridgeConfirmation {
+    bridgeId: Int as uint32;
+    transactionHash: Cell;
+    blockNumber: Int as uint64;
+    confirmations: Int as uint32;
+    customPayload: Cell?;
+}
+
+/**
+ * @notice EVM oracle price update message
+ * @dev Used for receiving price updates from EVM oracles
+ * @param oracleId Oracle identifier
+ * @param tokenAddress Token address on EVM chain
+ * @param price Price in USD with 8 decimal precision
+ * @param timestamp Price timestamp
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x8c9d0e1f
+ */
+message(0x8c9d0e1f) EVMOraclePriceUpdate {
+    oracleId: Int as uint32;
+    tokenAddress: Address;
+    price: Int as uint64;
+    timestamp: Int as uint32;
+    customPayload: Cell?;
+}
+
+/**
+ * @notice EVM chain validation message
+ * @dev Used for validating EVM chain parameters
+ * @param chainId EVM chain ID to validate
+ * @param blockNumber Current block number on the chain
+ * @param gasPrice Current gas price on the chain
+ * @param customPayload Optional custom payload for additional data
+ * @custom:opcode 0x2d3e4f5a
+ */
+message(0x2d3e4f5a) EVMChainValidation {
+    chainId: Int as uint32;
+    blockNumber: Int as uint64;
+    gasPrice: Int as uint64;
     customPayload: Cell?;
 }
 

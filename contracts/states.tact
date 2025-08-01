@@ -173,4 +173,130 @@ struct JettonWalletData {
     jettonWalletCode: Cell;
 }
 
+/**
+ * @notice EVM chain configuration data
+ * @dev Contains chain-specific parameters for EVM integration
+ * @param chainId EVM chain ID
+ * @param rpcEndpoint RPC endpoint for the chain
+ * @param blockTime Average block time in seconds
+ * @param gasLimit Default gas limit for transactions
+ * @param isActive Whether the chain is active for swaps
+ * @param bridgeAddress Bridge contract address for cross-chain transfers
+ * @param oracleAddress Oracle contract address for price feeds
+ * @custom:security Chain configuration must be validated before use
+ */
+struct EVMChainConfig {
+    chainId: Int as uint32;
+    rpcEndpoint: Cell; // Encoded as string
+    blockTime: Int as uint32;
+    gasLimit: Int as uint32;
+    isActive: Bool = true;
+    bridgeAddress: Cell; // Bridge contract address encoded as cell
+    oracleAddress: Cell; // Oracle contract address encoded as cell
+}
+
+/**
+ * @notice EVM transaction data for cross-chain operations
+ * @dev Contains transaction details for EVM chain interactions
+ * @param chainId Target EVM chain ID
+ * @param toContract Target contract address
+ * @param functionSelector Function selector (4 bytes)
+ * @param parameters Function parameters
+ * @param gasLimit Gas limit for the transaction
+ * @param gasPrice Gas price for the transaction
+ * @param value ETH value to send
+ * @param nonce Transaction nonce
+ * @param status Transaction status (0=pending, 1=confirmed, 2=failed)
+ * @param transactionHash EVM transaction hash
+ * @param blockNumber Block number where transaction was included
+ * @param confirmations Number of confirmations
+ * @custom:security Transaction data must be validated before execution
+ */
+struct EVMTransaction {
+    chainId: Int as uint32;
+    toContract: Cell; // Target contract address encoded as cell
+    functionSelector: Int as uint32;
+    parameters: Cell;
+    gasLimit: Int as uint32;
+    gasPrice: Int as uint64;
+    value: Int as uint64;
+    nonce: Int as uint64;
+    status: Int as uint8 = 0; // 0=pending, 1=confirmed, 2=failed
+    transactionHash: Cell; // Encoded as bytes32
+    blockNumber: Int as uint64 = 0;
+    confirmations: Int as uint32 = 0;
+}
+
+/**
+ * @notice EVM bridge data for cross-chain transfers
+ * @dev Contains bridge-specific information for cross-chain operations
+ * @param bridgeId Unique bridge identifier
+ * @param sourceChainId Source chain ID
+ * @param targetChainId Target chain ID
+ * @param bridgeContract Bridge contract address
+ * @param bridgeFee Bridge fee for transfers
+ * @param minTransferAmount Minimum transfer amount
+ * @param maxTransferAmount Maximum transfer amount
+ * @param isActive Whether the bridge is active
+ * @param lastUpdateTimestamp Last update timestamp
+ * @custom:security Bridge configuration must be validated before use
+ */
+struct EVMBridgeData {
+    bridgeId: Int as uint32;
+    sourceChainId: Int as uint32;
+    targetChainId: Int as uint32;
+    bridgeContract: Address;
+    bridgeFee: Int as uint64;
+    minTransferAmount: Int as uint64;
+    maxTransferAmount: Int as uint64;
+    isActive: Bool = true;
+    lastUpdateTimestamp: Int as uint32;
+}
+
+/**
+ * @notice EVM oracle data for price feeds
+ * @dev Contains oracle-specific information for price updates
+ * @param oracleId Unique oracle identifier
+ * @param chainId EVM chain ID where oracle operates
+ * @param oracleContract Oracle contract address
+ * @param tokenAddress Token address for price feed
+ * @param priceDecimals Number of decimal places for price
+ * @param heartbeatInterval Heartbeat interval for price updates
+ * @param isActive Whether the oracle is active
+ * @param lastPriceUpdate Last price update timestamp
+ * @custom:security Oracle data must be validated before use
+ */
+struct EVMOracleData {
+    oracleId: Int as uint32;
+    chainId: Int as uint32;
+    oracleContract: Address;
+    tokenAddress: Address;
+    priceDecimals: Int as uint8;
+    heartbeatInterval: Int as uint32;
+    isActive: Bool = true;
+    lastPriceUpdate: Int as uint32;
+}
+
+/**
+ * @notice Cross-chain message for EVM communication
+ * @dev Contains message data for cross-chain transfers
+ * @param sourceChain Source chain ID
+ * @param targetChain Target chain ID
+ * @param orderHash Hash of the order being processed
+ * @param amount Transfer amount
+ * @param secret Secret for order validation
+ * @param timestamp Message timestamp
+ * @param nonce Unique message nonce
+ * @custom:security Message data must be validated before processing
+ */
+struct CrossChainMessage {
+    sourceChain: Int as uint32;
+    targetChain: Int as uint32;
+    orderHash: Int as uint256;
+    amount: Int as uint64;
+    secret: Int as uint256;
+    timestamp: Int as uint32;
+    nonce: Int as uint64;
+}
+
 

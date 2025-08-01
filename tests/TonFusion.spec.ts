@@ -1766,7 +1766,6 @@ describe('TonFusion', () => {
                     $$type: 'CompletePartialFill',
                     orderHash: 123456789n,
                     secret: 987654321n,
-                    customPayload: null,
                 }
             );
 
@@ -1789,7 +1788,6 @@ describe('TonFusion', () => {
                     $$type: 'CompletePartialFill',
                     orderHash: 123456789n,
                     secret: 987654321n,
-                    customPayload: null,
                 }
             );
 
@@ -1812,7 +1810,6 @@ describe('TonFusion', () => {
                     $$type: 'CompletePartialFill',
                     orderHash: 999999999n, // Non-existent order
                     secret: 987654321n,
-                    customPayload: null,
                 }
             );
 

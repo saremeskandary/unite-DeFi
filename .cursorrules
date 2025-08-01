@@ -1,0 +1,32 @@
+# Cursor Rules for TON EVM Integration Project
+
+## Build Commands
+
+- Always use `npx blueprint build --all` instead of `npx blueprint build` to avoid interactive prompts
+- Use `npm run build` as an alternative for building all contracts
+- For specific contract builds, use `npx blueprint build <contract-name>`
+
+## Testing Commands
+
+- Use `npm test` to run all tests
+- Use `./scripts/run-tests.sh` for comprehensive test suite including contract building
+- For specific test files: `npm test tests/jetton_integration.spec.ts` or `npm test tests/evm_integration.spec.ts`
+
+## Development Workflow
+
+- Always build contracts before running tests
+- Use `tact --config ./tact.config.json` for Tact contract compilation
+- Check build output in `build/` directory for compiled contracts
+
+## Automation Guidelines
+
+- Avoid interactive prompts in scripts and commands
+- Use `--all` flags when available to automate multi-contract operations
+- Prefer non-interactive commands for CI/CD compatibility
+
+## Project Structure
+
+- Contracts are in `contracts/` directory
+- Tests are in `tests/` directory
+- Build output goes to `build/` directory
+- Scripts are in `scripts/` directory

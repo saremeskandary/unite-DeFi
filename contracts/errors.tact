@@ -83,6 +83,54 @@ const MISSING_MAKER_SRC_ATA: Int = 84;
 /// @dev Used when recipient address is invalid
 const INVALID_RECIPIENT: Int = 85;
 
+/// @notice Invalid chain ID error
+/// @dev Used when EVM chain ID is not supported
+const INVALID_CHAIN_ID: Int = 88;
+
+/// @notice Invalid bridge configuration error
+/// @dev Used when bridge configuration is missing or invalid
+const INVALID_BRIDGE_CONFIG: Int = 89;
+
+/// @notice Invalid oracle configuration error
+/// @dev Used when oracle configuration is missing or invalid
+const INVALID_ORACLE_CONFIG: Int = 90;
+
+/// @notice EVM transaction failed error
+/// @dev Used when EVM transaction execution fails
+const EVM_TRANSACTION_FAILED: Int = 91;
+
+/// @notice EVM bridge timeout error
+/// @dev Used when EVM bridge operation times out
+const EVM_BRIDGE_TIMEOUT: Int = 92;
+
+/// @notice EVM gas limit exceeded error
+/// @dev Used when EVM transaction gas limit is exceeded
+const EVM_GAS_LIMIT_EXCEEDED: Int = 93;
+
+/// @notice EVM insufficient balance error
+/// @dev Used when insufficient balance for EVM operation
+const EVM_INSUFFICIENT_BALANCE: Int = 94;
+
+/// @notice EVM contract not found error
+/// @dev Used when target EVM contract is not found
+const EVM_CONTRACT_NOT_FOUND: Int = 95;
+
+/// @notice Escrow contract not deployed error
+/// @dev Used when escrow contract is not deployed on target chain
+const ESCROW_NOT_DEPLOYED: Int = 106;
+
+/// @notice Cross-chain bridge failure error
+/// @dev Used when cross-chain bridge operation fails
+const BRIDGE_FAILURE: Int = 107;
+
+/// @notice Message delivery failed error
+/// @dev Used when cross-chain message delivery fails
+const MESSAGE_DELIVERY_FAILED: Int = 108;
+
+/// @notice Invalid EVM message format error
+/// @dev Used when EVM message format is invalid
+const INVALID_EVM_MESSAGE: Int = 109;
+
 // ============================================================================
 // ACCESS CONTROL ERRORS (85-87)
 // ============================================================================
@@ -118,10 +166,6 @@ const ORDER_ALREADY_FINALIZED: Int = 91;
 /// @notice Invalid swap direction error
 /// @dev Used when swap direction is not supported
 const INVALID_SWAP_DIRECTION: Int = 92;
-
-/// @notice Invalid chain ID error
-/// @dev Used when chain ID is not supported
-const INVALID_CHAIN_ID: Int = 93;
 
 /// @notice Invalid partial fill error
 /// @dev Used when partial fill parameters are invalid

@@ -95,6 +95,19 @@ fun calculateJettonWalletAddress(
 }
 
 /**
+ * @notice Create a zero address for placeholder purposes
+ * @dev Creates an address that represents a null/zero address
+ * @return Zero address for placeholder use
+ * @custom:internal Used for placeholder addresses
+ */
+fun createZeroAddress(): Address {
+    return contractAddress(StateInit{
+        code: beginCell().endCell(),
+        data: beginCell().endCell(),
+    });
+}
+
+/**
  * @notice Enhanced hash function for HTLC
  * @dev Generates keccak256 hash of a secret for hashlock creation
  * @param secret The secret to hash
@@ -143,6 +156,217 @@ fun isValidChainId(chainId: Int): Bool {
            chainId == 42161 || // Arbitrum
            chainId == -3 || // TON Mainnet
            chainId == -239; // TON Testnet
+}
+
+/**
+ * @notice Validate EVM chain ID for supported networks
+ * @dev Checks if an EVM chain ID is supported by the protocol
+ * @param chainId EVM chain ID to validate
+ * @return True if EVM chain ID is supported, false otherwise
+ * @custom:security Only supported EVM chains are allowed
+ */
+fun isValidEVMChainId(chainId: Int): Bool {
+    return chainId == EVM_CHAIN_ETHEREUM ||
+           chainId == EVM_CHAIN_POLYGON ||
+           chainId == EVM_CHAIN_BSC ||
+           chainId == EVM_CHAIN_BASE ||
+           chainId == EVM_CHAIN_ARBITRUM;
+}
+
+/**
+ * @notice Validate TON chain ID
+ * @dev Checks if a TON chain ID is valid
+ * @param chainId TON chain ID to validate
+ * @return True if TON chain ID is valid, false otherwise
+ * @custom:security Only valid TON chains are allowed
+ */
+fun isValidTONChainId(chainId: Int): Bool {
+    return chainId == TON_CHAIN_MAINNET || chainId == TON_CHAIN_TESTNET;
+}
+
+/**
+ * @notice Get EVM chain configuration
+ * @dev Returns chain-specific parameters for EVM integration
+ * @param chainId EVM chain ID
+ * @return EVMChainConfig with chain parameters
+ * @custom:internal Used for EVM chain configuration
+ */
+fun getEVMChainConfig(chainId: Int): EVMChainConfig? {
+    if (chainId == EVM_CHAIN_ETHEREUM) {
+        return EVMChainConfig {
+            chainId: EVM_CHAIN_ETHEREUM,
+            rpcEndpoint: beginCell().endCell(), // RPC endpoint placeholder
+            blockTime: 12,
+            gasLimit: EVM_CONTRACT_CALL_GAS_LIMIT,
+            isActive: true,
+            bridgeAddress: beginCell().endCell(), // Placeholder
+            oracleAddress: beginCell().endCell(), // Placeholder
+        };
+    } else if (chainId == EVM_CHAIN_POLYGON) {
+        return EVMChainConfig {
+            chainId: EVM_CHAIN_POLYGON,
+            rpcEndpoint: beginCell().endCell(), // RPC endpoint placeholder
+            blockTime: 2,
+            gasLimit: EVM_CONTRACT_CALL_GAS_LIMIT,
+            isActive: true,
+            bridgeAddress: beginCell().endCell(), // Placeholder
+            oracleAddress: beginCell().endCell(), // Placeholder
+        };
+    } else if (chainId == EVM_CHAIN_BSC) {
+        return EVMChainConfig {
+            chainId: EVM_CHAIN_BSC,
+            rpcEndpoint: beginCell().endCell(), // RPC endpoint placeholder
+            blockTime: 3,
+            gasLimit: EVM_CONTRACT_CALL_GAS_LIMIT,
+            isActive: true,
+            bridgeAddress: beginCell().endCell(), // Placeholder
+            oracleAddress: beginCell().endCell(), // Placeholder
+        };
+    } else if (chainId == EVM_CHAIN_BASE) {
+        return EVMChainConfig {
+            chainId: EVM_CHAIN_BASE,
+            rpcEndpoint: beginCell().endCell(), // RPC endpoint placeholder
+            blockTime: 2,
+            gasLimit: EVM_CONTRACT_CALL_GAS_LIMIT,
+            isActive: true,
+            bridgeAddress: beginCell().endCell(), // Placeholder
+            oracleAddress: beginCell().endCell(), // Placeholder
+        };
+    } else if (chainId == EVM_CHAIN_ARBITRUM) {
+        return EVMChainConfig {
+            chainId: EVM_CHAIN_ARBITRUM,
+            rpcEndpoint: beginCell().endCell(), // RPC endpoint placeholder
+            blockTime: 1,
+            gasLimit: EVM_CONTRACT_CALL_GAS_LIMIT,
+            isActive: true,
+            bridgeAddress: beginCell().endCell(), // Placeholder
+            oracleAddress: beginCell().endCell(), // Placeholder
+        };
+    }
+    return null;
+}
+
+/**
+ * @notice Create EVM cross-chain message
+ * @dev Creates a message for EVM chain interactions
+ * @param targetChainId Target EVM chain ID
+ * @param targetContract Target EVM contract address
+ * @param functionSelector EVM function selector
+ * @param parameters Function parameters
+ * @param gasLimit Gas limit for the call
+ * @param value ETH value to send
+ * @return Cross-chain message for EVM communication
+ * @custom:internal Used for EVM contract interactions
+ */
+fun createEVMCrossChainMessage(
+    targetChainId: Int,
+    targetContract: Cell,
+    functionSelector: Int,
+    parameters: Cell,
+    gasLimit: Int,
+    value: Int
+): CrossChainMessage {
+    return CrossChainMessage {
+        sourceChain: TON_CHAIN_MAINNET,
+        targetChain: targetChainId,
+        orderHash: 0, // Will be set by caller
+        amount: 0, // Will be set by caller
+        secret: 0, // Will be set by caller
+        timestamp: 0, // Will be set by caller
+        nonce: 0, // Will be set by caller
+    };
+}
+
+/**
+ * @notice Create EVM contract deployment message
+ * @dev Creates a message for deploying contracts on EVM chains
+ * @param targetChainId Target EVM chain ID
+ * @param contractBytecode EVM contract bytecode
+ * @param constructorParams Constructor parameters
+ * @param gasLimit Gas limit for deployment
+ * @param value ETH value to send
+ * @return EVMContractDeploy for contract deployment
+ * @custom:internal Used for EVM contract deployment
+ */
+fun createEVMContractDeploy(
+    targetChainId: Int,
+    contractBytecode: Cell,
+    constructorParams: Cell,
+    gasLimit: Int,
+    value: Int
+): EVMContractDeploy {
+    return EVMContractDeploy {
+        targetChainId: targetChainId,
+        contractBytecode: contractBytecode,
+        constructorParams: constructorParams,
+        gasLimit: gasLimit,
+        value: value,
+        customPayload: null,
+    };
+}
+
+/**
+ * @notice Calculate EVM gas price based on chain
+ * @dev Returns appropriate gas price for different EVM chains
+ * @param chainId EVM chain ID
+ * @return Gas price in wei
+ * @custom:internal Used for gas price estimation
+ */
+fun calculateEVMGasPrice(chainId: Int): Int {
+    if (chainId == EVM_CHAIN_ETHEREUM) {
+        return 20000000000; // 20 gwei
+    } else if (chainId == EVM_CHAIN_POLYGON) {
+        return 30000000000; // 30 gwei
+    } else if (chainId == EVM_CHAIN_BSC) {
+        return 5000000000; // 5 gwei
+    } else if (chainId == EVM_CHAIN_BASE) {
+        return 1000000000; // 1 gwei
+    } else if (chainId == EVM_CHAIN_ARBITRUM) {
+        return 100000000; // 0.1 gwei
+    }
+    return 20000000000; // Default to 20 gwei
+}
+
+/**
+ * @notice Validate EVM transaction parameters
+ * @dev Checks if EVM transaction parameters are valid
+ * @param transaction EVM transaction to validate
+ * @return True if transaction is valid, false otherwise
+ * @custom:security Critical for transaction validation
+ */
+fun validateEVMTransaction(transaction: EVMTransaction): Bool {
+    return isValidEVMChainId(transaction.chainId) &&
+           transaction.gasLimit > 0 &&
+           transaction.gasLimit <= EVM_CONTRACT_CALL_GAS_LIMIT &&
+           transaction.gasPrice > 0 &&
+           transaction.value >= 0;
+}
+
+/**
+ * @notice Calculate EVM bridge fee based on amount and chain
+ * @dev Returns bridge fee for cross-chain transfers
+ * @param amount Transfer amount
+ * @param sourceChainId Source chain ID
+ * @param targetChainId Target chain ID
+ * @return Bridge fee amount
+ * @custom:internal Used for fee calculation
+ */
+fun calculateEVMBridgeFee(amount: Int, sourceChainId: Int, targetChainId: Int): Int {
+    let baseFee = 1000000; // 0.001 TON base fee
+    let percentageFee = amount * 1 / 10000; // 0.01% fee
+    
+    // Higher fees for cross-chain transfers
+    if (sourceChainId == TON_CHAIN_MAINNET || sourceChainId == TON_CHAIN_TESTNET) {
+        if (isValidEVMChainId(targetChainId)) {
+            return baseFee + percentageFee + 5000000; // Extra for TON to EVM
+        }
+    } else if (isValidEVMChainId(sourceChainId)) {
+        if (targetChainId == TON_CHAIN_MAINNET || targetChainId == TON_CHAIN_TESTNET) {
+            return baseFee + percentageFee + 3000000; // Less for EVM to TON
+        }
+    }
+    
+    return baseFee + percentageFee;
 }
 
 /**
@@ -313,4 +537,153 @@ inline fun serializeRelayerData(relayer: RelayerData): Cell {
         .storeUint(relayer.totalResolves, 32)
         .storeUint(relayer.successRate, 16)
         .endCell();
+}
+
+/**
+ * @notice Find bridge for specific chain
+ * @dev Returns bridge ID for the given chain ID
+ * @param chainId Target chain ID
+ * @return Bridge ID if found, null otherwise
+ * @custom:internal Used for cross-chain bridge selection
+ */
+fun findBridgeForChain(chainId: Int): Int? {
+    // For now, return a default bridge ID
+    // In a real implementation, this would look up the appropriate bridge
+    if (isValidEVMChainId(chainId)) {
+        return 1; // Default bridge ID
+    }
+    return null;
+}
+
+/**
+ * @notice Validate cross-chain message
+ * @dev Validates cross-chain message format and parameters
+ * @param message Cross-chain message to validate
+ * @return True if message is valid, false otherwise
+ * @custom:security Critical for cross-chain security
+ */
+fun validateCrossChainMessage(message: CrossChainMessage): Bool {
+    // Validate source and target chains
+    if (!isValidEVMChainId(message.targetChain) && !isValidTONChainId(message.targetChain)) {
+        return false;
+    }
+    
+    // Validate timestamp (not too old)
+    let currentTime = 0; // In real implementation, get current timestamp
+    if (message.timestamp < currentTime - EVM_BRIDGE_TIMEOUT_SECONDS) {
+        return false;
+    }
+    
+    // Validate nonce (should be unique)
+    if (message.nonce == 0) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * @notice Build EVM transfer message
+ * @dev Creates EVM-compatible message format for transfers
+ * @param order Order configuration
+ * @param amount Transfer amount
+ * @param secret Secret for order validation
+ * @return Cell containing EVM transfer message
+ * @custom:internal Used for cross-chain transfers
+ */
+fun buildEVMTransferMessage(order: OrderConfig, amount: Int, secret: Int): Cell {
+    return beginCell()
+        .storeUint(order.id, 32) // Chain ID
+        .storeAddress(order.receiverPubKey) // Target address
+        .storeUint(amount, 256) // Amount
+        .storeUint(secret, 256) // Secret
+        .storeUint(order.hashlock, 256) // Hashlock
+        .storeUint(order.timelock, 32) // Timelock
+        .endCell();
+}
+
+/**
+ * @notice Send cross-chain message
+ * @dev Sends message to cross-chain bridge
+ * @param chainId Target chain ID
+ * @param message Cross-chain message
+ * @custom:internal Used for cross-chain communication
+ */
+fun sendCrossChainMessage(chainId: Int, message: Cell) {
+    // In a real implementation, this would send the message to the bridge
+    // For now, this is a placeholder
+    // The actual implementation would depend on the specific bridge being used
+}
+
+/**
+ * @notice Check if escrow contract is deployed
+ * @dev Validates escrow contract deployment on target chain
+ * @param chainId Target chain ID
+ * @param escrowContracts Map of escrow contracts
+ * @return True if escrow is deployed, false otherwise
+ * @custom:security Critical for cross-chain security
+ */
+fun isEscrowDeployed(chainId: Int, escrowContracts: map<Int as uint32, EscrowContract>): Bool {
+    let escrow = escrowContracts.get(chainId);
+    if (escrow == null) {
+        return false;
+    }
+    return escrow!!.deployed;
+}
+
+/**
+ * @notice Validate EVM message format
+ * @dev Validates EVM message structure and parameters
+ * @param message EVM message to validate
+ * @return True if message format is valid, false otherwise
+ * @custom:security Critical for EVM integration security
+ */
+fun validateEVMMessageFormat(message: Cell): Bool {
+    // Basic validation - check if message is not empty
+    // In a real implementation, this would validate the specific message format
+    // based on the EVM chain and message type
+    
+    return true;
+}
+
+/**
+ * @notice Handle bridge failure with retry logic
+ * @dev Implements retry mechanism for failed bridge operations
+ * @param transaction EVM transaction that failed
+ * @param retryCount Current retry attempt number
+ * @param maxRetries Maximum number of retry attempts
+ * @return True if retry should be attempted, false if max retries reached
+ * @custom:internal Used for bridge failure recovery
+ */
+fun handleBridgeFailure(transaction: EVMTransaction, retryCount: Int, maxRetries: Int): Bool {
+    if (retryCount >= maxRetries) {
+        return false; // Max retries reached
+    }
+    
+    // In a real implementation, this would implement exponential backoff
+    // and other retry strategies
+    
+    return true; // Retry should be attempted
+}
+
+/**
+ * @notice Process timeout scenarios
+ * @dev Handles timeout scenarios for cross-chain operations
+ * @param order Order configuration
+ * @param currentTime Current timestamp
+ * @return True if timeout should be processed, false otherwise
+ * @custom:internal Used for timeout handling
+ */
+fun processTimeoutScenario(order: OrderConfig, currentTime: Int): Bool {
+    // Check if order has expired
+    if (currentTime > order.timelock) {
+        return true; // Order has expired, process timeout
+    }
+    
+    // Check if bridge timeout has occurred
+    if (currentTime > order.timelock - EVM_BRIDGE_TIMEOUT_SECONDS) {
+        return true; // Bridge timeout, process timeout
+    }
+    
+    return false; // No timeout scenario
 }

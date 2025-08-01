@@ -1073,47 +1073,41 @@ export type CompletePartialFill = {
     $$type: 'CompletePartialFill';
     orderHash: bigint;
     secret: bigint;
-    customPayload: Cell | null;
 }
 
 export function storeCompletePartialFill(src: CompletePartialFill) {
     return (builder: Builder) => {
         const b_0 = builder;
-        b_0.storeUint(2335447075, 32);
+        b_0.storeUint(2054917277, 32);
         b_0.storeUint(src.orderHash, 256);
         b_0.storeUint(src.secret, 256);
-        if (src.customPayload !== null && src.customPayload !== undefined) { b_0.storeBit(true).storeRef(src.customPayload); } else { b_0.storeBit(false); }
     };
 }
 
 export function loadCompletePartialFill(slice: Slice) {
     const sc_0 = slice;
-    if (sc_0.loadUint(32) !== 2335447075) { throw Error('Invalid prefix'); }
+    if (sc_0.loadUint(32) !== 2054917277) { throw Error('Invalid prefix'); }
     const _orderHash = sc_0.loadUintBig(256);
     const _secret = sc_0.loadUintBig(256);
-    const _customPayload = sc_0.loadBit() ? sc_0.loadRef() : null;
-    return { $$type: 'CompletePartialFill' as const, orderHash: _orderHash, secret: _secret, customPayload: _customPayload };
+    return { $$type: 'CompletePartialFill' as const, orderHash: _orderHash, secret: _secret };
 }
 
 export function loadTupleCompletePartialFill(source: TupleReader) {
     const _orderHash = source.readBigNumber();
     const _secret = source.readBigNumber();
-    const _customPayload = source.readCellOpt();
-    return { $$type: 'CompletePartialFill' as const, orderHash: _orderHash, secret: _secret, customPayload: _customPayload };
+    return { $$type: 'CompletePartialFill' as const, orderHash: _orderHash, secret: _secret };
 }
 
 export function loadGetterTupleCompletePartialFill(source: TupleReader) {
     const _orderHash = source.readBigNumber();
     const _secret = source.readBigNumber();
-    const _customPayload = source.readCellOpt();
-    return { $$type: 'CompletePartialFill' as const, orderHash: _orderHash, secret: _secret, customPayload: _customPayload };
+    return { $$type: 'CompletePartialFill' as const, orderHash: _orderHash, secret: _secret };
 }
 
 export function storeTupleCompletePartialFill(source: CompletePartialFill) {
     const builder = new TupleBuilder();
     builder.writeNumber(source.orderHash);
     builder.writeNumber(source.secret);
-    builder.writeCell(source.customPayload);
     return builder.build();
 }
 
@@ -1124,6 +1118,373 @@ export function dictValueParserCompletePartialFill(): DictionaryValue<CompletePa
         },
         parse: (src) => {
             return loadCompletePartialFill(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type EVMCrossChainMessage = {
+    $$type: 'EVMCrossChainMessage';
+    targetChainId: bigint;
+    targetContract: Cell;
+    functionSelector: bigint;
+    parameters: Cell;
+    gasLimit: bigint;
+    value: bigint;
+    customPayload: Cell | null;
+}
+
+export function storeEVMCrossChainMessage(src: EVMCrossChainMessage) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(2592832621, 32);
+        b_0.storeUint(src.targetChainId, 32);
+        b_0.storeRef(src.targetContract);
+        b_0.storeUint(src.functionSelector, 32);
+        b_0.storeRef(src.parameters);
+        b_0.storeUint(src.gasLimit, 32);
+        b_0.storeUint(src.value, 64);
+        if (src.customPayload !== null && src.customPayload !== undefined) { b_0.storeBit(true).storeRef(src.customPayload); } else { b_0.storeBit(false); }
+    };
+}
+
+export function loadEVMCrossChainMessage(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 2592832621) { throw Error('Invalid prefix'); }
+    const _targetChainId = sc_0.loadUintBig(32);
+    const _targetContract = sc_0.loadRef();
+    const _functionSelector = sc_0.loadUintBig(32);
+    const _parameters = sc_0.loadRef();
+    const _gasLimit = sc_0.loadUintBig(32);
+    const _value = sc_0.loadUintBig(64);
+    const _customPayload = sc_0.loadBit() ? sc_0.loadRef() : null;
+    return { $$type: 'EVMCrossChainMessage' as const, targetChainId: _targetChainId, targetContract: _targetContract, functionSelector: _functionSelector, parameters: _parameters, gasLimit: _gasLimit, value: _value, customPayload: _customPayload };
+}
+
+export function loadTupleEVMCrossChainMessage(source: TupleReader) {
+    const _targetChainId = source.readBigNumber();
+    const _targetContract = source.readCell();
+    const _functionSelector = source.readBigNumber();
+    const _parameters = source.readCell();
+    const _gasLimit = source.readBigNumber();
+    const _value = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMCrossChainMessage' as const, targetChainId: _targetChainId, targetContract: _targetContract, functionSelector: _functionSelector, parameters: _parameters, gasLimit: _gasLimit, value: _value, customPayload: _customPayload };
+}
+
+export function loadGetterTupleEVMCrossChainMessage(source: TupleReader) {
+    const _targetChainId = source.readBigNumber();
+    const _targetContract = source.readCell();
+    const _functionSelector = source.readBigNumber();
+    const _parameters = source.readCell();
+    const _gasLimit = source.readBigNumber();
+    const _value = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMCrossChainMessage' as const, targetChainId: _targetChainId, targetContract: _targetContract, functionSelector: _functionSelector, parameters: _parameters, gasLimit: _gasLimit, value: _value, customPayload: _customPayload };
+}
+
+export function storeTupleEVMCrossChainMessage(source: EVMCrossChainMessage) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.targetChainId);
+    builder.writeCell(source.targetContract);
+    builder.writeNumber(source.functionSelector);
+    builder.writeCell(source.parameters);
+    builder.writeNumber(source.gasLimit);
+    builder.writeNumber(source.value);
+    builder.writeCell(source.customPayload);
+    return builder.build();
+}
+
+export function dictValueParserEVMCrossChainMessage(): DictionaryValue<EVMCrossChainMessage> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeEVMCrossChainMessage(src)).endCell());
+        },
+        parse: (src) => {
+            return loadEVMCrossChainMessage(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type EVMContractDeploy = {
+    $$type: 'EVMContractDeploy';
+    targetChainId: bigint;
+    contractBytecode: Cell;
+    constructorParams: Cell;
+    gasLimit: bigint;
+    value: bigint;
+    customPayload: Cell | null;
+}
+
+export function storeEVMContractDeploy(src: EVMContractDeploy) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(1582251308, 32);
+        b_0.storeUint(src.targetChainId, 32);
+        b_0.storeRef(src.contractBytecode);
+        b_0.storeRef(src.constructorParams);
+        b_0.storeUint(src.gasLimit, 32);
+        b_0.storeUint(src.value, 64);
+        if (src.customPayload !== null && src.customPayload !== undefined) { b_0.storeBit(true).storeRef(src.customPayload); } else { b_0.storeBit(false); }
+    };
+}
+
+export function loadEVMContractDeploy(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 1582251308) { throw Error('Invalid prefix'); }
+    const _targetChainId = sc_0.loadUintBig(32);
+    const _contractBytecode = sc_0.loadRef();
+    const _constructorParams = sc_0.loadRef();
+    const _gasLimit = sc_0.loadUintBig(32);
+    const _value = sc_0.loadUintBig(64);
+    const _customPayload = sc_0.loadBit() ? sc_0.loadRef() : null;
+    return { $$type: 'EVMContractDeploy' as const, targetChainId: _targetChainId, contractBytecode: _contractBytecode, constructorParams: _constructorParams, gasLimit: _gasLimit, value: _value, customPayload: _customPayload };
+}
+
+export function loadTupleEVMContractDeploy(source: TupleReader) {
+    const _targetChainId = source.readBigNumber();
+    const _contractBytecode = source.readCell();
+    const _constructorParams = source.readCell();
+    const _gasLimit = source.readBigNumber();
+    const _value = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMContractDeploy' as const, targetChainId: _targetChainId, contractBytecode: _contractBytecode, constructorParams: _constructorParams, gasLimit: _gasLimit, value: _value, customPayload: _customPayload };
+}
+
+export function loadGetterTupleEVMContractDeploy(source: TupleReader) {
+    const _targetChainId = source.readBigNumber();
+    const _contractBytecode = source.readCell();
+    const _constructorParams = source.readCell();
+    const _gasLimit = source.readBigNumber();
+    const _value = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMContractDeploy' as const, targetChainId: _targetChainId, contractBytecode: _contractBytecode, constructorParams: _constructorParams, gasLimit: _gasLimit, value: _value, customPayload: _customPayload };
+}
+
+export function storeTupleEVMContractDeploy(source: EVMContractDeploy) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.targetChainId);
+    builder.writeCell(source.contractBytecode);
+    builder.writeCell(source.constructorParams);
+    builder.writeNumber(source.gasLimit);
+    builder.writeNumber(source.value);
+    builder.writeCell(source.customPayload);
+    return builder.build();
+}
+
+export function dictValueParserEVMContractDeploy(): DictionaryValue<EVMContractDeploy> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeEVMContractDeploy(src)).endCell());
+        },
+        parse: (src) => {
+            return loadEVMContractDeploy(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type EVMBridgeConfirmation = {
+    $$type: 'EVMBridgeConfirmation';
+    bridgeId: bigint;
+    transactionHash: Cell;
+    blockNumber: bigint;
+    confirmations: bigint;
+    customPayload: Cell | null;
+}
+
+export function storeEVMBridgeConfirmation(src: EVMBridgeConfirmation) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(523124044, 32);
+        b_0.storeUint(src.bridgeId, 32);
+        b_0.storeRef(src.transactionHash);
+        b_0.storeUint(src.blockNumber, 64);
+        b_0.storeUint(src.confirmations, 32);
+        if (src.customPayload !== null && src.customPayload !== undefined) { b_0.storeBit(true).storeRef(src.customPayload); } else { b_0.storeBit(false); }
+    };
+}
+
+export function loadEVMBridgeConfirmation(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 523124044) { throw Error('Invalid prefix'); }
+    const _bridgeId = sc_0.loadUintBig(32);
+    const _transactionHash = sc_0.loadRef();
+    const _blockNumber = sc_0.loadUintBig(64);
+    const _confirmations = sc_0.loadUintBig(32);
+    const _customPayload = sc_0.loadBit() ? sc_0.loadRef() : null;
+    return { $$type: 'EVMBridgeConfirmation' as const, bridgeId: _bridgeId, transactionHash: _transactionHash, blockNumber: _blockNumber, confirmations: _confirmations, customPayload: _customPayload };
+}
+
+export function loadTupleEVMBridgeConfirmation(source: TupleReader) {
+    const _bridgeId = source.readBigNumber();
+    const _transactionHash = source.readCell();
+    const _blockNumber = source.readBigNumber();
+    const _confirmations = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMBridgeConfirmation' as const, bridgeId: _bridgeId, transactionHash: _transactionHash, blockNumber: _blockNumber, confirmations: _confirmations, customPayload: _customPayload };
+}
+
+export function loadGetterTupleEVMBridgeConfirmation(source: TupleReader) {
+    const _bridgeId = source.readBigNumber();
+    const _transactionHash = source.readCell();
+    const _blockNumber = source.readBigNumber();
+    const _confirmations = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMBridgeConfirmation' as const, bridgeId: _bridgeId, transactionHash: _transactionHash, blockNumber: _blockNumber, confirmations: _confirmations, customPayload: _customPayload };
+}
+
+export function storeTupleEVMBridgeConfirmation(source: EVMBridgeConfirmation) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.bridgeId);
+    builder.writeCell(source.transactionHash);
+    builder.writeNumber(source.blockNumber);
+    builder.writeNumber(source.confirmations);
+    builder.writeCell(source.customPayload);
+    return builder.build();
+}
+
+export function dictValueParserEVMBridgeConfirmation(): DictionaryValue<EVMBridgeConfirmation> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeEVMBridgeConfirmation(src)).endCell());
+        },
+        parse: (src) => {
+            return loadEVMBridgeConfirmation(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type EVMOraclePriceUpdate = {
+    $$type: 'EVMOraclePriceUpdate';
+    oracleId: bigint;
+    tokenAddress: Address;
+    price: bigint;
+    timestamp: bigint;
+    customPayload: Cell | null;
+}
+
+export function storeEVMOraclePriceUpdate(src: EVMOraclePriceUpdate) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(2359103007, 32);
+        b_0.storeUint(src.oracleId, 32);
+        b_0.storeAddress(src.tokenAddress);
+        b_0.storeUint(src.price, 64);
+        b_0.storeUint(src.timestamp, 32);
+        if (src.customPayload !== null && src.customPayload !== undefined) { b_0.storeBit(true).storeRef(src.customPayload); } else { b_0.storeBit(false); }
+    };
+}
+
+export function loadEVMOraclePriceUpdate(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 2359103007) { throw Error('Invalid prefix'); }
+    const _oracleId = sc_0.loadUintBig(32);
+    const _tokenAddress = sc_0.loadAddress();
+    const _price = sc_0.loadUintBig(64);
+    const _timestamp = sc_0.loadUintBig(32);
+    const _customPayload = sc_0.loadBit() ? sc_0.loadRef() : null;
+    return { $$type: 'EVMOraclePriceUpdate' as const, oracleId: _oracleId, tokenAddress: _tokenAddress, price: _price, timestamp: _timestamp, customPayload: _customPayload };
+}
+
+export function loadTupleEVMOraclePriceUpdate(source: TupleReader) {
+    const _oracleId = source.readBigNumber();
+    const _tokenAddress = source.readAddress();
+    const _price = source.readBigNumber();
+    const _timestamp = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMOraclePriceUpdate' as const, oracleId: _oracleId, tokenAddress: _tokenAddress, price: _price, timestamp: _timestamp, customPayload: _customPayload };
+}
+
+export function loadGetterTupleEVMOraclePriceUpdate(source: TupleReader) {
+    const _oracleId = source.readBigNumber();
+    const _tokenAddress = source.readAddress();
+    const _price = source.readBigNumber();
+    const _timestamp = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMOraclePriceUpdate' as const, oracleId: _oracleId, tokenAddress: _tokenAddress, price: _price, timestamp: _timestamp, customPayload: _customPayload };
+}
+
+export function storeTupleEVMOraclePriceUpdate(source: EVMOraclePriceUpdate) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.oracleId);
+    builder.writeAddress(source.tokenAddress);
+    builder.writeNumber(source.price);
+    builder.writeNumber(source.timestamp);
+    builder.writeCell(source.customPayload);
+    return builder.build();
+}
+
+export function dictValueParserEVMOraclePriceUpdate(): DictionaryValue<EVMOraclePriceUpdate> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeEVMOraclePriceUpdate(src)).endCell());
+        },
+        parse: (src) => {
+            return loadEVMOraclePriceUpdate(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type EVMChainValidation = {
+    $$type: 'EVMChainValidation';
+    chainId: bigint;
+    blockNumber: bigint;
+    gasPrice: bigint;
+    customPayload: Cell | null;
+}
+
+export function storeEVMChainValidation(src: EVMChainValidation) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(759058266, 32);
+        b_0.storeUint(src.chainId, 32);
+        b_0.storeUint(src.blockNumber, 64);
+        b_0.storeUint(src.gasPrice, 64);
+        if (src.customPayload !== null && src.customPayload !== undefined) { b_0.storeBit(true).storeRef(src.customPayload); } else { b_0.storeBit(false); }
+    };
+}
+
+export function loadEVMChainValidation(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 759058266) { throw Error('Invalid prefix'); }
+    const _chainId = sc_0.loadUintBig(32);
+    const _blockNumber = sc_0.loadUintBig(64);
+    const _gasPrice = sc_0.loadUintBig(64);
+    const _customPayload = sc_0.loadBit() ? sc_0.loadRef() : null;
+    return { $$type: 'EVMChainValidation' as const, chainId: _chainId, blockNumber: _blockNumber, gasPrice: _gasPrice, customPayload: _customPayload };
+}
+
+export function loadTupleEVMChainValidation(source: TupleReader) {
+    const _chainId = source.readBigNumber();
+    const _blockNumber = source.readBigNumber();
+    const _gasPrice = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMChainValidation' as const, chainId: _chainId, blockNumber: _blockNumber, gasPrice: _gasPrice, customPayload: _customPayload };
+}
+
+export function loadGetterTupleEVMChainValidation(source: TupleReader) {
+    const _chainId = source.readBigNumber();
+    const _blockNumber = source.readBigNumber();
+    const _gasPrice = source.readBigNumber();
+    const _customPayload = source.readCellOpt();
+    return { $$type: 'EVMChainValidation' as const, chainId: _chainId, blockNumber: _blockNumber, gasPrice: _gasPrice, customPayload: _customPayload };
+}
+
+export function storeTupleEVMChainValidation(source: EVMChainValidation) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.chainId);
+    builder.writeNumber(source.blockNumber);
+    builder.writeNumber(source.gasPrice);
+    builder.writeCell(source.customPayload);
+    return builder.build();
+}
+
+export function dictValueParserEVMChainValidation(): DictionaryValue<EVMChainValidation> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeEVMChainValidation(src)).endCell());
+        },
+        parse: (src) => {
+            return loadEVMChainValidation(src.loadRef().beginParse());
         }
     }
 }
@@ -2210,6 +2571,459 @@ export function dictValueParserJettonWalletData(): DictionaryValue<JettonWalletD
     }
 }
 
+export type EVMChainConfig = {
+    $$type: 'EVMChainConfig';
+    chainId: bigint;
+    rpcEndpoint: Cell;
+    blockTime: bigint;
+    gasLimit: bigint;
+    isActive: boolean;
+    bridgeAddress: Cell;
+    oracleAddress: Cell;
+}
+
+export function storeEVMChainConfig(src: EVMChainConfig) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(src.chainId, 32);
+        b_0.storeRef(src.rpcEndpoint);
+        b_0.storeUint(src.blockTime, 32);
+        b_0.storeUint(src.gasLimit, 32);
+        b_0.storeBit(src.isActive);
+        b_0.storeRef(src.bridgeAddress);
+        b_0.storeRef(src.oracleAddress);
+    };
+}
+
+export function loadEVMChainConfig(slice: Slice) {
+    const sc_0 = slice;
+    const _chainId = sc_0.loadUintBig(32);
+    const _rpcEndpoint = sc_0.loadRef();
+    const _blockTime = sc_0.loadUintBig(32);
+    const _gasLimit = sc_0.loadUintBig(32);
+    const _isActive = sc_0.loadBit();
+    const _bridgeAddress = sc_0.loadRef();
+    const _oracleAddress = sc_0.loadRef();
+    return { $$type: 'EVMChainConfig' as const, chainId: _chainId, rpcEndpoint: _rpcEndpoint, blockTime: _blockTime, gasLimit: _gasLimit, isActive: _isActive, bridgeAddress: _bridgeAddress, oracleAddress: _oracleAddress };
+}
+
+export function loadTupleEVMChainConfig(source: TupleReader) {
+    const _chainId = source.readBigNumber();
+    const _rpcEndpoint = source.readCell();
+    const _blockTime = source.readBigNumber();
+    const _gasLimit = source.readBigNumber();
+    const _isActive = source.readBoolean();
+    const _bridgeAddress = source.readCell();
+    const _oracleAddress = source.readCell();
+    return { $$type: 'EVMChainConfig' as const, chainId: _chainId, rpcEndpoint: _rpcEndpoint, blockTime: _blockTime, gasLimit: _gasLimit, isActive: _isActive, bridgeAddress: _bridgeAddress, oracleAddress: _oracleAddress };
+}
+
+export function loadGetterTupleEVMChainConfig(source: TupleReader) {
+    const _chainId = source.readBigNumber();
+    const _rpcEndpoint = source.readCell();
+    const _blockTime = source.readBigNumber();
+    const _gasLimit = source.readBigNumber();
+    const _isActive = source.readBoolean();
+    const _bridgeAddress = source.readCell();
+    const _oracleAddress = source.readCell();
+    return { $$type: 'EVMChainConfig' as const, chainId: _chainId, rpcEndpoint: _rpcEndpoint, blockTime: _blockTime, gasLimit: _gasLimit, isActive: _isActive, bridgeAddress: _bridgeAddress, oracleAddress: _oracleAddress };
+}
+
+export function storeTupleEVMChainConfig(source: EVMChainConfig) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.chainId);
+    builder.writeCell(source.rpcEndpoint);
+    builder.writeNumber(source.blockTime);
+    builder.writeNumber(source.gasLimit);
+    builder.writeBoolean(source.isActive);
+    builder.writeCell(source.bridgeAddress);
+    builder.writeCell(source.oracleAddress);
+    return builder.build();
+}
+
+export function dictValueParserEVMChainConfig(): DictionaryValue<EVMChainConfig> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeEVMChainConfig(src)).endCell());
+        },
+        parse: (src) => {
+            return loadEVMChainConfig(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type EVMTransaction = {
+    $$type: 'EVMTransaction';
+    chainId: bigint;
+    toContract: Cell;
+    functionSelector: bigint;
+    parameters: Cell;
+    gasLimit: bigint;
+    gasPrice: bigint;
+    value: bigint;
+    nonce: bigint;
+    status: bigint;
+    transactionHash: Cell;
+    blockNumber: bigint;
+    confirmations: bigint;
+}
+
+export function storeEVMTransaction(src: EVMTransaction) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(src.chainId, 32);
+        b_0.storeRef(src.toContract);
+        b_0.storeUint(src.functionSelector, 32);
+        b_0.storeRef(src.parameters);
+        b_0.storeUint(src.gasLimit, 32);
+        b_0.storeUint(src.gasPrice, 64);
+        b_0.storeUint(src.value, 64);
+        b_0.storeUint(src.nonce, 64);
+        b_0.storeUint(src.status, 8);
+        b_0.storeRef(src.transactionHash);
+        b_0.storeUint(src.blockNumber, 64);
+        b_0.storeUint(src.confirmations, 32);
+    };
+}
+
+export function loadEVMTransaction(slice: Slice) {
+    const sc_0 = slice;
+    const _chainId = sc_0.loadUintBig(32);
+    const _toContract = sc_0.loadRef();
+    const _functionSelector = sc_0.loadUintBig(32);
+    const _parameters = sc_0.loadRef();
+    const _gasLimit = sc_0.loadUintBig(32);
+    const _gasPrice = sc_0.loadUintBig(64);
+    const _value = sc_0.loadUintBig(64);
+    const _nonce = sc_0.loadUintBig(64);
+    const _status = sc_0.loadUintBig(8);
+    const _transactionHash = sc_0.loadRef();
+    const _blockNumber = sc_0.loadUintBig(64);
+    const _confirmations = sc_0.loadUintBig(32);
+    return { $$type: 'EVMTransaction' as const, chainId: _chainId, toContract: _toContract, functionSelector: _functionSelector, parameters: _parameters, gasLimit: _gasLimit, gasPrice: _gasPrice, value: _value, nonce: _nonce, status: _status, transactionHash: _transactionHash, blockNumber: _blockNumber, confirmations: _confirmations };
+}
+
+export function loadTupleEVMTransaction(source: TupleReader) {
+    const _chainId = source.readBigNumber();
+    const _toContract = source.readCell();
+    const _functionSelector = source.readBigNumber();
+    const _parameters = source.readCell();
+    const _gasLimit = source.readBigNumber();
+    const _gasPrice = source.readBigNumber();
+    const _value = source.readBigNumber();
+    const _nonce = source.readBigNumber();
+    const _status = source.readBigNumber();
+    const _transactionHash = source.readCell();
+    const _blockNumber = source.readBigNumber();
+    const _confirmations = source.readBigNumber();
+    return { $$type: 'EVMTransaction' as const, chainId: _chainId, toContract: _toContract, functionSelector: _functionSelector, parameters: _parameters, gasLimit: _gasLimit, gasPrice: _gasPrice, value: _value, nonce: _nonce, status: _status, transactionHash: _transactionHash, blockNumber: _blockNumber, confirmations: _confirmations };
+}
+
+export function loadGetterTupleEVMTransaction(source: TupleReader) {
+    const _chainId = source.readBigNumber();
+    const _toContract = source.readCell();
+    const _functionSelector = source.readBigNumber();
+    const _parameters = source.readCell();
+    const _gasLimit = source.readBigNumber();
+    const _gasPrice = source.readBigNumber();
+    const _value = source.readBigNumber();
+    const _nonce = source.readBigNumber();
+    const _status = source.readBigNumber();
+    const _transactionHash = source.readCell();
+    const _blockNumber = source.readBigNumber();
+    const _confirmations = source.readBigNumber();
+    return { $$type: 'EVMTransaction' as const, chainId: _chainId, toContract: _toContract, functionSelector: _functionSelector, parameters: _parameters, gasLimit: _gasLimit, gasPrice: _gasPrice, value: _value, nonce: _nonce, status: _status, transactionHash: _transactionHash, blockNumber: _blockNumber, confirmations: _confirmations };
+}
+
+export function storeTupleEVMTransaction(source: EVMTransaction) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.chainId);
+    builder.writeCell(source.toContract);
+    builder.writeNumber(source.functionSelector);
+    builder.writeCell(source.parameters);
+    builder.writeNumber(source.gasLimit);
+    builder.writeNumber(source.gasPrice);
+    builder.writeNumber(source.value);
+    builder.writeNumber(source.nonce);
+    builder.writeNumber(source.status);
+    builder.writeCell(source.transactionHash);
+    builder.writeNumber(source.blockNumber);
+    builder.writeNumber(source.confirmations);
+    return builder.build();
+}
+
+export function dictValueParserEVMTransaction(): DictionaryValue<EVMTransaction> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeEVMTransaction(src)).endCell());
+        },
+        parse: (src) => {
+            return loadEVMTransaction(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type EVMBridgeData = {
+    $$type: 'EVMBridgeData';
+    bridgeId: bigint;
+    sourceChainId: bigint;
+    targetChainId: bigint;
+    bridgeContract: Address;
+    bridgeFee: bigint;
+    minTransferAmount: bigint;
+    maxTransferAmount: bigint;
+    isActive: boolean;
+    lastUpdateTimestamp: bigint;
+}
+
+export function storeEVMBridgeData(src: EVMBridgeData) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(src.bridgeId, 32);
+        b_0.storeUint(src.sourceChainId, 32);
+        b_0.storeUint(src.targetChainId, 32);
+        b_0.storeAddress(src.bridgeContract);
+        b_0.storeUint(src.bridgeFee, 64);
+        b_0.storeUint(src.minTransferAmount, 64);
+        b_0.storeUint(src.maxTransferAmount, 64);
+        b_0.storeBit(src.isActive);
+        b_0.storeUint(src.lastUpdateTimestamp, 32);
+    };
+}
+
+export function loadEVMBridgeData(slice: Slice) {
+    const sc_0 = slice;
+    const _bridgeId = sc_0.loadUintBig(32);
+    const _sourceChainId = sc_0.loadUintBig(32);
+    const _targetChainId = sc_0.loadUintBig(32);
+    const _bridgeContract = sc_0.loadAddress();
+    const _bridgeFee = sc_0.loadUintBig(64);
+    const _minTransferAmount = sc_0.loadUintBig(64);
+    const _maxTransferAmount = sc_0.loadUintBig(64);
+    const _isActive = sc_0.loadBit();
+    const _lastUpdateTimestamp = sc_0.loadUintBig(32);
+    return { $$type: 'EVMBridgeData' as const, bridgeId: _bridgeId, sourceChainId: _sourceChainId, targetChainId: _targetChainId, bridgeContract: _bridgeContract, bridgeFee: _bridgeFee, minTransferAmount: _minTransferAmount, maxTransferAmount: _maxTransferAmount, isActive: _isActive, lastUpdateTimestamp: _lastUpdateTimestamp };
+}
+
+export function loadTupleEVMBridgeData(source: TupleReader) {
+    const _bridgeId = source.readBigNumber();
+    const _sourceChainId = source.readBigNumber();
+    const _targetChainId = source.readBigNumber();
+    const _bridgeContract = source.readAddress();
+    const _bridgeFee = source.readBigNumber();
+    const _minTransferAmount = source.readBigNumber();
+    const _maxTransferAmount = source.readBigNumber();
+    const _isActive = source.readBoolean();
+    const _lastUpdateTimestamp = source.readBigNumber();
+    return { $$type: 'EVMBridgeData' as const, bridgeId: _bridgeId, sourceChainId: _sourceChainId, targetChainId: _targetChainId, bridgeContract: _bridgeContract, bridgeFee: _bridgeFee, minTransferAmount: _minTransferAmount, maxTransferAmount: _maxTransferAmount, isActive: _isActive, lastUpdateTimestamp: _lastUpdateTimestamp };
+}
+
+export function loadGetterTupleEVMBridgeData(source: TupleReader) {
+    const _bridgeId = source.readBigNumber();
+    const _sourceChainId = source.readBigNumber();
+    const _targetChainId = source.readBigNumber();
+    const _bridgeContract = source.readAddress();
+    const _bridgeFee = source.readBigNumber();
+    const _minTransferAmount = source.readBigNumber();
+    const _maxTransferAmount = source.readBigNumber();
+    const _isActive = source.readBoolean();
+    const _lastUpdateTimestamp = source.readBigNumber();
+    return { $$type: 'EVMBridgeData' as const, bridgeId: _bridgeId, sourceChainId: _sourceChainId, targetChainId: _targetChainId, bridgeContract: _bridgeContract, bridgeFee: _bridgeFee, minTransferAmount: _minTransferAmount, maxTransferAmount: _maxTransferAmount, isActive: _isActive, lastUpdateTimestamp: _lastUpdateTimestamp };
+}
+
+export function storeTupleEVMBridgeData(source: EVMBridgeData) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.bridgeId);
+    builder.writeNumber(source.sourceChainId);
+    builder.writeNumber(source.targetChainId);
+    builder.writeAddress(source.bridgeContract);
+    builder.writeNumber(source.bridgeFee);
+    builder.writeNumber(source.minTransferAmount);
+    builder.writeNumber(source.maxTransferAmount);
+    builder.writeBoolean(source.isActive);
+    builder.writeNumber(source.lastUpdateTimestamp);
+    return builder.build();
+}
+
+export function dictValueParserEVMBridgeData(): DictionaryValue<EVMBridgeData> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeEVMBridgeData(src)).endCell());
+        },
+        parse: (src) => {
+            return loadEVMBridgeData(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type EVMOracleData = {
+    $$type: 'EVMOracleData';
+    oracleId: bigint;
+    chainId: bigint;
+    oracleContract: Address;
+    tokenAddress: Address;
+    priceDecimals: bigint;
+    heartbeatInterval: bigint;
+    isActive: boolean;
+    lastPriceUpdate: bigint;
+}
+
+export function storeEVMOracleData(src: EVMOracleData) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(src.oracleId, 32);
+        b_0.storeUint(src.chainId, 32);
+        b_0.storeAddress(src.oracleContract);
+        b_0.storeAddress(src.tokenAddress);
+        b_0.storeUint(src.priceDecimals, 8);
+        b_0.storeUint(src.heartbeatInterval, 32);
+        b_0.storeBit(src.isActive);
+        b_0.storeUint(src.lastPriceUpdate, 32);
+    };
+}
+
+export function loadEVMOracleData(slice: Slice) {
+    const sc_0 = slice;
+    const _oracleId = sc_0.loadUintBig(32);
+    const _chainId = sc_0.loadUintBig(32);
+    const _oracleContract = sc_0.loadAddress();
+    const _tokenAddress = sc_0.loadAddress();
+    const _priceDecimals = sc_0.loadUintBig(8);
+    const _heartbeatInterval = sc_0.loadUintBig(32);
+    const _isActive = sc_0.loadBit();
+    const _lastPriceUpdate = sc_0.loadUintBig(32);
+    return { $$type: 'EVMOracleData' as const, oracleId: _oracleId, chainId: _chainId, oracleContract: _oracleContract, tokenAddress: _tokenAddress, priceDecimals: _priceDecimals, heartbeatInterval: _heartbeatInterval, isActive: _isActive, lastPriceUpdate: _lastPriceUpdate };
+}
+
+export function loadTupleEVMOracleData(source: TupleReader) {
+    const _oracleId = source.readBigNumber();
+    const _chainId = source.readBigNumber();
+    const _oracleContract = source.readAddress();
+    const _tokenAddress = source.readAddress();
+    const _priceDecimals = source.readBigNumber();
+    const _heartbeatInterval = source.readBigNumber();
+    const _isActive = source.readBoolean();
+    const _lastPriceUpdate = source.readBigNumber();
+    return { $$type: 'EVMOracleData' as const, oracleId: _oracleId, chainId: _chainId, oracleContract: _oracleContract, tokenAddress: _tokenAddress, priceDecimals: _priceDecimals, heartbeatInterval: _heartbeatInterval, isActive: _isActive, lastPriceUpdate: _lastPriceUpdate };
+}
+
+export function loadGetterTupleEVMOracleData(source: TupleReader) {
+    const _oracleId = source.readBigNumber();
+    const _chainId = source.readBigNumber();
+    const _oracleContract = source.readAddress();
+    const _tokenAddress = source.readAddress();
+    const _priceDecimals = source.readBigNumber();
+    const _heartbeatInterval = source.readBigNumber();
+    const _isActive = source.readBoolean();
+    const _lastPriceUpdate = source.readBigNumber();
+    return { $$type: 'EVMOracleData' as const, oracleId: _oracleId, chainId: _chainId, oracleContract: _oracleContract, tokenAddress: _tokenAddress, priceDecimals: _priceDecimals, heartbeatInterval: _heartbeatInterval, isActive: _isActive, lastPriceUpdate: _lastPriceUpdate };
+}
+
+export function storeTupleEVMOracleData(source: EVMOracleData) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.oracleId);
+    builder.writeNumber(source.chainId);
+    builder.writeAddress(source.oracleContract);
+    builder.writeAddress(source.tokenAddress);
+    builder.writeNumber(source.priceDecimals);
+    builder.writeNumber(source.heartbeatInterval);
+    builder.writeBoolean(source.isActive);
+    builder.writeNumber(source.lastPriceUpdate);
+    return builder.build();
+}
+
+export function dictValueParserEVMOracleData(): DictionaryValue<EVMOracleData> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeEVMOracleData(src)).endCell());
+        },
+        parse: (src) => {
+            return loadEVMOracleData(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type CrossChainMessage = {
+    $$type: 'CrossChainMessage';
+    sourceChain: bigint;
+    targetChain: bigint;
+    orderHash: bigint;
+    amount: bigint;
+    secret: bigint;
+    timestamp: bigint;
+    nonce: bigint;
+}
+
+export function storeCrossChainMessage(src: CrossChainMessage) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(src.sourceChain, 32);
+        b_0.storeUint(src.targetChain, 32);
+        b_0.storeUint(src.orderHash, 256);
+        b_0.storeUint(src.amount, 64);
+        b_0.storeUint(src.secret, 256);
+        b_0.storeUint(src.timestamp, 32);
+        b_0.storeUint(src.nonce, 64);
+    };
+}
+
+export function loadCrossChainMessage(slice: Slice) {
+    const sc_0 = slice;
+    const _sourceChain = sc_0.loadUintBig(32);
+    const _targetChain = sc_0.loadUintBig(32);
+    const _orderHash = sc_0.loadUintBig(256);
+    const _amount = sc_0.loadUintBig(64);
+    const _secret = sc_0.loadUintBig(256);
+    const _timestamp = sc_0.loadUintBig(32);
+    const _nonce = sc_0.loadUintBig(64);
+    return { $$type: 'CrossChainMessage' as const, sourceChain: _sourceChain, targetChain: _targetChain, orderHash: _orderHash, amount: _amount, secret: _secret, timestamp: _timestamp, nonce: _nonce };
+}
+
+export function loadTupleCrossChainMessage(source: TupleReader) {
+    const _sourceChain = source.readBigNumber();
+    const _targetChain = source.readBigNumber();
+    const _orderHash = source.readBigNumber();
+    const _amount = source.readBigNumber();
+    const _secret = source.readBigNumber();
+    const _timestamp = source.readBigNumber();
+    const _nonce = source.readBigNumber();
+    return { $$type: 'CrossChainMessage' as const, sourceChain: _sourceChain, targetChain: _targetChain, orderHash: _orderHash, amount: _amount, secret: _secret, timestamp: _timestamp, nonce: _nonce };
+}
+
+export function loadGetterTupleCrossChainMessage(source: TupleReader) {
+    const _sourceChain = source.readBigNumber();
+    const _targetChain = source.readBigNumber();
+    const _orderHash = source.readBigNumber();
+    const _amount = source.readBigNumber();
+    const _secret = source.readBigNumber();
+    const _timestamp = source.readBigNumber();
+    const _nonce = source.readBigNumber();
+    return { $$type: 'CrossChainMessage' as const, sourceChain: _sourceChain, targetChain: _targetChain, orderHash: _orderHash, amount: _amount, secret: _secret, timestamp: _timestamp, nonce: _nonce };
+}
+
+export function storeTupleCrossChainMessage(source: CrossChainMessage) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.sourceChain);
+    builder.writeNumber(source.targetChain);
+    builder.writeNumber(source.orderHash);
+    builder.writeNumber(source.amount);
+    builder.writeNumber(source.secret);
+    builder.writeNumber(source.timestamp);
+    builder.writeNumber(source.nonce);
+    return builder.build();
+}
+
+export function dictValueParserCrossChainMessage(): DictionaryValue<CrossChainMessage> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeCrossChainMessage(src)).endCell());
+        },
+        parse: (src) => {
+            return loadCrossChainMessage(src.loadRef().beginParse());
+        }
+    }
+}
+
 export type SendViaJettonTransfer = {
     $$type: 'SendViaJettonTransfer';
     queryId: bigint;
@@ -2306,6 +3120,12 @@ export type TonFusion$Data = {
     totalOrders: bigint;
     totalVolume: bigint;
     totalResolves: bigint;
+    evmChainConfigs: Dictionary<number, EVMChainConfig>;
+    evmTransactions: Dictionary<bigint, EVMTransaction>;
+    evmBridges: Dictionary<number, EVMBridgeData>;
+    evmOracles: Dictionary<number, EVMOracleData>;
+    evmTransactionNonce: bigint;
+    evmBridgeFees: bigint;
 }
 
 export function storeTonFusion$Data(src: TonFusion$Data) {
@@ -2324,6 +3144,14 @@ export function storeTonFusion$Data(src: TonFusion$Data) {
         b_2.storeUint(src.totalOrders, 32);
         b_2.storeUint(src.totalVolume, 64);
         b_2.storeUint(src.totalResolves, 32);
+        b_2.storeDict(src.evmChainConfigs, Dictionary.Keys.Uint(32), dictValueParserEVMChainConfig());
+        const b_3 = new Builder();
+        b_3.storeDict(src.evmTransactions, Dictionary.Keys.BigUint(64), dictValueParserEVMTransaction());
+        b_3.storeDict(src.evmBridges, Dictionary.Keys.Uint(32), dictValueParserEVMBridgeData());
+        b_3.storeDict(src.evmOracles, Dictionary.Keys.Uint(32), dictValueParserEVMOracleData());
+        b_3.storeUint(src.evmTransactionNonce, 64);
+        b_3.storeUint(src.evmBridgeFees, 64);
+        b_2.storeRef(b_3.endCell());
         b_1.storeRef(b_2.endCell());
         b_0.storeRef(b_1.endCell());
     };
@@ -2344,7 +3172,14 @@ export function loadTonFusion$Data(slice: Slice) {
     const _totalOrders = sc_2.loadUintBig(32);
     const _totalVolume = sc_2.loadUintBig(64);
     const _totalResolves = sc_2.loadUintBig(32);
-    return { $$type: 'TonFusion$Data' as const, owner: _owner, escrowLock: _escrowLock, escrowOrder: _escrowOrder, jettons: _jettons, jettonAccount: _jettonAccount, whiteLists: _whiteLists, relayers: _relayers, escrowContracts: _escrowContracts, totalOrders: _totalOrders, totalVolume: _totalVolume, totalResolves: _totalResolves };
+    const _evmChainConfigs = Dictionary.load(Dictionary.Keys.Uint(32), dictValueParserEVMChainConfig(), sc_2);
+    const sc_3 = sc_2.loadRef().beginParse();
+    const _evmTransactions = Dictionary.load(Dictionary.Keys.BigUint(64), dictValueParserEVMTransaction(), sc_3);
+    const _evmBridges = Dictionary.load(Dictionary.Keys.Uint(32), dictValueParserEVMBridgeData(), sc_3);
+    const _evmOracles = Dictionary.load(Dictionary.Keys.Uint(32), dictValueParserEVMOracleData(), sc_3);
+    const _evmTransactionNonce = sc_3.loadUintBig(64);
+    const _evmBridgeFees = sc_3.loadUintBig(64);
+    return { $$type: 'TonFusion$Data' as const, owner: _owner, escrowLock: _escrowLock, escrowOrder: _escrowOrder, jettons: _jettons, jettonAccount: _jettonAccount, whiteLists: _whiteLists, relayers: _relayers, escrowContracts: _escrowContracts, totalOrders: _totalOrders, totalVolume: _totalVolume, totalResolves: _totalResolves, evmChainConfigs: _evmChainConfigs, evmTransactions: _evmTransactions, evmBridges: _evmBridges, evmOracles: _evmOracles, evmTransactionNonce: _evmTransactionNonce, evmBridgeFees: _evmBridgeFees };
 }
 
 export function loadTupleTonFusion$Data(source: TupleReader) {
@@ -2359,7 +3194,14 @@ export function loadTupleTonFusion$Data(source: TupleReader) {
     const _totalOrders = source.readBigNumber();
     const _totalVolume = source.readBigNumber();
     const _totalResolves = source.readBigNumber();
-    return { $$type: 'TonFusion$Data' as const, owner: _owner, escrowLock: _escrowLock, escrowOrder: _escrowOrder, jettons: _jettons, jettonAccount: _jettonAccount, whiteLists: _whiteLists, relayers: _relayers, escrowContracts: _escrowContracts, totalOrders: _totalOrders, totalVolume: _totalVolume, totalResolves: _totalResolves };
+    const _evmChainConfigs = Dictionary.loadDirect(Dictionary.Keys.Uint(32), dictValueParserEVMChainConfig(), source.readCellOpt());
+    const _evmTransactions = Dictionary.loadDirect(Dictionary.Keys.BigUint(64), dictValueParserEVMTransaction(), source.readCellOpt());
+    const _evmBridges = Dictionary.loadDirect(Dictionary.Keys.Uint(32), dictValueParserEVMBridgeData(), source.readCellOpt());
+    source = source.readTuple();
+    const _evmOracles = Dictionary.loadDirect(Dictionary.Keys.Uint(32), dictValueParserEVMOracleData(), source.readCellOpt());
+    const _evmTransactionNonce = source.readBigNumber();
+    const _evmBridgeFees = source.readBigNumber();
+    return { $$type: 'TonFusion$Data' as const, owner: _owner, escrowLock: _escrowLock, escrowOrder: _escrowOrder, jettons: _jettons, jettonAccount: _jettonAccount, whiteLists: _whiteLists, relayers: _relayers, escrowContracts: _escrowContracts, totalOrders: _totalOrders, totalVolume: _totalVolume, totalResolves: _totalResolves, evmChainConfigs: _evmChainConfigs, evmTransactions: _evmTransactions, evmBridges: _evmBridges, evmOracles: _evmOracles, evmTransactionNonce: _evmTransactionNonce, evmBridgeFees: _evmBridgeFees };
 }
 
 export function loadGetterTupleTonFusion$Data(source: TupleReader) {
@@ -2374,7 +3216,13 @@ export function loadGetterTupleTonFusion$Data(source: TupleReader) {
     const _totalOrders = source.readBigNumber();
     const _totalVolume = source.readBigNumber();
     const _totalResolves = source.readBigNumber();
-    return { $$type: 'TonFusion$Data' as const, owner: _owner, escrowLock: _escrowLock, escrowOrder: _escrowOrder, jettons: _jettons, jettonAccount: _jettonAccount, whiteLists: _whiteLists, relayers: _relayers, escrowContracts: _escrowContracts, totalOrders: _totalOrders, totalVolume: _totalVolume, totalResolves: _totalResolves };
+    const _evmChainConfigs = Dictionary.loadDirect(Dictionary.Keys.Uint(32), dictValueParserEVMChainConfig(), source.readCellOpt());
+    const _evmTransactions = Dictionary.loadDirect(Dictionary.Keys.BigUint(64), dictValueParserEVMTransaction(), source.readCellOpt());
+    const _evmBridges = Dictionary.loadDirect(Dictionary.Keys.Uint(32), dictValueParserEVMBridgeData(), source.readCellOpt());
+    const _evmOracles = Dictionary.loadDirect(Dictionary.Keys.Uint(32), dictValueParserEVMOracleData(), source.readCellOpt());
+    const _evmTransactionNonce = source.readBigNumber();
+    const _evmBridgeFees = source.readBigNumber();
+    return { $$type: 'TonFusion$Data' as const, owner: _owner, escrowLock: _escrowLock, escrowOrder: _escrowOrder, jettons: _jettons, jettonAccount: _jettonAccount, whiteLists: _whiteLists, relayers: _relayers, escrowContracts: _escrowContracts, totalOrders: _totalOrders, totalVolume: _totalVolume, totalResolves: _totalResolves, evmChainConfigs: _evmChainConfigs, evmTransactions: _evmTransactions, evmBridges: _evmBridges, evmOracles: _evmOracles, evmTransactionNonce: _evmTransactionNonce, evmBridgeFees: _evmBridgeFees };
 }
 
 export function storeTupleTonFusion$Data(source: TonFusion$Data) {
@@ -2390,6 +3238,12 @@ export function storeTupleTonFusion$Data(source: TonFusion$Data) {
     builder.writeNumber(source.totalOrders);
     builder.writeNumber(source.totalVolume);
     builder.writeNumber(source.totalResolves);
+    builder.writeCell(source.evmChainConfigs.size > 0 ? beginCell().storeDictDirect(source.evmChainConfigs, Dictionary.Keys.Uint(32), dictValueParserEVMChainConfig()).endCell() : null);
+    builder.writeCell(source.evmTransactions.size > 0 ? beginCell().storeDictDirect(source.evmTransactions, Dictionary.Keys.BigUint(64), dictValueParserEVMTransaction()).endCell() : null);
+    builder.writeCell(source.evmBridges.size > 0 ? beginCell().storeDictDirect(source.evmBridges, Dictionary.Keys.Uint(32), dictValueParserEVMBridgeData()).endCell() : null);
+    builder.writeCell(source.evmOracles.size > 0 ? beginCell().storeDictDirect(source.evmOracles, Dictionary.Keys.Uint(32), dictValueParserEVMOracleData()).endCell() : null);
+    builder.writeNumber(source.evmTransactionNonce);
+    builder.writeNumber(source.evmBridgeFees);
     return builder.build();
 }
 
@@ -2415,7 +3269,7 @@ function initTonFusion_init_args(src: TonFusion_init_args) {
 }
 
 async function TonFusion_init() {
-    const __code = Cell.fromHex('b5ee9c72410233010011f3000110ff0020e303f2c80b0103f83001d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e23fa40f404d401d0f404f404f404d430d0f404f404f404d31fd33fd31f30109b109a6c1b9f306d6d6d6d6d6d6d705300f8425590e20c925f0ce0702bd74920c21f95310bd31f0cde218210a985fdf8bae3022182107362d09ebae3022102030400d05b0afa40d20030f84252b0c705b3f2d056102581010b5971216e955b59f4593098c801cf004133f441e2108a107910681057104644554313c87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed5400f05b0afa4030f84252a0c705b3f2d0567f7053025520431381010b5024c855305034ceca00cb1fcb0fc9103512206e953059f45930944133f413e2108a107910681057104610355034c87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed5404c882107362d09cba8f485b0ad33f31fa0031fa40d31fd430218210f512f7dfbae30fc87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed54e021821050635fd2bae302218210e49e1dcbba0508131603ae3120d0d31f018210f512f7dfbaf2e081db3c0bd4f4044ddd0dd1550b1a5f0a324300db3cf842c7058e92109b108a107910681057104610354430db3c8e1830f842c8cf8508ce70cf0b6ec98042fb00f2c056108a5517e2250f0603e6d0d31f018210f512f7dfbaf2e081db3c0bd4f4044ddd0dd1550b303181010bf842561259714133f40a6fa19401d70030925b6de27f216e925b7091bae2f2d057f82326bef2d04b561483072859f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be26eb3f2d05a11127081010b52b2111525250701c4206e953059f45930944133f413e281010bf8420211130252b0206e953059f4593096c8ce4133f441e2107a10691058104a8307c82b516d106c5045103c020111160155a0db3cc9103d12206e953059f45b30944133f417e203a4502aa010291067010d03c02182107362d09cba8f54322082108b341822ba8e9330109b108a107910681057104610354430db3c8eb3821062239978ba8e92109b108a107910681057104610354430db3c8e1530f842c8cf8508ce70cf0b6ec98042fb00108a5517e2e2e30d090b0e03f6d0d31f0182108b341822baf2e081db3c0bd401d0fa40f40430102d0dd1550b5f0381010bf842561159714133f40a6fa19401d70030925b6de27f216e925b7091bae2f2d057f82325bef2d04b561383072759f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be26eb3f2d05a1069105810471039718307c82b25250a014c516d106c5045103c0255a0db3cc9103d12206e953059f45b30944133f417e203a4502aa049000d03f6d0d31f01821062239978baf2e081db3c0bd31ff4044ddd0dd1550b5f0381010bf842561159714133f40a6fa19401d70030925b6de27f216e925b7091bae2f2d057f82325bef2d04b561383072759f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be26eb3f2d05a1069105810471039708307c82b516d106c25250c01445045103c0255a0db3cc9103d12206e953059f45b30944133f417e203a4502aa049000d004050abcb1f18ce16ce14ce02c8cbffcb1f12cb3f12ca0012f40012cb3f12cb07cd02fe3120d0d31f0182107362d09cbaf2e081d401d0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755900ad4f4043010ab109a10891078106710561045103410230cd1550a195f09324300db3cf842c7058e92109b108a107910681057104610354430db3c8e1830f842c8cf8508ce70cf0b6ec98042fb00f2c056108a5517e20f10007a70541323c855305043fa02ce12ceccc9705920f90022f9005ad76501d76582020134c8cb17cb0fcb0fcbffcbff71f90400c87401cb0212ca07cbffc9d001e8d0d31f0182107362d09cbaf2e081d401d0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755900ad4f4043010ab109a10891078106710561045103410230cd1550a303181010bf842561159714133f40a6fa19401d70030925b6de27f216e925b7091bae2f2d057f82326bef2d04b56128307281101f659f40f6fa192306ddf206e92306d8e1bd0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755906c1a6f0ae26eb3f2d05a11117281010b52a21114206e953059f45930944133f413e281010bf8420211120252a0206e953059f4593096c8ce4133f441e21069105810478307c82b516a106c5045103c02011115011200685590509acb1f17ce15ce13cbffcb1fcb3fca00f400cb3fcb07c91c13206e953059f45b30944133f417e203a45029a01028106701019a5b0ad3ffd3fff4043010bd10ac109b108a10791068105710461035db3cc87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed541403a63083072c0259f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be2206ef2d058206ef2d0806f2b2bdb3cf82327bcf2d04b04f2d05b5136bdf2d059109a108910781067105610457f24505610341023db3c251526000cc8cbffc9f90004d48ecb5b0ad3fff4043010ac109b108a107910681057104610351024db3cc87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed54e02182107362d09dbae3022182104ef5cb26bae3022182108b341823ba171a1e2302703083072b0259f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be2206ef2d058206ef2d0806f2bf82326b9f2d05003f2d05b7f03db3c251801dc561181010b2b59f40a6fa192306ddff8416f2443305230fa40fa0071d721fa00fa00306c6170f83a7101aa00a0802881753070f838a081753070f836aa008209312d00a0a0a170b60801206ef2d080708040531109111009108f2e518b108f107e106d05041112040311110341ff1900ee33c81bcb1f5009cf165007cf165005cf1613cbffcb1fcb3fca0012cb3f12cb07cbffc9c8ccc9d010465413050346666d103459c8556082100f8a7ea55008cb1f16cb3f5004fa0212ce01206e9430cf84809201cee2f40001fa02cec91340037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0001965b0ad3fff4043010ac109b108a107910681057104610351024db3cc87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed541b01983083072a0259f40f6fa192306ddf206e92306d8e1bd0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755906c1a6f0ae2206ef2d058206ef2d0806f2af82326b9f2d05003f2d05b7f03db3c1c01d2561081010b2a59f40a6fa192306ddff8416f2443305230fa40fa0071d721fa00fa00306c6170f83a7101aa00a0802881753070f838a081753070f836aa008209312d00a0a0a170b60801206ef2d0807080405311108f2d108f517b107e106d05104b031111031110021d00e633c81acb1f5008cf165006cf1614cbff12cb1fcb3fca0012cb3f12cb07cbffc9c8ccc9d025105803461450886d103459c8556082100f8a7ea55008cb1f16cb3f5004fa0212ce01206e9430cf84809201cee2f40001fa02cec940037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0001a25b0ad3ffd3ffd33ffa40f4043010df10ce10bd10ac109b108a107910681057db3cc87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed541f03bc302d83072559f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be2206eb3e302308307544d1559f40f6fa192306ddf206e92306d8e1bd0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755906c1a6f0ae2206eb3e3025f04f2c05825202101c83403206ef2d0806f2b306c443434f2d05b21a1315220bc6c12f2d0672083072380404133f40e6fa19401d70130925b6de26c216eb3f2d0682581010b2259f40b6fa192306ddf206e92306d9fd0fa40d200d31fd30f55306c146f04e2206eb3915be30da42201c6206ef2d0806f2a306c443401f2d05b5112a1325222bc6c12f2d0672083072380404133f40e6fa19401d70130925b6de26c216eb3f2d0682581010b2259f40b6fa192306ddf206e92306d9fd0fa40d200d31fd30f55306c146f04e2206eb3915be30da42200a820206ef2d0806f245f0321206ef2d0806f2410235f0322206ef2d0806f24135f03a403206ef2d0806f246c314130431381010b5024c855305034ceca00cb1fcb0fc9103712206e953059f45930944133f413e20404d88ecd5b0ad3ffd3fff4043010bd10ac109b108a10791068105710461035db3cc87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed54e0218210595f07bcbae3022182107362d09fbae302218210946a98b6ba242c2e3104ec302b83072359f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be2206eb38f446c12206ef2d0806f2b2283072d80404133f40e6fa19401d70130925b6de2206ef2d05f21c000917f9321c002e28e89206ef2d080550bdb3c8e89206ef2d080550bdb3ce2e0308307544b1359f40f6fa192306ddf252628290044d31ffa40fa40fa40d401d0d3ffd31fd33fd200f404d33fd30730107b107a1079107801e6561381010b2d59f40a6fa192306ddff8416f2443305230fa40fa0071d721fa00fa00306c6170f83a7101aa00a0802881753070f838a081753070f836aa008209312d00a0a0a170b60801206ef2d080708040210a11110a09111009108f2e08107e106d105c041112040311110302111002500d2700e433c81bcb1f5009cf165007cf165005cf1613cbffcb1fcb3fca0012cb3f12cb07cbffc9c8ccc9d0241035596d103459c8556082100f8a7ea55008cb1f16cb3f5004fa0212ce01206e9430cf84809201cee2f40001fa02cec940037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0000045f0d01ae206e92306d8e1bd0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755906c1a6f0ae2206eb38eaa206ef2d0806f2a2283072c80404133f40e6fa19401d70130925b6de2206ef2d05f206ef2d080550adb3ce05bf2c0582a01da561281010b2c59f40a6fa192306ddff8416f2443305230fa40fa0071d721fa00fa00306c6170f83a7101aa00a0802881753070f838a081753070f836aa008209312d00a0a0a170b60801206ef2d0807080402109111009108f2e08107e106d105c104b0311110302111002500d2b00e433c81acb1f5008cf165006cf1614cbff12cb1fcb3fca0012cb3f12cb07cbffc9c8ccc9d025104546336d103459c8556082100f8a7ea55008cb1f16cb3f5004fa0212ce01206e9430cf84809201cee2f40001fa02cec9433040037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb00019a5b0ad31ffa40f4043010bd10ac109b108a10791068105710461035db3cc87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed542d006830f84252d0c705b3f2d05652107f70431380205024c855305034cb1fceca00cb1fc9103612206e953059f45b30944133f417e203019a5b0afa40d200f4043010bd10ac109b108a10791068105710461035db3cc87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed542f01ee302681010b2359f40b6fa192306ddf206e92306d9fd0fa40d200d31fd30f55306c146f04e2206ef2d06020206ef2d0806f24135f03a4029f20206ef2d0806f246c31a48064b6089e20206ef2d0806f246c31a570b609e221206ef2d0806f245f0302206ef2d0806f2410235f034033431381010b5024c830003c55305034ceca00cb1fcb0fc9103712206e953059f45930944133f413e20401fe8e765b0ad33f30c8018210aff90f5758cb1fcb3fc9109b108a107910681057104610354430f84270705003804201503304c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00c87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed54e03cc0000bc12132009c1bb08e44f842c8cf8508ce70cf0b6ec98042fb00108a5517c87f01ca0055a050abce18f40006c8f40015f40013f40001c8f40012f40012f40013cb1f13cb3f13cb1f12cdcdc9ed54e05f0bf2c08259ba89ee');
+    const __code = Cell.fromHex('b5ee9c7241025a01001dcf000110ff0020e303f2c80b0102f63001d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e3cfa40f404d401d0f404f404f404d430d0f404f404f404d31fd33fd31fd430d0f404f404f404f404d33fd33f300f11110f0f11100f57110f11100f550e8e17306d6d6d6d6d6d6d7053006d6d6d6d5344f842111055e0e21112e30270020300085f0f5f0304fe5611d74920c21f97311111d31f1112de218210a985fdf8ba8ec85b1110fa40d20030f842561101c705b3f2d056102b81010b5971216e955b59f4593098c801cf004133f441e20e11100e10df10ce10bd10ac0b108a10791068105710461035440302e02182107362d09ebae3022182107362d09cbae3022182109a8b7c6dba5804051401ae5b1110fa4030f842561001c705b3f2d0567f7053025520431381010b5024c855305034ceca00cb1fcb0fc9103b12206e953059f45930944133f413e20e11100e10df10ce10bd10ac109b0a1079106810571046103544305802c45b1110d33f31fa0031fa40d31fd430218210f512f7dfbae30fc87f01ca001111111055e0011110011111ce1ef4000cc8f4001bf40019f40007c8f40016f40014f40012cb1fcb3fcb1f01c8f40013f40013f40014f40014cb3f14cb3fcdcdcdc9ed54060903d23120d0d31f018210f512f7dfbaf2e081db3c0bd4f4044ddd0dd1550b1a5f0a324300db3cf842c7058ea20f11110f0e11100e10df10ce10bd10ac109b108a107910681057104610354430db3c8e1a30f842c8cf8508ce70cf0b6ec98042fb00f2c0560e11100e551de2370a0703e6d0d31f018210f512f7dfbaf2e081db3c0bd4f4044ddd0dd1550b303181010bf842561859714133f40a6fa19401d70030925b6de27f216e925b7091bae2f2d057f82326bef2d04b561a83072859f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be26eb3f2d05a11187081010b52b2111b37370801ca206e953059f45930944133f413e281010bf8420211190252b0206e953059f4593096c8ce4133f441e2107a10691058104a8307c82b516d106c5045103c0201111c0155a0db3cc90311130312206e953059f45b30944133f417e209a4111018a0108f10cd074e03f42182107362d09cba8f6e3120d0d31f0182107362d09cbaf2e081d401d0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755900ad4f4043010ab109a10891078106710561045103410230cd1550a195f09324300db3cf842c7058e1a30f842c8cf8508ce70cf0b6ec98042fb00f2c0560e11100e551de30de30e0a0b0f007a70541323c855305043fa02ce12ceccc9705920f90022f9005ad76501d76582020134c8cb17cb0fcb0fcbffcbff71f90400c87401cb0212ca07cbffc9d001440f11110f0e11100e10df10ce10bd10ac109b108a107910681057104610354430db3c0c01e8d0d31f0182107362d09cbaf2e081d401d0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755900ad4f4043010ab109a10891078106710561045103410230cd1550a303181010bf842561759714133f40a6fa19401d70030925b6de27f216e925b7091bae2f2d057f82326bef2d04b56188307280d01f659f40f6fa192306ddf206e92306d8e1bd0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755906c1a6f0ae26eb3f2d05a11177281010b52a2111a206e953059f45930944133f413e281010bf8420211180252a0206e953059f4593096c8ce4133f441e21069105810478307c82b516a106c5045103c0201111b010e00745590509acb1f17ce15ce13cbffcb1fcb3fca00f400cb3fcb07c90311120301111201206e953059f45b30944133f417e209a4508fa0108e10cd0702ec322082108b341822ba8ea3300f11110f0e11100e10df10ce10bd10ac109b108a107910681057104610354430db3c8ec5821062239978ba8ea20f11110f0e11100e10df10ce10bd10ac109b108a107910681057104610354430db3c8e1730f842c8cf8508ce70cf0b6ec98042fb000e11100e551de2e2101203f6d0d31f0182108b341822baf2e081db3c0bd401d0fa40f40430102d0dd1550b5f0381010bf842561759714133f40a6fa19401d70030925b6de27f216e925b7091bae2f2d057f82325bef2d04b561983072759f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be26eb3f2d05a1069105810471039718307c82b3737110154516d106c5045103c0255a0db3cc90311130312206e953059f45b30944133f417e209a4111018a0108f074e03f6d0d31f01821062239978baf2e081db3c0bd31ff4044ddd0dd1550b5f0381010bf842561759714133f40a6fa19401d70030925b6de27f216e925b7091bae2f2d057f82325bef2d04b561983072759f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be26eb3f2d05a1069105810471039708307c82b516d106c373713014c5045103c0255a0db3cc90311130312206e953059f45b30944133f417e209a4111018a0108f074e04ba8fd25b1110d31fd4d31fd4d31fd33ff4043026db3cf2e0581115111711151114111611141113111511131112111411121111111311111110111211100f11110f0e11100e10df10ce10bd10ac109b108a1079db3ce02182105e4f3d2cba4b15581903a82282080493e0bcf2d05d26db3c70c8c9547119515b515b515b515b515b04561344341114a4109b5e37106a105b104a103b80402b04103d0211161dc855b0db3cc9103e206e953059f45b30944133f417e20bdb3c43441602c01110111711100f11160f0e11150e0d11140d0c11130c0b11120b0a11110a09111709081116080711150706111406051113050411120403111103021117020111160111155614db3c206ef2d059802001206ef2d080255959f40f6fa192306ddf1c1701fe206e92306d8e19d0d31fd31fd31ffa40d33fd33fd33fd200d31f55806c196f09e2206ef2d059206ef2d0806f2910585f08041115040311140302111302011112011118821005f5e100111880401118c8556082109a8b7c6d5008cb1f16cb1f14cc12cb1fcccb1fcb3ff400c903111403021113020111120140037fc8cf858018003eca00cf8440ce01fa02806acf40f400c901fb0009111009108f107e5566553204c28fd65b1110d31fd4d4d31fd33ff4043025db3cf2e05822820807a120bcf2d05d1114111611141113111511131112111411121111111311111110111211100f11110f0e11100e10df10ce10bd10ac109b108a10791068db3ce02182101f2e3d4cba4b1a581f03ac22820807a120bcf2d05dc8c97027db3c21c8c954711a0706515b515b44152b04561250441113a4109b5e37106a105b104a103b80402b04103d0211151dc855b0db3cc9103d206e953059f45b30944133f417e20adb3c43441b02c01110111611100f11150f0e11140e0d11130d0c11120c0b11110b0a11160a09111509081114080711130706111206051111050411160403111503021114020111130111125611db3c206ef2d059802001206ef2d080255959f40f6fa192306ddf1c1d006aeda2edfb20c001923071e020810089ba943072db31e020c038943073db31e020812105ba943074db31e08200a4b1ba9375db31e06d01fe206e92306d8e19d0d31fd31fd31ffa40d33fd33fd33fd200d31f55806c196f09e2206ef2d059206ef2d0806f2910585f080311120302111702011116011115821005f5e100111580401115c8555082105e4f3d2c5007cb1f15cb1f13cccccb1fcb3ff400c903111203021111020111100140037fc8cf8580ca00cf8440ce011e0028fa02806acf40f400c901fb000a11100a109f555804ac8f415b1110d31fd4d33fd31ff404301113111511131112111411121111111311111110111211100f11110f0e11100e10df10ce10bd10ac109b108a107910681057db3ce02182108c9d0e1fbae3022182102d3e4f5aba205821230072135f03802054461359f40f6fa192306ddf206e92306d8e19d0d31fd31fd31ffa40d33fd33fd33fd200d31f55806c196f09e26ef2d059c20b3002845b1110d31ffa40d33fd31ff404301113111511131112111411121111111311111110111211100f11110f0e11100e10df10ce10bd10ac109b108a107910681057db3c225800645f048020240259f40f6fa192306ddf206e92306d8e17d0d31fd31ffa40fa40d307d31fd200d31f55706c186f08e26ef2d05a04a28f3c5b1110d31fd33fd33ff404301112111411121111111311111110111211100f11110f0e11100e10df10ce10bd10ac109b108a1079106810571046db3ce021821050635fd2bae302218210e49e1dcbba2458252801645f0320db3cf2e0588020270259f40f6fa192306ddf206e92306d8e12d0d31fd4d31fd31fd200d4d455606c176f07e26eb3304b01fe5b1110d3ffd3fff404301111111311111110111211100f11110f0e11100e10df10ce10bd10ac109b108a10791068105710461035db3cc87f01ca001111111055e0011110011111ce1ef4000cc8f4001bf40019f40007c8f40016f40014f40012cb1fcb3fcb1f01c8f40013f40013f40014f40014cb3f14cb3fcdcdcdc9ed542603a830830756120259f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be2206ef2d058206ef2d0806f2b2bdb3cf82327bcf2d04b04f2d05b5136bdf2d059109a108910781067105610457f24505610341023db3c372738000cc8cbffc9f90002fa8ef95b1110d3fff404301110111211100f11110f0e11100e10df10ce10bd10ac109b108a107910681057104610351024db3cc87f01ca001111111055e0011110011111ce1ef4000cc8f4001bf40019f40007c8f40016f40014f40012cb1fcb3fcb1f01c8f40013f40013f40014f40014cb3f14cb3fcdcdcdc9ed54e021292c027230830756110259f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be2206ef2d058206ef2d0806f2bf82326b9f2d05003f2d05b7f03db3c372a01dc561781010b2b59f40a6fa192306ddff8416f2443305230fa40fa0071d721fa00fa00306c6170f83a7101aa00a0802881753070f838a081753070f836aa008209312d00a0a0a170b60801206ef2d080708040531109111009108f2e518b108f107e106d05041112040311110341ff2b00ee33c81bcb1f5009cf165007cf165005cf1613cbffcb1fcb3fca0012cb3f12cb07cbffc9c8ccc9d010465413050346666d103459c8556082100f8a7ea55008cb1f16cb3f5004fa0212ce01206e9430cf84809201cee2f40001fa02cec91340037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0004bc82107362d09dbae3022182104ef5cb26ba8f425b1110d3ffd3ffd33ffa40f404301113111511131112111411121111111311111110111211100f11110f0e11100e10df10ce10bd10ac109b108a107910681057db3ce02182107a7b8c9dba2d31583501f25b1110d3fff404301110111211100f11110f0e11100e10df10ce10bd10ac109b108a107910681057104610351024db3cc87f01ca001111111055e0011110011111ce1ef4000cc8f4001bf40019f40007c8f40016f40014f40012cb1fcb3fcb1f01c8f40013f40013f40014f40014cb3f14cb3fcdcdcdc9ed542e019a30830756100259f40f6fa192306ddf206e92306d8e1bd0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755906c1a6f0ae2206ef2d058206ef2d0806f2af82326b9f2d05003f2d05b7f03db3c2f01d2561681010b2a59f40a6fa192306ddff8416f2443305230fa40fa0071d721fa00fa00306c6170f83a7101aa00a0802881753070f838a081753070f836aa008209312d00a0a0a170b60801206ef2d0807080405311108f2d108f517b107e106d05104b031111031110023000e633c81acb1f5008cf165006cf1614cbff12cb1fcb3fca0012cb3f12cb07cbffc9c8ccc9d025105803461450886d103459c8556082100f8a7ea55008cb1f16cb3f5004fa0212ce01206e9430cf84809201cee2f40001fa02cec940037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0003c030561383072559f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be2206eb3e3023083075613401559f40f6fa192306ddf206e92306d8e1bd0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755906c1a6f0ae2206eb3e3025f04f2c05837323301cc3403206ef2d0806f2b306c443434f2d05b21a1315220bc6c12f2d0672083072380404133f40e6fa19401d70130925b6de26c216eb3f2d0682b81010b2259f40b6fa192306ddf206e92306d9fd0fa40d200d31fd30f55306c146f04e2206eb3915be30d06a4063401ca206ef2d0806f2a306c443401f2d05b5112a1325222bc6c12f2d0672083072380404133f40e6fa19401d70130925b6de26c216eb3f2d0682b81010b2259f40b6fa192306ddf206e92306d9fd0fa40d200d31fd30f55306c146f04e2206eb3915be30d06a4063400a820206ef2d0806f245f0321206ef2d0806f2410235f0322206ef2d0806f24135f03a403206ef2d0806f246c314130431381010b5024c855305034ceca00cb1fcb0fc9103d12206e953059f45930944133f413e20a02fa8ef95b1110d3ffd3ff301110111211100f11110f0e11100e10df10ce10bd10ac109b108a107910681057104610351024db3cc87f01ca001111111055e0011110011111ce1ef4000cc8f4001bf40019f40007c8f40016f40014f40012cb1fcb3fcb1f01c8f40013f40013f40014f40014cb3f14cb3fcdcdcdc9ed54e021365204ee561183072359f40f6fa192306ddf206e92306d8e87d0db3c6c1b6f0be2206eb38f446c12206ef2d0806f2b2283072d80404133f40e6fa19401d70130925b6de2206ef2d05f21c000917f9321c002e28e89206ef2d080550bdb3c8e89206ef2d080550bdb3ce2e03083075611401359f40f6fa192306ddf37383a4f0044d31ffa40fa40fa40d401d0d3ffd31fd33fd200f404d33fd30730107b107a1079107801e6561981010b2d59f40a6fa192306ddff8416f2443305230fa40fa0071d721fa00fa00306c6170f83a7101aa00a0802881753070f838a081753070f836aa008209312d00a0a0a170b60801206ef2d080708040210a11110a09111009108f2e08107e106d105c041112040311110302111002500d3900e433c81bcb1f5009cf165007cf165005cf1613cbffcb1fcb3fca0012cb3f12cb07cbffc9c8ccc9d0241035596d103459c8556082100f8a7ea55008cb1f16cb3f5004fa0212ce01206e9430cf84809201cee2f40001fa02cec940037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0004f62cdb3cf2e0582c5617db3cf2e06a561280202e59f40f6fa192306ddf206e92306d8e12d0d31fd4d31fd31fd200d4d455606c176f07e26e8ebb2cdb3c206ef2d058802001206ef2d0806f27c855605067cb1f14cc12cb1fcb1fca00ccccc90211140252e0206e953059f45b30944133f417e21112de547cba547cba4b3b3c3e006480205859f40f6fa192306ddf206e92306d9fd0d31ffa40d200d31f55306c146f04e2206e923070e0206ef2d0806f24135f0301f0eda2edfb20c0018e123071c8c9800c82080493e07fc8c9c8c96f07e020810089ba8e1530810089c8c97282080493e07fc8c9c8c96f07db31e020c0388e14308038c8c97382080493e07fc8c9c8c96f07db31e020812105ba8e1530812105c8c97282080493e07fc8c9c8c96f07db31e08200a4b1bae3026d3d002a8200a4b1c8c97182080493e07fc8c9c8c96f07db310456547cba547cba2cdb3cdb3cf2e06d217d2edb3c1ea0c8c98210a9059cbbc82ccf1614cbffc982080493e02f3f404142002c50ab5f07c816cb1f58cf1612cbff12cbffcbffcb1fc90004307f029ceda2edfb82080f424003812710a90422c0fd917f952281ff11bae28e8e32db3c99a082084c4b40a0db31e08e9f02db3c8e1720c0fd92307f9481ff11bae299a082082dc6c0a0db31e09130e2e2a04b4b03fcdb3c7020c8c9531156150a108b107b106b105b104b561804103c50c21119a48040547cba547cba547cba53cb5625c855b0db3cc902111e025260206e953059f45b30944133f417e2111e1128111e111d1127111d111c1126111c111b1125111b111a1124111a11191123111911181122111811171121111711161120111643444500aceda2edfb20c0019830821804a817c800e020810089ba9a30821806fc23ac00db31e020c038993082112a05f200db31e020812105ba993082103b9aca00db31e08200a4b1ba98821005f5e100db31e0821804a817c800003650bccb1f19cc17cb1f15cc13cb1fcb3fcb3fcb3fcb07cccb3fcb1f02fc1115111f111511141128111411131127111311121111112511111110112411100f11260f10ce10bd10ac109b108a10791068105710461035443002112302562102562102562102562b02562b5121562b0201112b01562d01562b5110112cdb3c07111307061112060511110504111a047f8307561b060511190504111a04464d04ee5f0f10235f03255540db3c54765454765426db3cf2e06d07db3c206ef2d059802001206ef2d0802c5959f40f6fa192306ddf206e92306d8e19d0d31fd31fd31ffa40d33fd33fd33fd200d31f55806c196f09e2206ef2d05920206ef2d0806f29185f08f2e06b206ef2d0806f2910585f0810461035465647484a4c00145f057d70547000201056024434355b21db3cb38e8401db3cb3923170e2925b70e00181f1f0b9923070e09170e17f4b49001820c0fd92307f9481ff11bae2010cdb3c9171e06d4b004c20c001917f9520810089bae2917f9320c038e2917f9520812105bae292307f958200a4b1bae20078821005f5e10080405079c855605067cb1f14cb1f12cbffcb3fcbffcb1fcb3fc9413040037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb00017c102302111b02011118011117c855a0db3cc91038102e01111201206e953059f45b30944133f417e208a406111006108f104e103d4cb0105a0650941715134e004050abcb1f18ce16ce14ce02c8cbffcb1f12cb3f12ca0012f40012cb3f12cb07cd01ae206e92306d8e1bd0d31ffa40fa40d3ffd31fd33fd200f404d33fd30755906c1a6f0ae2206eb38eaa206ef2d0806f2a2283072c80404133f40e6fa19401d70130925b6de2206ef2d05f206ef2d080550adb3ce05bf2c0585001da561881010b2c59f40a6fa192306ddff8416f2443305230fa40fa0071d721fa00fa00306c6170f83a7101aa00a0802881753070f838a081753070f836aa008209312d00a0a0a170b60801206ef2d0807080402109111009108f2e08107e106d105c104b0311110302111002500d5100e433c81acb1f5008cf165006cf1614cbff12cb1fcb3fca0012cb3f12cb07cbffc9c8ccc9d025104546336d103459c8556082100f8a7ea55008cb1f16cb3f5004fa0212ce01206e9430cf84809201cee2f40001fa02cec9433040037fc8cf8580ca00cf8440ce01fa02806acf40f400c901fb0004fa8210595f07bcbae3022182107362d09fbae302218210946a98b6ba8ed75b1110d33f30c8018210aff90f5758cb1fcb3fc90f11110f0e11100e10df10ce10bd10ac109b108a107910681057104610354430f84270705003804201503304c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00e05712c0001111c1215355585901fe5b1110d31ffa40f404301111111311111110111211100f11110f0e11100e10df10ce10bd10ac109b108a10791068105710461035db3cc87f01ca001111111055e0011110011111ce1ef4000cc8f4001bf40019f40007c8f40016f40014f40012cb1fcb3fcb1f01c8f40013f40013f40014f40014cb3f14cb3fcdcdcdc9ed5454006a30f842561301c705b3f2d05652107f70431380205024c855305034cb1fceca00cb1fc9103c12206e953059f45b30944133f417e20901fe5b1110fa40d200f404301111111311111110111211100f11110f0e11100e10df10ce10bd10ac109b108a10791068105710461035db3cc87f01ca001111111055e0011110011111ce1ef4000cc8f4001bf40019f40007c8f40016f40014f40012cb1fcb3fcb1f01c8f40013f40013f40014f40014cb3f14cb3fcdcdcdc9ed545601ee302c81010b2359f40b6fa192306ddf206e92306d9fd0fa40d200d31fd30f55306c146f04e2206ef2d06020206ef2d0806f24135f03a4029f20206ef2d0806f246c31a48064b6089e20206ef2d0806f246c31a570b609e221206ef2d0806f245f0302206ef2d0806f2410235f034033431381010b5024c857003c55305034ceca00cb1fcb0fc9103d12206e953059f45930944133f413e20a0092c87f01ca001111111055e0011110011111ce1ef4000cc8f4001bf40019f40007c8f40016f40014f40012cb1fcb3fcb1f01c8f40013f40013f40014f40014cb3f14cb3fcdcdcdc9ed5400da01111101b08e5ff842c8cf8508ce70cf0b6ec98042fb000e11100e551dc87f01ca001111111055e0011110011111ce1ef4000cc8f4001bf40019f40007c8f40016f40014f40012cb1fcb3fcb1f01c8f40013f40013f40014f40014cb3f14cb3fcdcdcdc9ed54e05f0f5bf2c082f876a22e');
     const builder = beginCell();
     builder.storeUint(0, 1);
     initTonFusion_init_args({ $$type: 'TonFusion_init_args' })(builder);
@@ -2520,7 +3374,12 @@ const TonFusion_types: ABIType[] = [
     {"name":"CreateEVMToTONOrder","header":2335447074,"fields":[{"name":"orderConfig","type":{"kind":"simple","type":"OrderConfig","optional":false}},{"name":"evmContractAddress","type":{"kind":"simple","type":"address","optional":false}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
     {"name":"CreateTONToEVMOrder","header":1646500216,"fields":[{"name":"orderConfig","type":{"kind":"simple","type":"OrderConfig","optional":false}},{"name":"targetChainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
     {"name":"PartialFill","header":1324731174,"fields":[{"name":"orderHash","type":{"kind":"simple","type":"uint","optional":false,"format":256}},{"name":"secret","type":{"kind":"simple","type":"uint","optional":false,"format":256}},{"name":"fillAmount","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"resolver","type":{"kind":"simple","type":"address","optional":false}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
-    {"name":"CompletePartialFill","header":2335447075,"fields":[{"name":"orderHash","type":{"kind":"simple","type":"uint","optional":false,"format":256}},{"name":"secret","type":{"kind":"simple","type":"uint","optional":false,"format":256}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
+    {"name":"CompletePartialFill","header":2054917277,"fields":[{"name":"orderHash","type":{"kind":"simple","type":"uint","optional":false,"format":256}},{"name":"secret","type":{"kind":"simple","type":"uint","optional":false,"format":256}}]},
+    {"name":"EVMCrossChainMessage","header":2592832621,"fields":[{"name":"targetChainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"targetContract","type":{"kind":"simple","type":"cell","optional":false}},{"name":"functionSelector","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"parameters","type":{"kind":"simple","type":"cell","optional":false}},{"name":"gasLimit","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"value","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
+    {"name":"EVMContractDeploy","header":1582251308,"fields":[{"name":"targetChainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"contractBytecode","type":{"kind":"simple","type":"cell","optional":false}},{"name":"constructorParams","type":{"kind":"simple","type":"cell","optional":false}},{"name":"gasLimit","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"value","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
+    {"name":"EVMBridgeConfirmation","header":523124044,"fields":[{"name":"bridgeId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"transactionHash","type":{"kind":"simple","type":"cell","optional":false}},{"name":"blockNumber","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"confirmations","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
+    {"name":"EVMOraclePriceUpdate","header":2359103007,"fields":[{"name":"oracleId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"tokenAddress","type":{"kind":"simple","type":"address","optional":false}},{"name":"price","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"timestamp","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
+    {"name":"EVMChainValidation","header":759058266,"fields":[{"name":"chainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"blockNumber","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"gasPrice","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
     {"name":"DeployEscrow","header":1499400124,"fields":[{"name":"chainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"targetAddress","type":{"kind":"simple","type":"address","optional":false}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
     {"name":"EscrowDeployed","header":2078119902,"fields":[{"name":"chainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"contractAddress","type":{"kind":"simple","type":"address","optional":false}},{"name":"success","type":{"kind":"simple","type":"bool","optional":false}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
     {"name":"RegisterRelayer","header":1935855774,"fields":[{"name":"relayer","type":{"kind":"simple","type":"address","optional":false}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}}]},
@@ -2538,8 +3397,13 @@ const TonFusion_types: ABIType[] = [
     {"name":"EscrowContract","header":null,"fields":[{"name":"chainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"contractAddress","type":{"kind":"simple","type":"address","optional":false}},{"name":"deployed","type":{"kind":"simple","type":"bool","optional":false}},{"name":"totalOrders","type":{"kind":"simple","type":"uint","optional":false,"format":32}}]},
     {"name":"RelayerData","header":null,"fields":[{"name":"address","type":{"kind":"simple","type":"address","optional":false}},{"name":"whitelisted","type":{"kind":"simple","type":"bool","optional":false}},{"name":"totalResolves","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"successRate","type":{"kind":"simple","type":"uint","optional":false,"format":16}}]},
     {"name":"JettonWalletData","header":null,"fields":[{"name":"balance","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"ownerAddress","type":{"kind":"simple","type":"address","optional":false}},{"name":"jettonMasterAddress","type":{"kind":"simple","type":"address","optional":false}},{"name":"jettonWalletCode","type":{"kind":"simple","type":"cell","optional":false}}]},
+    {"name":"EVMChainConfig","header":null,"fields":[{"name":"chainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"rpcEndpoint","type":{"kind":"simple","type":"cell","optional":false}},{"name":"blockTime","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"gasLimit","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"isActive","type":{"kind":"simple","type":"bool","optional":false}},{"name":"bridgeAddress","type":{"kind":"simple","type":"cell","optional":false}},{"name":"oracleAddress","type":{"kind":"simple","type":"cell","optional":false}}]},
+    {"name":"EVMTransaction","header":null,"fields":[{"name":"chainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"toContract","type":{"kind":"simple","type":"cell","optional":false}},{"name":"functionSelector","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"parameters","type":{"kind":"simple","type":"cell","optional":false}},{"name":"gasLimit","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"gasPrice","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"value","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"nonce","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"status","type":{"kind":"simple","type":"uint","optional":false,"format":8}},{"name":"transactionHash","type":{"kind":"simple","type":"cell","optional":false}},{"name":"blockNumber","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"confirmations","type":{"kind":"simple","type":"uint","optional":false,"format":32}}]},
+    {"name":"EVMBridgeData","header":null,"fields":[{"name":"bridgeId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"sourceChainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"targetChainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"bridgeContract","type":{"kind":"simple","type":"address","optional":false}},{"name":"bridgeFee","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"minTransferAmount","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"maxTransferAmount","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"isActive","type":{"kind":"simple","type":"bool","optional":false}},{"name":"lastUpdateTimestamp","type":{"kind":"simple","type":"uint","optional":false,"format":32}}]},
+    {"name":"EVMOracleData","header":null,"fields":[{"name":"oracleId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"chainId","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"oracleContract","type":{"kind":"simple","type":"address","optional":false}},{"name":"tokenAddress","type":{"kind":"simple","type":"address","optional":false}},{"name":"priceDecimals","type":{"kind":"simple","type":"uint","optional":false,"format":8}},{"name":"heartbeatInterval","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"isActive","type":{"kind":"simple","type":"bool","optional":false}},{"name":"lastPriceUpdate","type":{"kind":"simple","type":"uint","optional":false,"format":32}}]},
+    {"name":"CrossChainMessage","header":null,"fields":[{"name":"sourceChain","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"targetChain","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"orderHash","type":{"kind":"simple","type":"uint","optional":false,"format":256}},{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"secret","type":{"kind":"simple","type":"uint","optional":false,"format":256}},{"name":"timestamp","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"nonce","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"SendViaJettonTransfer","header":260734629,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"amount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"destination","type":{"kind":"simple","type":"address","optional":false}},{"name":"responseDestination","type":{"kind":"simple","type":"address","optional":true}},{"name":"customPayload","type":{"kind":"simple","type":"cell","optional":true}},{"name":"forwardTonAmount","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"forwardPayload","type":{"kind":"simple","type":"slice","optional":false,"format":"remainder"}}]},
-    {"name":"TonFusion$Data","header":null,"fields":[{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"escrowLock","type":{"kind":"dict","key":"uint","keyFormat":256,"value":"OrderConfig","valueFormat":"ref"}},{"name":"escrowOrder","type":{"kind":"dict","key":"uint","keyFormat":256,"value":"Order","valueFormat":"ref"}},{"name":"jettons","type":{"kind":"dict","key":"address","value":"cell","valueFormat":"ref"}},{"name":"jettonAccount","type":{"kind":"dict","key":"address","value":"address"}},{"name":"whiteLists","type":{"kind":"dict","key":"address","value":"bool"}},{"name":"relayers","type":{"kind":"dict","key":"address","value":"RelayerData","valueFormat":"ref"}},{"name":"escrowContracts","type":{"kind":"dict","key":"uint","keyFormat":32,"value":"EscrowContract","valueFormat":"ref"}},{"name":"totalOrders","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"totalVolume","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"totalResolves","type":{"kind":"simple","type":"uint","optional":false,"format":32}}]},
+    {"name":"TonFusion$Data","header":null,"fields":[{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"escrowLock","type":{"kind":"dict","key":"uint","keyFormat":256,"value":"OrderConfig","valueFormat":"ref"}},{"name":"escrowOrder","type":{"kind":"dict","key":"uint","keyFormat":256,"value":"Order","valueFormat":"ref"}},{"name":"jettons","type":{"kind":"dict","key":"address","value":"cell","valueFormat":"ref"}},{"name":"jettonAccount","type":{"kind":"dict","key":"address","value":"address"}},{"name":"whiteLists","type":{"kind":"dict","key":"address","value":"bool"}},{"name":"relayers","type":{"kind":"dict","key":"address","value":"RelayerData","valueFormat":"ref"}},{"name":"escrowContracts","type":{"kind":"dict","key":"uint","keyFormat":32,"value":"EscrowContract","valueFormat":"ref"}},{"name":"totalOrders","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"totalVolume","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"totalResolves","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"evmChainConfigs","type":{"kind":"dict","key":"uint","keyFormat":32,"value":"EVMChainConfig","valueFormat":"ref"}},{"name":"evmTransactions","type":{"kind":"dict","key":"uint","keyFormat":64,"value":"EVMTransaction","valueFormat":"ref"}},{"name":"evmBridges","type":{"kind":"dict","key":"uint","keyFormat":32,"value":"EVMBridgeData","valueFormat":"ref"}},{"name":"evmOracles","type":{"kind":"dict","key":"uint","keyFormat":32,"value":"EVMOracleData","valueFormat":"ref"}},{"name":"evmTransactionNonce","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"evmBridgeFees","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
 ]
 
 const TonFusion_opcodes = {
@@ -2551,7 +3415,12 @@ const TonFusion_opcodes = {
     "CreateEVMToTONOrder": 2335447074,
     "CreateTONToEVMOrder": 1646500216,
     "PartialFill": 1324731174,
-    "CompletePartialFill": 2335447075,
+    "CompletePartialFill": 2054917277,
+    "EVMCrossChainMessage": 2592832621,
+    "EVMContractDeploy": 1582251308,
+    "EVMBridgeConfirmation": 523124044,
+    "EVMOraclePriceUpdate": 2359103007,
+    "EVMChainValidation": 759058266,
     "DeployEscrow": 1499400124,
     "EscrowDeployed": 2078119902,
     "RegisterRelayer": 1935855774,
@@ -2576,6 +3445,11 @@ const TonFusion_receivers: ABIReceiver[] = [
     {"receiver":"internal","message":{"kind":"typed","type":"SetWhiteList"}},
     {"receiver":"internal","message":{"kind":"typed","type":"RegisterRelayer"}},
     {"receiver":"internal","message":{"kind":"typed","type":"JettonNotifyWithActionRequest"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"EVMCrossChainMessage"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"EVMContractDeploy"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"EVMBridgeConfirmation"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"EVMOraclePriceUpdate"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"EVMChainValidation"}},
     {"receiver":"internal","message":{"kind":"typed","type":"GetFund"}},
     {"receiver":"internal","message":{"kind":"typed","type":"Refund"}},
     {"receiver":"internal","message":{"kind":"typed","type":"RefundOrder"}},
@@ -2602,6 +3476,18 @@ export const CANCEL_ORDER_BY_RESOLVER_IS_FORBIDDEN = 82n;
 export const MISSING_TAKER_DST_ATA = 83n;
 export const MISSING_MAKER_SRC_ATA = 84n;
 export const INVALID_RECIPIENT = 85n;
+export const INVALID_CHAIN_ID = 88n;
+export const INVALID_BRIDGE_CONFIG = 89n;
+export const INVALID_ORACLE_CONFIG = 90n;
+export const EVM_TRANSACTION_FAILED = 91n;
+export const EVM_BRIDGE_TIMEOUT = 92n;
+export const EVM_GAS_LIMIT_EXCEEDED = 93n;
+export const EVM_INSUFFICIENT_BALANCE = 94n;
+export const EVM_CONTRACT_NOT_FOUND = 95n;
+export const ESCROW_NOT_DEPLOYED = 106n;
+export const BRIDGE_FAILURE = 107n;
+export const MESSAGE_DELIVERY_FAILED = 108n;
+export const INVALID_EVM_MESSAGE = 109n;
 export const INVALID_OWNER = 86n;
 export const INVALID_WHITELIST = 87n;
 export const INVALID_HASH = 88n;
@@ -2609,7 +3495,6 @@ export const INVALID_SECRET = 89n;
 export const ORDER_ALREADY_EXISTS = 90n;
 export const ORDER_ALREADY_FINALIZED = 91n;
 export const INVALID_SWAP_DIRECTION = 92n;
-export const INVALID_CHAIN_ID = 93n;
 export const INVALID_PARTIAL_FILL = 94n;
 export const ORDER_NOT_PARTIALLY_FILLED = 95n;
 export const INVALID_RELAYER = 96n;
@@ -2633,6 +3518,25 @@ export const HTLC_REFUNDED = 3n;
 export const BASE_1E2 = 100n;
 export const BASE_1E3 = 1000n;
 export const BASE_1E5 = 100000n;
+export const EVM_CHAIN_ETHEREUM = 1n;
+export const EVM_CHAIN_POLYGON = 137n;
+export const EVM_CHAIN_BSC = 56n;
+export const EVM_CHAIN_BASE = 8453n;
+export const EVM_CHAIN_ARBITRUM = 42161n;
+export const TON_CHAIN_MAINNET = -3n;
+export const TON_CHAIN_TESTNET = -239n;
+export const SWAP_DIRECTION_TON_TO_EVM = 0n;
+export const SWAP_DIRECTION_EVM_TO_TON = 1n;
+export const SWAP_DIRECTION_TON_TO_TON = 2n;
+export const EVM_MESSAGE_OPCODE = 305419896n;
+export const EVM_CONTRACT_CALL_GAS_LIMIT = 300000n;
+export const EVM_CONTRACT_DEPLOY_GAS_LIMIT = 500000n;
+export const EVM_BRIDGE_TIMEOUT_SECONDS = 3600n;
+export const EVM_CONFIRMATION_BLOCKS = 12n;
+export const EVM_MAX_RETRY_ATTEMPTS = 3n;
+export const EVM_RETRY_DELAY_SECONDS = 300n;
+export const EVM_BRIDGE_FEE_BASE = 10000000n;
+export const EVM_GAS_PRICE_MULTIPLIER = 110n;
 
 export class TonFusion implements Contract {
     
@@ -2668,7 +3572,7 @@ export class TonFusion implements Contract {
         this.init = init;
     }
     
-    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: null | SetWhiteList | RegisterRelayer | JettonNotifyWithActionRequest | GetFund | Refund | RefundOrder | PartialFill | CompletePartialFill | DeployEscrow | UpdateRelayerStats | Deploy) {
+    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: null | SetWhiteList | RegisterRelayer | JettonNotifyWithActionRequest | EVMCrossChainMessage | EVMContractDeploy | EVMBridgeConfirmation | EVMOraclePriceUpdate | EVMChainValidation | GetFund | Refund | RefundOrder | PartialFill | CompletePartialFill | DeployEscrow | UpdateRelayerStats | Deploy) {
         
         let body: Cell | null = null;
         if (message === null) {
@@ -2682,6 +3586,21 @@ export class TonFusion implements Contract {
         }
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'JettonNotifyWithActionRequest') {
             body = beginCell().store(storeJettonNotifyWithActionRequest(message)).endCell();
+        }
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'EVMCrossChainMessage') {
+            body = beginCell().store(storeEVMCrossChainMessage(message)).endCell();
+        }
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'EVMContractDeploy') {
+            body = beginCell().store(storeEVMContractDeploy(message)).endCell();
+        }
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'EVMBridgeConfirmation') {
+            body = beginCell().store(storeEVMBridgeConfirmation(message)).endCell();
+        }
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'EVMOraclePriceUpdate') {
+            body = beginCell().store(storeEVMOraclePriceUpdate(message)).endCell();
+        }
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'EVMChainValidation') {
+            body = beginCell().store(storeEVMChainValidation(message)).endCell();
         }
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'GetFund') {
             body = beginCell().store(storeGetFund(message)).endCell();
