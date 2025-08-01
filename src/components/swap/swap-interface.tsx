@@ -269,6 +269,26 @@ export function SwapInterface({ onOrderCreated }: SwapInterfaceProps) {
         ? (token.symbol === toToken.symbol && (selectedNetworkFilter === 'all' || selectedNetworkFilter === toNetwork.id))
         : (token.symbol === fromToken.symbol && (selectedNetworkFilter === 'all' || selectedNetworkFilter === fromNetwork.id))
 
+      // Special restriction: If TON, BTC, or TRX is selected in one field, 
+      // the other field should only show Ethereum testnet tokens
+      const isSpecialToken = (tokenSymbol: string) => ['TON', 'BTC', 'TRX'].includes(tokenSymbol)
+      const isEthereumTestnetToken = (tokenSymbol: string) => ['ETH', 'WETH'].includes(tokenSymbol)
+      
+      let shouldRestrictToEthereum = false
+      
+      if (type === 'from') {
+        // If "to" field has a special token, restrict "from" field to Ethereum testnet only
+        shouldRestrictToEthereum = isSpecialToken(toToken.symbol)
+      } else {
+        // If "from" field has a special token, restrict "to" field to Ethereum testnet only
+        shouldRestrictToEthereum = isSpecialToken(fromToken.symbol)
+      }
+      
+      // Apply restriction: if special token is selected in other field, only show Ethereum testnet tokens
+      if (shouldRestrictToEthereum && !isEthereumTestnetToken(token.symbol)) {
+        return false
+      }
+
       return matchesSearch && matchesNetwork && !isExcluded
     })
   }
