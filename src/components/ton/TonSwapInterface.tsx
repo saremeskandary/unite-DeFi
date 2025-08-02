@@ -1195,9 +1195,9 @@ export function SwapInterface({ onOrderCreated, tonWalletAddress = null, tonWall
 
                 {/* Cross-chain restriction notice */}
                 {(isSpecialToken(fromToken.symbol) || isSpecialToken(toToken.symbol)) && (
-                    <div className="flex items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-md">
-                        <Info className="w-4 h-4 text-blue-600 mr-2" />
-                        <p className="text-xs text-blue-700">
+                    <div className="flex items-center justify-center p-2 bg-primary/10 border border-primary/20 rounded-md">
+                        <Info className="w-4 h-4 text-primary mr-2" />
+                        <p className="text-xs text-primary">
                             Cross-chain swap: {isSpecialToken(fromToken.symbol) ? fromToken.symbol : toToken.symbol} ↔ Ethereum Testnet
                         </p>
                     </div>

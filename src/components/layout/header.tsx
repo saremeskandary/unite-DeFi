@@ -28,8 +28,8 @@ export function Header() {
     { href: "/orders", label: "Orders" },
     { href: "/portfolio", label: "Portfolio" },
     { href: "/settings", label: "Settings" },
-    { href: "/ton-test", label: "TON Test" },
-    { href: "/ton-debug", label: "TON Debug" },
+    // { href: "/ton-test", label: "TON Test" },
+    // { href: "/ton-debug", label: "TON Debug" },
   ]
 
   return (
