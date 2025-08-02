@@ -97,7 +97,9 @@ describe("Partial Fill Manager", () => {
     });
 
     it("should validate secret hash format and consistency", async () => {
-      const testSecret = global.testUtils.generateTestSecret();
+      // Use a test secret that meets the entropy requirements
+      const testSecret =
+        "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456";
       const hashes = await partialFillManager.generateSecretHashes([
         testSecret,
       ]);
