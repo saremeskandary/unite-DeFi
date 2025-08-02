@@ -5,6 +5,7 @@ A decentralized cross-chain atomic swap protocol that enables trustless trading 
 ## Features
 
 ### Core Functionality
+
 - **Cross-Chain Atomic Swaps**: Secure, trustless trading between Ethereum and Bitcoin
 - **Partial Fill Support**: Execute large orders across multiple resolvers for better liquidity
 - **Bitcoin Relayer Service**: Automated transaction broadcasting and monitoring
@@ -12,12 +13,14 @@ A decentralized cross-chain atomic swap protocol that enables trustless trading 
 - **WebSocket Integration**: Real-time updates for orders and prices
 
 ### Wallet Integration
+
 - **Multi-Wallet Support**: MetaMask, WalletConnect, Coinbase Wallet
 - **Persistent Connections**: Wallet connections persist across browser tabs and page refreshes
 - **Automatic State Restoration**: Seamless reconnection when returning to the app
 - **Cross-Tab Synchronization**: Wallet state stays in sync across multiple tabs
 
 ### Security Features
+
 - **Atomic Swap Protocol**: Ensures either both parties receive their assets or neither does
 - **Time-Locked Contracts**: Automatic refund mechanisms for failed swaps
 - **Multi-Signature Support**: Enhanced security for large transactions
@@ -28,20 +31,23 @@ A decentralized cross-chain atomic swap protocol that enables trustless trading 
 The application now supports persistent wallet connections that work across browser tabs and page refreshes. Here's how it works:
 
 ### How It Works
+
 1. **Automatic State Saving**: When you connect your wallet, the connection state is automatically saved to localStorage
 2. **Cross-Tab Synchronization**: The wallet connection is recognized across all open tabs
 3. **Page Refresh Recovery**: When you refresh the page, your wallet connection is automatically restored
-4. **Security Features**: 
+4. **Security Features**:
    - Connection state expires after 24 hours
    - Automatic cleanup when wallet is disconnected
    - Graceful error handling for storage issues
 
 ### Benefits
+
 - **Seamless User Experience**: No need to reconnect wallet when switching tabs or refreshing
 - **Improved Workflow**: Start a swap in one tab, monitor in another
 - **Reliable State Management**: Consistent wallet state across the entire application
 
 ### Technical Implementation
+
 - Uses localStorage for persistent storage
 - Automatic state restoration on app initialization
 - Real-time synchronization of wallet events (account changes, chain changes)
@@ -50,7 +56,8 @@ The application now supports persistent wallet connections that work across brow
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - pnpm package manager
 - MetaMask or compatible Web3 wallet
 - Bitcoin testnet wallet (for testing)
@@ -91,6 +98,7 @@ pnpm test:coverage
 ## Architecture
 
 ### Frontend
+
 - **Next.js 14**: React framework with App Router
 - **TypeScript**: Type-safe development
 - **Tailwind CSS**: Utility-first styling
@@ -99,6 +107,7 @@ pnpm test:coverage
 - **WebSocket**: Real-time updates
 
 ### Backend
+
 - **Node.js**: Server runtime
 - **Express.js**: API framework
 - **WebSocket Server**: Real-time communication
@@ -106,6 +115,7 @@ pnpm test:coverage
 - **PostgreSQL**: Data persistence
 
 ### Smart Contracts
+
 - **Solidity**: Ethereum smart contracts
 - **Hardhat**: Development and testing framework
 - **OpenZeppelin**: Security libraries
@@ -113,18 +123,33 @@ pnpm test:coverage
 ## API Endpoints
 
 ### Swap Operations
+
 - `POST /api/swap/quote` - Get swap quote
 - `POST /api/swap/execute` - Execute swap
 - `GET /api/swap/orders/:id` - Get order status
 
 ### Wallet Operations
+
 - `GET /api/wallet/balance` - Get wallet balances
 - `POST /api/wallet/connect` - Connect wallet
 - `POST /api/wallet/disconnect` - Disconnect wallet
 
 ### Market Data
+
 - `GET /api/prices` - Get current prices
 - `GET /api/prices/history` - Get price history
+
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs/) directory:
+
+- **[Quick Start Guide](./docs/getting-started/QUICK_START.md)** - Get up and running in minutes
+- **[API Reference](./docs/api/API_REFERENCE.md)** - Complete API documentation
+- **[Testing Guide](./docs/testing/TESTING_OVERVIEW.md)** - Testing strategy and procedures
+- **[Development Setup](./docs/development/ANVIL_SETUP.md)** - Local development environment
+- **[Integration Guides](./docs/integrations/)** - Blockchain-specific integration docs
+
+For a complete overview, see the [Documentation Index](./docs/README.md).
 
 ## Contributing
 
@@ -134,6 +159,15 @@ pnpm test:coverage
 4. Add tests for new functionality
 5. Ensure all tests pass
 6. Submit a pull request
+
+### Documentation Standards
+
+When contributing documentation:
+
+- Follow the established directory structure in `docs/`
+- Use UPPER_CASE naming for files
+- Update the main index when adding new files
+- Keep content concise and focused
 
 ## License
 
@@ -147,4 +181,4 @@ For security concerns, please email security@unitedefi.com or create a private i
 
 - Documentation: [docs.unitedefi.com](https://docs.unitedefi.com)
 - Discord: [discord.gg/unitedefi](https://discord.gg/unitedefi)
-- Twitter: [@UniteDeFi](https://twitter.com/UniteDeFi) 
+- Twitter: [@UniteDeFi](https://twitter.com/UniteDeFi)
