@@ -107,6 +107,15 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.83.1
         version: 5.83.1(@tanstack/react-query@5.83.1(react@18.3.1))(react@18.3.1)
+      '@ton/core':
+        specifier: ~0.61.0
+        version: 0.61.0(@ton/crypto@3.3.0)
+      '@ton/crypto':
+        specifier: ^3.3.0
+        version: 3.3.0
+      '@ton/ton':
+        specifier: ^15.3.1
+        version: 15.3.1(@ton/core@0.61.0(@ton/crypto@3.3.0))(@ton/crypto@3.3.0)
       '@tonconnect/sdk':
         specifier: ^3.2.0
         version: 3.2.0
