@@ -23,7 +23,9 @@ describe("Swap Validation", () => {
         return /^[2][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(address);
       };
 
-      const validAddress = (global as any).testUtils.generateTestBitcoinAddress();
+      const validAddress = (
+        global as any
+      ).testUtils.generateTestBitcoinAddress();
       const invalidAddress = "invalid-address";
 
       expect(validateBitcoinAddress(validAddress)).toBe(true);
