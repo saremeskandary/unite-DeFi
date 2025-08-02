@@ -4,10 +4,17 @@ import { config } from "dotenv";
 // Load environment variables for testing
 config({ path: ".env.test" });
 
+// Polyfill for TextEncoder and TextDecoder (Node.js environment)
+if (typeof global.TextEncoder === "undefined") {
+  const { TextEncoder, TextDecoder } = require("util");
+  (global as any).TextEncoder = TextEncoder;
+  (global as any).TextDecoder = TextDecoder;
+}
+
 // Polyfill for Request and Response objects in test environment
 if (typeof global.Request === "undefined") {
   // Simple Request polyfill for testing
-  global.Request = class Request {
+  (global as any).Request = class Request {
     url: string;
     method: string;
     headers: any;
@@ -32,7 +39,7 @@ if (typeof global.Request === "undefined") {
 
 if (typeof global.Response === "undefined") {
   // Simple Response polyfill for testing
-  global.Response = class Response {
+  (global as any).Response = class Response {
     status: number;
     statusText: string;
     headers: any;
@@ -53,9 +60,9 @@ if (typeof global.Response === "undefined") {
 
 // Mock NextResponse for testing
 if (typeof global.NextResponse === "undefined") {
-  global.NextResponse = {
+  (global as any).NextResponse = {
     json: (data: any, init?: any) => {
-      return new global.Response(JSON.stringify(data), {
+      return new (global as any).Response(JSON.stringify(data), {
         status: init?.status || 200,
         headers: {
           "Content-Type": "application/json",
@@ -77,7 +84,7 @@ beforeAll(() => {
 });
 
 // Global test utilities
-global.testUtils = {
+(global as any).testUtils = {
   // Generate test secrets and hashes
   generateTestSecret: () => {
     const crypto = require("crypto");
