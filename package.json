@@ -29,6 +29,8 @@
     "ton:release": "pnpm --filter ton-fusion release",
     "ton:cli": "tsx scripts/ton-cli.ts",
     "ton:cli:simple": "tsx scripts/ton-cli-simple.ts",
+    "bitcoin:cli": "tsx scripts/bitcoin-cli.ts",
+    "bitcoin:cli:simple": "tsx scripts/bitcoin-cli-simple.ts",
     "contracts:build": "pnpm --filter=./contracts/* build",
     "contracts:test": "pnpm --filter=./contracts/* test",
     "workspace:install": "pnpm install",
