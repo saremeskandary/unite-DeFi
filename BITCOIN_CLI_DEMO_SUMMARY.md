@@ -39,7 +39,7 @@ I've successfully created a comprehensive Bitcoin HTLC Swap CLI for testing and 
 ### 4. `scripts/bitcoin-cli.ts`
 
 - **Purpose**: Full-featured CLI (with actual implementation dependencies)
-- **Status**: Created but requires actual Bitcoin implementation classes
+- **Status**: Removed due to dependency issues - using simple CLI instead
 
 ## 🚀 Quick Start for Hackathon Demo
 
@@ -60,14 +60,14 @@ chmod +x scripts/bitcoin-cli-demo.sh
 pnpm install
 
 # Run comprehensive demo
-pnpm bitcoin:cli:simple demo
+pnpm bitcoin:cli demo
 
 # Test individual features
-pnpm bitcoin:cli:simple htlc-script
-pnpm bitcoin:cli:simple bidirectional-swap
-pnpm bitcoin:cli:simple hashlock-logic
-pnpm bitcoin:cli:simple contract-expiration
-pnpm bitcoin:cli:simple relayer-resolver
+pnpm bitcoin:cli htlc-script
+pnpm bitcoin:cli bidirectional-swap
+pnpm bitcoin:cli hashlock-logic
+pnpm bitcoin:cli contract-expiration
+pnpm bitcoin:cli relayer-resolver
 ```
 
 ## 🎉 Demo Output

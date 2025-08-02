@@ -2,11 +2,8 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
-import { TonClient, WalletContractV4, internal, Address, toNano } from '@ton/ton';
-import { mnemonicToPrivateKey } from '@ton/crypto';
+import { TonClient, WalletContractV4, Address, toNano } from '@ton/ton';
 import { TonConnect } from '@tonconnect/sdk';
-import axios from 'axios';
 import ora from 'ora';
 import Table from 'cli-table3';
 

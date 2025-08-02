@@ -79,7 +79,7 @@ echo -e "${GRAY}   This will test all Bitcoin HTLC swap features${NC}"
 echo ""
 
 # Run the comprehensive demo
-pnpm bitcoin:cli:simple demo
+pnpm bitcoin:cli demo
 
 echo ""
 echo -e "${YELLOW}2. Individual Feature Tests${NC}"
@@ -87,33 +87,33 @@ echo ""
 
 # Test individual features
 echo -e "${BLUE}🔐 Testing HTLC Script Creation...${NC}"
-pnpm bitcoin:cli:simple htlc-script
+pnpm bitcoin:cli htlc-script
 
 echo ""
 echo -e "${BLUE}🔄 Testing Bi-directional Swaps...${NC}"
-pnpm bitcoin:cli:simple bidirectional-swap
+pnpm bitcoin:cli bidirectional-swap
 
 echo ""
 echo -e "${BLUE}🔑 Testing Hashlock Logic...${NC}"
-pnpm bitcoin:cli:simple hashlock-logic
+pnpm bitcoin:cli hashlock-logic
 
 echo ""
 echo -e "${BLUE}⏰ Testing Contract Expiration...${NC}"
-pnpm bitcoin:cli:simple contract-expiration
+pnpm bitcoin:cli contract-expiration
 
 echo ""
 echo -e "${BLUE}📡 Testing Relayer & Resolver...${NC}"
-pnpm bitcoin:cli:simple relayer-resolver
+pnpm bitcoin:cli relayer-resolver
 
 echo ""
 echo -e "${BLUE}📋 Available Commands:${NC}"
-echo -e "${GRAY}   pnpm bitcoin:cli:simple demo                    - Run comprehensive demo${NC}"
-echo -e "${GRAY}   pnpm bitcoin:cli:simple htlc-script            - Test HTLC script creation${NC}"
-echo -e "${GRAY}   pnpm bitcoin:cli:simple bidirectional-swap     - Test bi-directional swaps${NC}"
-echo -e "${GRAY}   pnpm bitcoin:cli:simple hashlock-logic         - Test hashlock and secret management${NC}"
-echo -e "${GRAY}   pnpm bitcoin:cli:simple contract-expiration    - Test contract expiration handling${NC}"
-echo -e "${GRAY}   pnpm bitcoin:cli:simple relayer-resolver       - Test relayer and resolver functionality${NC}"
-echo -e "${GRAY}   pnpm bitcoin:cli:simple help                   - Show help information${NC}"
+echo -e "${GRAY}   pnpm bitcoin:cli demo                    - Run comprehensive demo${NC}"
+echo -e "${GRAY}   pnpm bitcoin:cli htlc-script            - Test HTLC script creation${NC}"
+echo -e "${GRAY}   pnpm bitcoin:cli bidirectional-swap     - Test bi-directional swaps${NC}"
+echo -e "${GRAY}   pnpm bitcoin:cli hashlock-logic         - Test hashlock and secret management${NC}"
+echo -e "${GRAY}   pnpm bitcoin:cli contract-expiration    - Test contract expiration handling${NC}"
+echo -e "${GRAY}   pnpm bitcoin:cli relayer-resolver       - Test relayer and resolver functionality${NC}"
+echo -e "${GRAY}   pnpm bitcoin:cli help                   - Show help information${NC}"
 
 echo ""
 echo -e "${GREEN}✅ Bitcoin HTLC Swap CLI Demo completed!${NC}"
