@@ -125,6 +125,43 @@ describe("Error Handling Tests", () => {
       deploy: true,
       success: true,
     });
+
+    // Set whitelist for test users
+    await tonFusion.send(
+      deployer.getSender(),
+      {
+        value: toNano("0.05"),
+      },
+      {
+        $$type: "SetWhiteList",
+        resolver: user1.address,
+        whitelistStatus: true,
+      }
+    );
+
+    await tonFusion.send(
+      deployer.getSender(),
+      {
+        value: toNano("0.05"),
+      },
+      {
+        $$type: "SetWhiteList",
+        resolver: user2.address,
+        whitelistStatus: true,
+      }
+    );
+
+    await tonFusion.send(
+      deployer.getSender(),
+      {
+        value: toNano("0.05"),
+      },
+      {
+        $$type: "SetWhiteList",
+        resolver: resolver.address,
+        whitelistStatus: true,
+      }
+    );
   });
 
   describe("Bridge Failure Handling", () => {
@@ -163,7 +200,7 @@ describe("Error Handling Tests", () => {
 
     it("should implement exponential backoff for retries", async () => {
       const orderConfig = createOrderConfig(
-        2,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -278,7 +315,7 @@ describe("Error Handling Tests", () => {
   describe("Timeout Handling", () => {
     it("should handle bridge timeouts gracefully", async () => {
       const orderConfig = createOrderConfig(
-        5,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -310,7 +347,7 @@ describe("Error Handling Tests", () => {
 
     it("should implement timeout escalation", async () => {
       const orderConfig = createOrderConfig(
-        6,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -344,7 +381,7 @@ describe("Error Handling Tests", () => {
   describe("Circuit Breaker Pattern", () => {
     it("should implement circuit breaker for repeated failures", async () => {
       const orderConfig = createOrderConfig(
-        7,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -376,7 +413,7 @@ describe("Error Handling Tests", () => {
 
     it("should reset circuit breaker after successful operations", async () => {
       const orderConfig = createOrderConfig(
-        8,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -410,7 +447,7 @@ describe("Error Handling Tests", () => {
   describe("Gas Management", () => {
     it("should handle gas limit exceeded errors", async () => {
       const orderConfig = createOrderConfig(
-        9,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -442,7 +479,7 @@ describe("Error Handling Tests", () => {
 
     it("should handle insufficient balance errors", async () => {
       const orderConfig = createOrderConfig(
-        10,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -476,7 +513,7 @@ describe("Error Handling Tests", () => {
   describe("Contract Interaction Errors", () => {
     it("should handle contract not found errors", async () => {
       const orderConfig = createOrderConfig(
-        11,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -508,7 +545,7 @@ describe("Error Handling Tests", () => {
 
     it("should handle contract interaction failures", async () => {
       const orderConfig = createOrderConfig(
-        12,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -542,7 +579,7 @@ describe("Error Handling Tests", () => {
   describe("Error Reporting and Monitoring", () => {
     it("should report errors for monitoring", async () => {
       const orderConfig = createOrderConfig(
-        13,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -574,7 +611,7 @@ describe("Error Handling Tests", () => {
 
     it("should categorize errors for analysis", async () => {
       const orderConfig = createOrderConfig(
-        14,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -606,7 +643,7 @@ describe("Error Handling Tests", () => {
 
     it("should provide error recommendations", async () => {
       const orderConfig = createOrderConfig(
-        15,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -640,7 +677,7 @@ describe("Error Handling Tests", () => {
   describe("Complex Error Scenarios", () => {
     it("should handle multiple concurrent errors", async () => {
       const orderConfig = createOrderConfig(
-        16,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,
@@ -672,7 +709,7 @@ describe("Error Handling Tests", () => {
 
     it("should maintain system stability under error conditions", async () => {
       const orderConfig = createOrderConfig(
-        17,
+        1, // Use supported chain ID
         jettonMaster.address,
         user1.address,
         user2.address,

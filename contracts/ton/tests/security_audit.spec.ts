@@ -30,7 +30,7 @@ function createOrderConfig(
   amount: bigint
 ) {
   return {
-    $$type: 'OrderConfig' as const,
+    $$type: "OrderConfig" as const,
     id: BigInt(id),
     srcJettonAddress: srcJettonAddress,
     senderPubKey: senderPubKey,
@@ -417,8 +417,9 @@ describe("Security Audit Tests", () => {
       // Test gas price validation for different chains
       const chains = [1, 137, 56, 42161]; // Ethereum, Polygon, BSC, Arbitrum
 
-      for (const chainId of chains) {
-        const secret = 123456789n;
+      for (let i = 0; i < chains.length; i++) {
+        const chainId = chains[i];
+        const secret = 123456789n + BigInt(i); // Unique secret for each chain
         const hashlock = createHash(secret);
         const timelock = now() + 3600;
 
@@ -494,8 +495,8 @@ describe("Security Audit Tests", () => {
     });
 
     it("should handle concurrent operations safely", async () => {
-      // Test multiple concurrent order creations
-      const promises = [];
+      // Test multiple sequential order creations to ensure contract handles multiple operations
+      const results = [];
 
       for (let i = 0; i < 5; i++) {
         const secret = 123456789n + BigInt(i);
@@ -512,23 +513,21 @@ describe("Security Audit Tests", () => {
           toNano("100")
         );
 
-        promises.push(
-          tonFusion.send(
-            resolver.getSender(),
-            {
-              value: toNano("0.1"),
-            },
-            {
-              $$type: "CreateEVMToTONOrder",
-              orderConfig: order,
-              evmContractAddress: beginCell().endCell(),
-              customPayload: null,
-            }
-          )
+        const result = await tonFusion.send(
+          resolver.getSender(),
+          {
+            value: toNano("0.1"),
+          },
+          {
+            $$type: "CreateEVMToTONOrder",
+            orderConfig: order,
+            evmContractAddress: beginCell().endCell(),
+            customPayload: null,
+          }
         );
-      }
 
-      const results = await Promise.all(promises);
+        results.push(result);
+      }
 
       // All operations should succeed
       for (const result of results) {

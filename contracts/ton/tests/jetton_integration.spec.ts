@@ -224,6 +224,43 @@ describe("Jetton Integration Tests", () => {
       },
       "mint"
     );
+
+    // Set whitelist for test users
+    await tonFusion.send(
+      deployer.getSender(),
+      {
+        value: toNano("0.05"),
+      },
+      {
+        $$type: "SetWhiteList",
+        resolver: user1.address,
+        whitelistStatus: true,
+      }
+    );
+
+    await tonFusion.send(
+      deployer.getSender(),
+      {
+        value: toNano("0.05"),
+      },
+      {
+        $$type: "SetWhiteList",
+        resolver: user2.address,
+        whitelistStatus: true,
+      }
+    );
+
+    await tonFusion.send(
+      deployer.getSender(),
+      {
+        value: toNano("0.05"),
+      },
+      {
+        $$type: "SetWhiteList",
+        resolver: resolver.address,
+        whitelistStatus: true,
+      }
+    );
   });
 
   describe("Real Jetton Wallet Integration", () => {
@@ -275,11 +312,11 @@ describe("Jetton Integration Tests", () => {
         }
       );
 
-      // Should fail due to whitelist check, not INVALID_OWNER
+      // Should succeed since user is now whitelisted
       expect(createResult.transactions).toHaveTransaction({
         from: user1.address,
         to: tonFusion.address,
-        success: false,
+        success: true,
       });
     });
 
@@ -534,7 +571,7 @@ describe("Jetton Integration Tests", () => {
 
       // Create TON to EVM order
       const tonToEVMOrder = createOrderConfig(
-        2,
+        1, // Use supported chain ID
         jettonMaster.address,
         user2.address,
         user1.address,

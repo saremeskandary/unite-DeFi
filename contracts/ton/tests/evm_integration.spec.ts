@@ -137,6 +137,43 @@ describe("EVM Integration Tests", () => {
       deploy: true,
       success: true,
     });
+
+    // Set whitelist for test users
+    await tonFusion.send(
+      deployer.getSender(),
+      {
+        value: toNano("0.05"),
+      },
+      {
+        $$type: "SetWhiteList",
+        resolver: user1.address,
+        whitelistStatus: true,
+      }
+    );
+
+    await tonFusion.send(
+      deployer.getSender(),
+      {
+        value: toNano("0.05"),
+      },
+      {
+        $$type: "SetWhiteList",
+        resolver: user2.address,
+        whitelistStatus: true,
+      }
+    );
+
+    await tonFusion.send(
+      deployer.getSender(),
+      {
+        value: toNano("0.05"),
+      },
+      {
+        $$type: "SetWhiteList",
+        resolver: resolver.address,
+        whitelistStatus: true,
+      }
+    );
   });
 
   describe("CreateEVMToTONOrder", () => {
@@ -241,11 +278,11 @@ describe("EVM Integration Tests", () => {
     });
 
     it("should handle different EVM chains", async () => {
-      const chains = [ETHEREUM_MAINNET, POLYGON, BSC, ARBITRUM, OPTIMISM];
+      const chains = [ETHEREUM_MAINNET, POLYGON, BSC, ARBITRUM, EVM_CHAIN_BASE];
 
       for (let i = 0; i < chains.length; i++) {
         const orderConfig = createOrderConfig(
-          i + 1,
+          chains[i],
           jettonMaster.address,
           user1.address,
           user2.address,
@@ -382,11 +419,11 @@ describe("EVM Integration Tests", () => {
     });
 
     it("should handle different target chains", async () => {
-      const chains = [ETHEREUM_MAINNET, POLYGON, BSC, ARBITRUM, OPTIMISM];
+      const chains = [ETHEREUM_MAINNET, POLYGON, BSC, ARBITRUM, EVM_CHAIN_BASE];
 
       for (let i = 0; i < chains.length; i++) {
         const orderConfig = createOrderConfig(
-          i + 1,
+          chains[i],
           jettonMaster.address,
           user1.address,
           user2.address,
@@ -665,7 +702,7 @@ describe("EVM Integration Tests", () => {
         POLYGON,
         BSC,
         ARBITRUM,
-        OPTIMISM,
+        EVM_CHAIN_BASE,
       ];
 
       for (const chainId of supportedChains) {
@@ -741,7 +778,8 @@ describe("EVM Integration Tests", () => {
         expect(result.transactions).toHaveTransaction({
           from: user1.address,
           to: tonFusion.address,
-          success: true, // Contract should handle gracefully
+          success: false,
+          exitCode: 88, // INVALID_CHAIN_ID - expected for unsupported chains
         });
       }
     });
@@ -749,11 +787,11 @@ describe("EVM Integration Tests", () => {
 
   describe("Gas Optimization", () => {
     it("should handle gas estimation for different chains", async () => {
-      const chains = [ETHEREUM_MAINNET, POLYGON, BSC, ARBITRUM, OPTIMISM];
+      const chains = [ETHEREUM_MAINNET, POLYGON, BSC, ARBITRUM, EVM_CHAIN_BASE];
 
       for (const chainId of chains) {
         const orderConfig = createOrderConfig(
-          chainId + 100, // Use unique order ID to avoid duplicates
+          chainId, // Use actual chain ID for validation
           jettonMaster.address,
           user1.address,
           user2.address,

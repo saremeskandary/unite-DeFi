@@ -378,8 +378,14 @@ contract TonFusion with Deployable {
     fun create(payload: Cell) {
         let msg = LockJetton.fromCell(payload);
 
-        if (self.whiteLists.get(sender()) == true) {
+        // Validate whitelist - should throw if NOT whitelisted
+        if (self.whiteLists.get(sender()) != true) {
             throw(INVALID_WHITELIST);
+        }
+
+        // Validate amount
+        if (msg.orderConfig.amount == 0) {
+            throw(INVALID_AMOUNT);
         }
 
         if (now() >= msg.orderConfig.timelock) {
@@ -410,8 +416,14 @@ contract TonFusion with Deployable {
     fun makeOrder(payload: Cell) {
         let msg = CreateOrder.fromCell(payload);
 
-        if (self.whiteLists.get(sender()) == true) {
+        // Validate whitelist - should throw if NOT whitelisted
+        if (self.whiteLists.get(sender()) != true) {
             throw(INVALID_WHITELIST);
+        }
+
+        // Validate amount
+        if (msg.orderConfig.amount == 0) {
+            throw(INVALID_AMOUNT);
         }
 
         if (now() >= msg.orderConfig.timelock) {
@@ -442,8 +454,19 @@ contract TonFusion with Deployable {
     fun createEVMToTONOrder(payload: Cell) {
         let msg = CreateEVMToTONOrder.fromCell(payload);
 
-        if (self.whiteLists.get(sender()) == true) {
+        // Validate whitelist - should throw if NOT whitelisted
+        if (self.whiteLists.get(sender()) != true) {
             throw(INVALID_WHITELIST);
+        }
+
+        // Validate amount
+        if (msg.orderConfig.amount == 0) {
+            throw(INVALID_AMOUNT);
+        }
+
+        // Validate chain ID
+        if (!isValidEVMChainId(msg.orderConfig.id)) {
+            throw(INVALID_CHAIN_ID);
         }
 
         if (now() >= msg.orderConfig.timelock) {
@@ -472,8 +495,19 @@ contract TonFusion with Deployable {
     fun createTONToEVMOrder(payload: Cell) {
         let msg = CreateTONToEVMOrder.fromCell(payload);
 
-        if (self.whiteLists.get(sender()) == true) {
+        // Validate whitelist - should throw if NOT whitelisted
+        if (self.whiteLists.get(sender()) != true) {
             throw(INVALID_WHITELIST);
+        }
+
+        // Validate amount
+        if (msg.orderConfig.amount == 0) {
+            throw(INVALID_AMOUNT);
+        }
+
+        // Validate chain ID
+        if (!isValidEVMChainId(msg.orderConfig.id)) {
+            throw(INVALID_CHAIN_ID);
         }
 
         if (now() >= msg.orderConfig.timelock) {
