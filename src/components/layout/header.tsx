@@ -38,7 +38,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-            <Image src="/fusion-swap-favicon.png" alt="FusionSwap Logo" width={32} height={32} />
+            <Image src="/fusion-swap-favicon.png" alt="FusionSwap Logo" width={60} height={90} />
             <span className="text-xl font-bold text-white">FusionSwap</span>
             <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
               Beta

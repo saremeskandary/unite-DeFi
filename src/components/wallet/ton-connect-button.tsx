@@ -66,13 +66,11 @@ export function TONConnectButton({ size = 'default', className = '' }: TONConnec
     }, 1000)
   }
 
-
-
   if (!isMounted) {
     return (
       <Button
         disabled
-        className={`bg-blue-500 hover:bg-blue-600 text-white border-0 transition-colors rounded-md ${combinedClasses}`}
+        className={`bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 transition-all duration-200 rounded-lg shadow-md ${combinedClasses}`}
       >
         {size === 'sm' ? 'TON' : 'Connect TON'}
       </Button>
@@ -84,7 +82,7 @@ export function TONConnectButton({ size = 'default', className = '' }: TONConnec
       <Button
         onClick={handleRetry}
         disabled={isLoading}
-        className={`bg-red-500 hover:bg-red-600 text-white border-0 transition-colors rounded-md ${combinedClasses}`}
+        className={`bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 transition-all duration-200 rounded-lg shadow-md ${combinedClasses}`}
       >
         {isLoading ? 'Retrying...' : 'Retry TON'}
       </Button>
@@ -93,6 +91,26 @@ export function TONConnectButton({ size = 'default', className = '' }: TONConnec
 
   return (
     <div className="ton-connect-button-wrapper">
+      <style jsx>{`
+        .ton-connect-button-wrapper :global(button) {
+          background: linear-gradient(to right, #2563eb, #1d4ed8) !important;
+          color: white !important;
+          border: none !important;
+          border-radius: 0.5rem !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+          transition: all 0.2s ease-in-out !important;
+        }
+        
+        .ton-connect-button-wrapper :global(button:hover) {
+          background: linear-gradient(to right, #1d4ed8, #1e40af) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        }
+        
+        .ton-connect-button-wrapper :global(button:active) {
+          transform: translateY(0) !important;
+        }
+      `}</style>
       <TonConnectButton
         className={combinedClasses}
       />
