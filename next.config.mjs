@@ -9,10 +9,22 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Add timeout configurations
+  // Fix the conflict between transpilePackages and serverExternalPackages
   experimental: {
-    // Remove ethers from serverExternalPackages to fix the error
-    optimizePackageImports: ['@tonconnect/ui-react'],
+    serverExternalPackages: ['@tonconnect/ui-react'],
+  },
+  // Add CORS headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+        ],
+      },
+    ];
   },
   // Increase timeout for development
   ...(process.env.NODE_ENV === 'development' && {

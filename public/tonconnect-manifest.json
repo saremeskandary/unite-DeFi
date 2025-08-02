@@ -4,6 +4,10 @@
   "iconUrl": "https://unite-defi.vercel.app/Unite-Defi-favicon.png",
   "termsOfUseUrl": "https://unite-defi.vercel.app/terms",
   "privacyPolicyUrl": "https://unite-defi.vercel.app/privacy",
-  "features": ["ton_addr", "ton_proof", "ton_send_tx"],
+  "features": [
+    "ton_addr",
+    "ton_proof",
+    "ton_send_tx"
+  ],
   "version": "1.0.0"
 }
