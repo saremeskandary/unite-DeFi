@@ -59,11 +59,14 @@
 
 #### **2. TonConnect Wallet** (2-3 hours)
 
-- [ ] **Implement wallet connection** (`src/components/ton/TonWalletConnect.tsx`)
-  - [ ] Add TonConnect SDK integration
-  - [ ] Create connect/disconnect functionality
-  - [ ] Display TON wallet address and balance
-  - [ ] Handle wallet connection errors
+- [x] **Implement wallet connection** (`src/components/ton/TonWalletConnect.tsx`) ✅ **ALREADY IMPLEMENTED**
+
+  - [x] Add TonConnect SDK integration ✅ **Working in `src/components/wallet/ton-connect-button.tsx`**
+  - [x] Create connect/disconnect functionality ✅ **Fully functional**
+  - [x] Display TON wallet address and balance ✅ **Available in TON debug/test pages**
+  - [x] Handle wallet connection errors ✅ **Error handling with retry mechanism**
+
+  > **Note:** The `src/components/ton/TonWalletConnect.tsx` file is a placeholder, but the actual TON wallet connection is fully implemented in `src/components/wallet/ton-connect-button.tsx` and integrated throughout the app.
 
 #### **3. TON Swap Interface** (6-8 hours)
 
