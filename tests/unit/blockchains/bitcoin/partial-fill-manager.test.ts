@@ -169,15 +169,18 @@ describe("Partial Fill Manager", () => {
       );
       const newSecrets = await partialFillManager.generateMultipleSecrets(2);
 
-      await partialFillManager.rotateSecrets(originalSecrets, newSecrets);
-
-      // Verify old secrets are invalidated
-      const oldHashes = await partialFillManager.generateSecretHashes(
+      // Store original secrets first
+      const originalHashes = await partialFillManager.generateSecretHashes(
         originalSecrets
       );
+      await partialFillManager.storeSecretHashes(originalSecrets, originalHashes);
+
+      await partialFillManager.rotateSecrets(originalSecrets, newSecrets);
+
+      // Verify old secrets are invalidated by checking stored hashes
       const oldValid = await partialFillManager.validateSecretHash(
         originalSecrets[0],
-        oldHashes[0]
+        originalHashes[0]
       );
       expect(oldValid).toBe(false);
 
