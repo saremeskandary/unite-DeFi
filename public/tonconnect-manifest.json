@@ -7,7 +7,14 @@
   "features": [
     "ton_addr",
     "ton_proof",
-    "ton_send_tx"
+    "ton_send_tx",
+    "ton_getAccounts"
   ],
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "networks": [
+    {
+      "chainId": -3,
+      "name": "TON Testnet"
+    }
+  ]
 }

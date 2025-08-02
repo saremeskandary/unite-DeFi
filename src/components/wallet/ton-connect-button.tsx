@@ -1,6 +1,6 @@
 "use client"
 
-import { TonConnectButton } from '@tonconnect/ui-react'
+import { TonConnectButton, useTonConnectUI } from '@tonconnect/ui-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -14,6 +14,7 @@ export function TONConnectButton({ size = 'default', className = '' }: TONConnec
   const [isMounted, setIsMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const [tonConnectUI] = useTonConnectUI()
 
   useEffect(() => {
     setIsMounted(true)
@@ -27,12 +28,30 @@ export function TONConnectButton({ size = 'default', className = '' }: TONConnec
       }
     }
 
+    // Listen for TON Connect specific events
+    const handleConnect = () => {
+      console.log('TON Connect: Connection successful')
+      toast.success('TON wallet connected successfully!')
+    }
+
+    const handleDisconnect = () => {
+      console.log('TON Connect: Disconnected')
+      toast.info('TON wallet disconnected')
+    }
+
+    const handleError = (error: any) => {
+      console.error('TON Connect: Connection error:', error)
+      toast.error(`TON Connect error: ${error.message || 'Unknown error'}`)
+    }
+
     window.addEventListener('error', handleGlobalError)
+
+    // TON Connect event listeners will be handled by the provider
 
     return () => {
       window.removeEventListener('error', handleGlobalError)
     }
-  }, [])
+  }, [tonConnectUI])
 
   const sizeClasses = size === 'sm' ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'
   const combinedClasses = `${sizeClasses} ${className}`
@@ -46,6 +65,8 @@ export function TONConnectButton({ size = 'default', className = '' }: TONConnec
       window.location.reload()
     }, 1000)
   }
+
+
 
   if (!isMounted) {
     return (

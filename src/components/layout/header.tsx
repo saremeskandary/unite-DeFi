@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { WalletConnection } from "@/components/wallet/wallet-connection"
 import { TONConnectButton } from "@/components/wallet/ton-connect-button"
 import { Menu, X } from "lucide-react"
+import Image from "next/image"
 
 export function Header() {
   const [isConnected, setIsConnected] = useState(false)
@@ -37,11 +38,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-            </div>
+            <Image src="/fusion-swap-favicon.png" alt="FusionSwap Logo" width={32} height={32} />
             <span className="text-xl font-bold text-white">FusionSwap</span>
             <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
               Beta

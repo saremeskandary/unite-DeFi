@@ -7,10 +7,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Copy, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
+import { TonConnectDebug } from "@/components/debug/ton-connect-debug"
+import { useTonConnectFixed } from "@/hooks/use-ton-connect-fixed"
 
 export function TONTestPageClient() {
     const [isMounted, setIsMounted] = useState(false)
     const [copied, setCopied] = useState(false)
+
+    // Use the fixed TON Connect hook
+    const {
+        address: safeAddress,
+        wallet: safeWallet,
+        isConnectionRestored: safeIsConnectionRestored,
+        isConnecting,
+        connectionError,
+        connect,
+        disconnect
+    } = useTonConnectFixed()
 
     // Always call TON Connect hooks to maintain hook order
     const address = useTonAddress()
@@ -23,10 +36,6 @@ export function TONTestPageClient() {
     }, [])
 
     // Use safe fallbacks when not mounted or provider not ready
-    const safeAddress = isMounted ? address : null
-    const safeWallet = isMounted ? wallet : null
-    const safeTonConnectUI = isMounted ? tonConnectUI : null
-    const safeIsConnectionRestored = isMounted ? isConnectionRestored : false
     const isConnected = isMounted && safeAddress && safeWallet ? true : false
 
     const copyAddress = async () => {
@@ -41,6 +50,22 @@ export function TONTestPageClient() {
     const openExplorer = () => {
         if (safeAddress) {
             window.open(`https://tonviewer.com/${safeAddress}`, '_blank')
+        }
+    }
+
+    const handleConnect = async () => {
+        try {
+            await connect()
+        } catch (error) {
+            toast.error(`Connection failed: ${error}`)
+        }
+    }
+
+    const handleDisconnect = async () => {
+        try {
+            await disconnect()
+        } catch (error) {
+            toast.error(`Disconnect failed: ${error}`)
         }
     }
 
@@ -71,7 +96,11 @@ export function TONTestPageClient() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 space-y-6">
+            {/* Debug Component */}
+            <TonConnectDebug />
+
+            {/* Main Test Card */}
             <Card>
                 <CardHeader>
                     <CardTitle>TON Wallet Test</CardTitle>
@@ -90,6 +119,14 @@ export function TONTestPageClient() {
                             {isConnected ? "Connected" : "Disconnected"}
                         </Badge>
                     </div>
+
+                    {/* Error Display */}
+                    {connectionError && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded">
+                            <h4 className="font-semibold text-red-800">Connection Error</h4>
+                            <p className="text-sm text-red-700">{connectionError}</p>
+                        </div>
+                    )}
 
                     {/* Wallet Info */}
                     {isConnected && (
@@ -116,12 +153,12 @@ export function TONTestPageClient() {
 
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm font-medium">Wallet Name:</span>
-                                        <span className="text-sm">{safeWallet?.name || "Unknown"}</span>
+                                        <span className="text-sm">{(safeWallet as any)?.name || "Unknown"}</span>
                                     </div>
 
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm font-medium">Version:</span>
-                                        <span className="text-sm">{safeWallet?.version || "Unknown"}</span>
+                                        <span className="text-sm">{(safeWallet as any)?.version || "Unknown"}</span>
                                     </div>
                                 </div>
                             </div>
@@ -140,7 +177,7 @@ export function TONTestPageClient() {
                                 <Button
                                     variant="destructive"
                                     size="sm"
-                                    onClick={() => safeTonConnectUI?.disconnect()}
+                                    onClick={handleDisconnect}
                                     className="w-full"
                                 >
                                     Disconnect
@@ -153,10 +190,11 @@ export function TONTestPageClient() {
                     {!isConnected && (
                         <div className="space-y-4">
                             <Button
-                                onClick={() => safeTonConnectUI?.openModal()}
+                                onClick={handleConnect}
                                 className="w-full"
+                                disabled={isConnecting}
                             >
-                                Connect TON Wallet
+                                {isConnecting ? 'Connecting...' : 'Connect TON Wallet'}
                             </Button>
                         </div>
                     )}

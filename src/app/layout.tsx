@@ -11,6 +11,9 @@ import { Header } from "@/components/layout/header"
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register"
 import { TonConnectProvider } from "@/components/providers/ton-connect-provider"
 
+// Import bridge blocker early to prevent TON Connect bridge requests
+import "@/lib/ton-connect-bridge-blocker"
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -19,7 +22,7 @@ export const metadata: Metadata = {
     "Seamlessly swap between Bitcoin and ERC20 tokens using atomic swaps powered by 1inch Fusion+",
   generator: 'v0.dev',
   icons: {
-    icon: "/Unite-Defi-favicon.png"
+    icon: "/fusion-swap-favicon.png"
   },
   manifest: "/manifest.json",
   appleWebApp: {
@@ -60,12 +63,12 @@ export default function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#3b82f6" />
 
-        <link rel="apple-touch-icon" href="/Unite-Defi-favicon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/Unite-Defi-favicon.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/Unite-Defi-favicon.png" />
+        <link rel="apple-touch-icon" href="/fusion-swap-favicon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/fusion-swap-favicon.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/fusion-swap-favicon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="mask-icon" href="/Unite-Defi-favicon.png" color="#3b82f6" />
-        <link rel="shortcut icon" href="/Unite-Defi-favicon.png" />
+        <link rel="mask-icon" href="/fusion-swap-favicon.png" color="#3b82f6" />
+        <link rel="shortcut icon" href="/fusion-swap-favicon.png" />
       </head>
       <body className={inter.className} suppressHydrationWarning={true}>
         <ErrorBoundary>
