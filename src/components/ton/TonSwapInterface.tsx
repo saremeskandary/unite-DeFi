@@ -464,7 +464,7 @@ export function SwapInterface({ onOrderCreated, tonWalletAddress = null, tonWall
 
         try {
             // Use TON integration service to get wallet info
-            if (tonIntegration.isReady()) {
+            if (tonIntegration.isNetworkReady()) {
                 const balance = await tonIntegration.getWalletBalance()
                 setTonWalletInfo({
                     address: tonWalletAddress,
@@ -499,7 +499,7 @@ export function SwapInterface({ onOrderCreated, tonWalletAddress = null, tonWall
     // Load TON network information
     const loadTonNetworkInfo = useCallback(async () => {
         try {
-            if (tonIntegration.isReady()) {
+            if (tonIntegration.isNetworkReady()) {
                 const networkInfo = await tonIntegration.getNetworkInfo()
                 setTonNetworkInfo(networkInfo)
             }
@@ -650,7 +650,7 @@ export function SwapInterface({ onOrderCreated, tonWalletAddress = null, tonWall
         setIsTonQuoteLoading(true)
         try {
             // Check if TON integration is ready
-            if (!tonIntegration.isReady()) {
+            if (!tonIntegration.isNetworkReady()) {
                 // Fallback to mock TON quote
                 const mockRate = fromToken.symbol === 'TON' ? 0.0001 : 10000 // TON to ETH or ETH to TON
                 const toAmount = (parseFloat(amount) * mockRate).toFixed(8)
@@ -812,7 +812,7 @@ export function SwapInterface({ onOrderCreated, tonWalletAddress = null, tonWall
             }
 
             // Create TON swap order using TON integration service
-            if (tonIntegration.isReady()) {
+            if (tonIntegration.isNetworkReady()) {
                 const tonOrder = await tonIntegration.createTONSwapOrder(
                     fromToken.symbol,
                     toToken.symbol,

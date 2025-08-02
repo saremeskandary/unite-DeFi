@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if TON integration is ready
-    if (!tonIntegration.isReady()) {
+    // Check if TON network is ready (don't require wallet initialization)
+    if (!tonIntegration.isNetworkReady()) {
       return NextResponse.json(
-        { error: 'TON integration not ready' },
+        { error: 'TON network not ready' },
         { status: 503 }
       )
     }

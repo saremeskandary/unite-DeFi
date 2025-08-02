@@ -61,13 +61,16 @@ export class TONIntegrationService {
       const network = process.env.NEXT_PUBLIC_TON_NETWORK || 'testnet';
       this.tonSDK.setNetwork(network as 'mainnet' | 'testnet' | 'sandbox');
 
-      // Initialize wallet if credentials are provided
-      if (process.env.TON_MNEMONIC) {
-        const mnemonic = process.env.TON_MNEMONIC.split(' ');
-        await this.tonSDK.initializeWalletFromMnemonic(mnemonic);
-      } else if (process.env.TON_PRIVATE_KEY) {
-        const privateKey = Buffer.from(process.env.TON_PRIVATE_KEY, 'hex');
-        await this.tonSDK.initializeWalletFromPrivateKey(privateKey);
+      // Only initialize wallet if we're in a client environment and credentials are provided
+      // Skip wallet initialization during server-side rendering
+      if (typeof window !== 'undefined') {
+        if (process.env.TON_MNEMONIC) {
+          const mnemonic = process.env.TON_MNEMONIC.split(' ');
+          await this.tonSDK.initializeWalletFromMnemonic(mnemonic);
+        } else if (process.env.TON_PRIVATE_KEY) {
+          const privateKey = Buffer.from(process.env.TON_PRIVATE_KEY, 'hex');
+          await this.tonSDK.initializeWalletFromPrivateKey(privateKey);
+        }
       }
 
       this.isInitialized = true;
@@ -82,6 +85,13 @@ export class TONIntegrationService {
    */
   isReady(): boolean {
     return this.isInitialized && this.tonSDK.isWalletInitialized();
+  }
+
+  /**
+   * Check if TON network is initialized (for server-side operations)
+   */
+  isNetworkReady(): boolean {
+    return this.isInitialized;
   }
 
   /**

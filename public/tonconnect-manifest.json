@@ -1,9 +1,9 @@
 {
-  "url": "https://unite-defi.vercel.app",
-  "name": "Unite DeFi - Cross-Chain Swap Platform",
-  "iconUrl": "https://unite-defi.vercel.app/Unite-Defi-favicon.png",
-  "termsOfUseUrl": "https://unite-defi.vercel.app/terms",
-  "privacyPolicyUrl": "https://unite-defi.vercel.app/privacy",
+  "url": "https://www.fusionswap.es/",
+  "name": "FusionSwap - 1inch Fusion+ Cross-Chain Swap Platform",
+  "iconUrl": "https://www.fusionswap.es/fusion-swap-favicon.png",
+  "termsOfUseUrl": "https://www.fusionswap.es/terms",
+  "privacyPolicyUrl": "https://www.fusionswap.es/privacy",
   "features": [
     "ton_addr",
     "ton_proof",

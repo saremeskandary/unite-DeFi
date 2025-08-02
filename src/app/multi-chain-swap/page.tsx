@@ -1,3 +1,5 @@
+'use client'
+
 import { MultiChainSwapInterface } from "@/components/swap/multi-chain-swap-interface"
 
 export default function MultiChainSwapPage() {
