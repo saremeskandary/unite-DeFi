@@ -10,13 +10,14 @@ export class Wallet {
         if (privateKeyOrAddress.startsWith('0x') && privateKeyOrAddress.length === 66) {
             // It's a private key - create a new TronWeb instance with the private key
             // TronWeb expects private keys without 0x prefix
-            const fullHost = String((tronWebInstance as any).fullHost || 'https://nile.trongrid.io')
+            const fullHost = (tronWebInstance as any).fullHost || 'https://nile.trongrid.io'
             const privateKey = privateKeyOrAddress.slice(2) // Remove 0x prefix
             this.tronWeb = new TronWeb({
                 fullHost: fullHost,
                 privateKey: privateKey
             })
-            this.address = this.tronWeb.address.fromPrivateKey(privateKey)
+            const address = this.tronWeb.address.fromPrivateKey(privateKey)
+            this.address = address || privateKeyOrAddress
         } else {
             // It's an address
             this.tronWeb = tronWebInstance
@@ -84,14 +85,14 @@ export class Wallet {
         // In a real implementation, you would need proper EIP-712 signing
         // TronWeb doesn't support EIP-712 natively, so you'd need to use a library like ethers
         const message = JSON.stringify(typedData.message)
-        
+
         // Create a mock signature for testing
         // In production, this should be a real signature from the private key
         const mockSignature = '0x' + '1'.repeat(64) + '2'.repeat(64) + '1b' // r, s, v format
         return mockSignature
     }
 
-    async send(param: any): Promise<{ txHash: string; blockTimestamp: bigint; blockHash: string }> {
+    async send(param: unknown): Promise<{ txHash: string; blockTimestamp: bigint; blockHash: string }> {
         // For testing purposes, we'll mock the transaction sending
         // In production, you would need to properly sign and send transactions
         const mockTxHash = '0x' + Math.random().toString(16).slice(2, 66)
@@ -109,12 +110,12 @@ export class Wallet {
     }
 
     // Add missing methods that are being called in the test code
-    public static fromSdk(sdk: any): Wallet {
+    public static fromSdk(sdk: unknown): Wallet {
         // Implementation for creating wallet from SDK
         throw new Error('fromSdk not implemented')
     }
 
-    public getSdk(): any {
+    public getSdk(): unknown {
         // Implementation for getting SDK from wallet
         throw new Error('getSdk not implemented')
     }

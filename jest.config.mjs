@@ -30,5 +30,11 @@ export default {
     // Add BigInt serialization support
     globals: {
         BigInt: global.BigInt
-    }
+    },
+    // Ensure BigInt serialization works
+    testEnvironmentOptions: {
+        customExportConditions: ['node', 'node-addons']
+    },
+    // Disable workers to avoid BigInt serialization issues
+    maxWorkers: 1
 }

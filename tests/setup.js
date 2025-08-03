@@ -42,4 +42,9 @@ if (typeof BigInt !== 'undefined') {
   BigInt.prototype.toJSON = function () {
     return this.toString();
   };
+  
+  // Also handle BigInt serialization for Jest workers
+  if (typeof global !== 'undefined') {
+    global.BigInt = BigInt;
+  }
 }
