@@ -11,73 +11,54 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useEnhancedWallet } from "@/hooks/use-enhanced-wallet";
-import { enhancedWallet } from "@/lib/enhanced-wallet";
+import { useTronWallet } from "@/hooks/use-tron-wallet";
 import { Loader2, ExternalLink, Copy, CheckCircle, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
-interface WalletConnectionProps {
+interface TronWalletConnectionProps {
   compact?: boolean;
 }
 
-export function WalletConnection({ compact = false }: WalletConnectionProps) {
+export function TronWalletConnection({
+  compact = false,
+}: TronWalletConnectionProps) {
   const {
-    isConnected: isEthConnected,
-    address: ethAddress,
-    chainId,
-    network: ethNetwork,
-    nativeBalance: ethBalance,
-    tokens: ethTokens,
-    totalValue: ethTotalValue,
-    isLoading: isEthLoading,
-    error: ethError,
-    connect: connectEth,
-    disconnect: disconnectEth,
-    switchToSupportedNetwork,
-  } = useEnhancedWallet();
+    isConnected: isTronConnected,
+    address: tronAddress,
+    network: tronNetwork,
+    nativeBalance: tronBalance,
+    tokens: tronTokens,
+    totalValue: tronTotalValue,
+    isLoading: isTronLoading,
+    error: tronError,
+    connect: connectTron,
+    disconnect: disconnectTron,
+    switchNetwork: switchTronNetwork,
+  } = useTronWallet();
 
   const [copied, setCopied] = useState(false);
-  const [activeWallet, setActiveWallet] = useState<"ethereum" | null>(null);
+  const [activeWallet, setActiveWallet] = useState<"tron" | null>(null);
 
-  const handleConnectEth = async () => {
+  const handleConnectTron = async () => {
     try {
-      await connectEth();
-      setActiveWallet("ethereum");
+      await connectTron();
+      setActiveWallet("tron");
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message.includes("Unsupported network")
-      ) {
-        // Try to switch to a supported network
-        const switched = await switchToSupportedNetwork();
-        if (switched) {
-          // Try connecting again
-          await connectEth();
-          setActiveWallet("ethereum");
-        } else {
-          toast.error(
-            "Please manually switch to Ethereum Mainnet, Goerli, or Sepolia in MetaMask"
-          );
-        }
-      } else {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Failed to connect Ethereum wallet"
-        );
-      }
+      toast.error(
+        error instanceof Error ? error.message : "Failed to connect Tron wallet"
+      );
     }
   };
 
   const handleDisconnect = async () => {
-    if (activeWallet === "ethereum") {
-      disconnectEth();
+    if (activeWallet === "tron") {
+      disconnectTron();
     }
     setActiveWallet(null);
   };
 
   const copyAddress = async () => {
-    const address = ethAddress;
+    const address = tronAddress;
     if (!address) return;
 
     try {
@@ -91,37 +72,33 @@ export function WalletConnection({ compact = false }: WalletConnectionProps) {
   };
 
   const openExplorer = () => {
-    if (activeWallet === "ethereum" && ethAddress && chainId) {
-      // Get the appropriate explorer URL based on the network
-      const getExplorerUrl = (chainId: number, address: string) => {
-        const explorers: { [key: number]: string } = {
-          1: `https://etherscan.io/address/${address}`, // Ethereum Mainnet
-          5: `https://goerli.etherscan.io/address/${address}`, // Goerli
-          11155111: `https://sepolia.etherscan.io/address/${address}`, // Sepolia
-          137: `https://polygonscan.com/address/${address}`, // Polygon
-          42161: `https://arbiscan.io/address/${address}`, // Arbitrum
-          10: `https://optimistic.etherscan.io/address/${address}`, // Optimism
-          56: `https://bscscan.com/address/${address}`, // BSC
-          43114: `https://snowtrace.io/address/${address}`, // Avalanche
+    if (activeWallet === "tron" && tronAddress && tronNetwork) {
+      const getTronExplorerUrl = (network: string, address: string) => {
+        const explorers: { [key: string]: string } = {
+          mainnet: `https://tronscan.org/#/address/${address}`,
+          nile: `https://nile.tronscan.org/#/address/${address}`,
+          shasta: `https://shasta.tronscan.org/#/address/${address}`,
         };
-        return explorers[chainId] || `https://etherscan.io/address/${address}`;
+        return (
+          explorers[network] || `https://tronscan.org/#/address/${address}`
+        );
       };
 
-      const explorerUrl = getExplorerUrl(chainId, ethAddress);
+      const explorerUrl = getTronExplorerUrl(tronNetwork, tronAddress);
       window.open(explorerUrl, "_blank");
     }
   };
 
   // Determine which wallet is connected
-  const isConnected = isEthConnected;
-  const isLoading = isEthLoading;
-  const error = ethError;
+  const isConnected = isTronConnected;
+  const isLoading = isTronLoading;
+  const error = tronError;
 
-  if (isConnected && ethAddress) {
+  if (isConnected && tronAddress) {
     if (compact) {
-      const address = ethAddress;
-      const balance = ethBalance;
-      const symbol = "ETH";
+      const address = tronAddress;
+      const balance = tronBalance;
+      const symbol = "TRX";
 
       return (
         <div className="flex items-center space-x-2">
@@ -145,12 +122,12 @@ export function WalletConnection({ compact = false }: WalletConnectionProps) {
       );
     }
 
-    const address = ethAddress;
-    const balance = ethBalance;
-    const totalValue = ethTotalValue;
-    const symbol = "ETH";
-    const network = ethNetwork;
-    const explorerTitle = "View on Etherscan";
+    const address = tronAddress;
+    const balance = tronBalance;
+    const totalValue = tronTotalValue;
+    const symbol = "TRX";
+    const network = tronNetwork;
+    const explorerTitle = "View on Tronscan";
 
     return (
       <div className="flex items-center space-x-3">
@@ -183,7 +160,7 @@ export function WalletConnection({ compact = false }: WalletConnectionProps) {
             </button>
           </div>
           <div className="text-xs text-slate-500">
-            ETHEREUM • {network?.toUpperCase()}
+            TRON • {network?.toUpperCase()}
           </div>
         </div>
         <Button
@@ -202,7 +179,7 @@ export function WalletConnection({ compact = false }: WalletConnectionProps) {
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          className={`bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white ${
+          className={`bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white ${
             compact ? "px-3 py-1.5 text-sm" : ""
           }`}
         >
@@ -218,16 +195,16 @@ export function WalletConnection({ compact = false }: WalletConnectionProps) {
           ) : (
             <>
               <Wallet className={compact ? "w-3 h-3 mr-1" : "w-4 h-4 mr-2"} />
-              {compact ? "Connect" : "Connect Wallet"}
+              {compact ? "Connect" : "Connect Tron Wallet"}
             </>
           )}
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-slate-800 border-slate-700 text-white">
         <DialogHeader>
-          <DialogTitle>Connect Your Wallet</DialogTitle>
+          <DialogTitle>Connect Your Tron Wallet</DialogTitle>
           <DialogDescription className="text-slate-400">
-            Connect your wallet to start swapping tokens
+            Connect your Tron wallet to start swapping tokens
           </DialogDescription>
         </DialogHeader>
 
@@ -239,20 +216,20 @@ export function WalletConnection({ compact = false }: WalletConnectionProps) {
 
         <div className="space-y-3 mt-6">
           <Button
-            onClick={handleConnectEth}
+            onClick={handleConnectTron}
             variant="outline"
             className="w-full justify-start border-slate-600 bg-slate-700 hover:bg-slate-600 text-white"
-            disabled={isEthLoading}
+            disabled={isTronLoading}
           >
-            <span className="mr-3">🦊</span>
-            MetaMask (Ethereum)
+            <span className="mr-3">⚡</span>
+            TronLink (TRON)
             <Badge
               variant="secondary"
-              className="ml-auto bg-green-500/20 text-green-400"
+              className="ml-auto bg-yellow-500/20 text-yellow-400"
             >
-              Popular
+              Fast & Low Fees
             </Badge>
-            {isEthLoading && (
+            {isTronLoading && (
               <Loader2 className="w-4 h-4 ml-auto animate-spin" />
             )}
           </Button>
@@ -269,36 +246,14 @@ export function WalletConnection({ compact = false }: WalletConnectionProps) {
                 <li>
                   •{" "}
                   <a
-                    href="https://metamask.io"
+                    href="https://www.tronlink.org/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
+                    className="text-yellow-400 hover:underline"
                   >
-                    MetaMask
+                    TronLink
                   </a>{" "}
-                  (Ethereum)
-                </li>
-                <li>
-                  •{" "}
-                  <a
-                    href="https://wallet.coinbase.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
-                  >
-                    Coinbase Wallet
-                  </a>
-                </li>
-                <li>
-                  •{" "}
-                  <a
-                    href="https://walletconnect.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
-                  >
-                    WalletConnect
-                  </a>
+                  (TRON)
                 </li>
               </ul>
             </div>

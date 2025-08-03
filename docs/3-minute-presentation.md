@@ -11,6 +11,8 @@
 
 _"I'm presenting Fusion Swap - trustless cross-chain atomic swap protocol that connects Bitcoin, TON, and Tron to Ethereum using 1inch infrastructure. Traditional DEXs are limited to single blockchains. We've solved cross-chain trading with real atomic swaps."_
 
+if you come to fusionswap.es you can see the demo of the dapp
+
 **Show:** Open fusionswap.es in browser
 
 ---
@@ -20,6 +22,10 @@ _"I'm presenting Fusion Swap - trustless cross-chain atomic swap protocol that c
 _"Let me show you our professional UI that supports multiple blockchains:"_
 
 #### **Bitcoin Integration (20 seconds)**
+
+frontend and backend are ready but not working since you told us 
+- **Do Not post any orders to our REST APIs. this is for our live resolvers**
+- **Work with just smartcontract level and filling things on your own without actually being broadcast to everybody**
 
 - **Navigate to Bitcoin tab**
 - _"Here's bi-directional BTC↔ETH swaps with HTLC technology"_

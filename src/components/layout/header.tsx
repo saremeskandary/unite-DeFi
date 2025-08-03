@@ -10,6 +10,7 @@ import { WalletConnection } from "@/components/wallet/wallet-connection"
 import { TONConnectButton } from "@/components/wallet/ton-connect-button"
 import { Menu, X } from "lucide-react"
 import Image from "next/image"
+import { TronWalletConnection } from "../wallet/tron-wallet-connection"
 
 export function Header() {
   const [isConnected, setIsConnected] = useState(false)
@@ -38,9 +39,17 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-            <Image src="/fusion-swap-favicon.png" alt="FusionSwap Logo" width={60} height={90} />
+            <Image
+              src="/fusion-swap-favicon.png"
+              alt="FusionSwap Logo"
+              width={60}
+              height={90}
+            />
             <span className="text-xl font-bold text-white">FusionSwap</span>
-            <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+            <Badge
+              variant="secondary"
+              className="bg-blue-500/20 text-blue-400 border-blue-500/30"
+            >
               Beta
             </Badge>
           </Link>
@@ -51,10 +60,11 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`transition-colors whitespace-nowrap ${isActive(item.href)
-                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                  : "text-slate-400 hover:text-white"
-                  }`}
+                className={`transition-colors whitespace-nowrap ${
+                  isActive(item.href)
+                    ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                    : "text-slate-400 hover:text-white"
+                }`}
               >
                 {item.label}
               </Link>
@@ -64,6 +74,7 @@ export function Header() {
           {/* Wallet Connections - Desktop */}
           <div className="hidden lg:flex items-center space-x-3 flex-shrink-0">
             <WalletConnection compact />
+            <TronWalletConnection compact />
             <TONConnectButton size="sm" />
           </div>
 
@@ -97,10 +108,11 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-4 py-2 transition-colors ${isActive(item.href)
-                    ? "text-blue-400 bg-blue-500/10 border-l-2 border-blue-400"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800"
-                    }`}
+                  className={`block px-4 py-2 transition-colors ${
+                    isActive(item.href)
+                      ? "text-blue-400 bg-blue-500/10 border-l-2 border-blue-400"
+                      : "text-slate-400 hover:text-white hover:bg-slate-800"
+                  }`}
                 >
                   {item.label}
                 </Link>
@@ -110,5 +122,5 @@ export function Header() {
         )}
       </div>
     </header>
-  )
+  );
 }
