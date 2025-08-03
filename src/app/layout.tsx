@@ -1,6 +1,6 @@
 import type React from "react"
 import "@/app/globals.css"
-import { Inter } from "next/font/google"
+import { inter } from "@/lib/fonts"
 import type { Metadata } from "next"
 import { QueryProvider } from "@/components/providers/query-provider"
 // import { WebSocketProvider } from "@/components/providers/websocket-provider"
@@ -13,8 +13,6 @@ import { TonConnectProvider } from "@/components/providers/ton-connect-provider"
 
 // Import bridge blocker early to prevent TON Connect bridge requests
 import "@/lib/ton-connect-bridge-blocker"
-
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "FusionSwap - Cross-Chain Bitcoin Swaps",
