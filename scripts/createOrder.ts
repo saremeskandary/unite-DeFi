@@ -1,5 +1,5 @@
-import { Address, toNano, beginCell } from '@ton/core';
-import { TonFusion } from '../build/TonFusion/TonFusion_TonFusion';
+import { Address, toNano, beginCell, Cell, Dictionary } from '@ton/core';
+import { TonFusion, storeLockJetton, storeCreateOrder } from '../build/TonFusion/TonFusion_TonFusion';
 import { NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider, args: string[]) {
@@ -35,14 +35,18 @@ export async function run(provider: NetworkProvider, args: string[]) {
     if (orderType === 'lock') {
         // Create LockJetton order (cross-chain)
         const orderConfig = {
-            id: chainId,
+            $$type: 'OrderConfig' as const,
+            id: BigInt(chainId),
             srcJettonAddress: srcJettonAddress,
             senderPubKey: senderPubKey,
             receiverPubKey: receiverPubKey!,
             hashlock: hashlock,
-            timelock: timelock,
+            timelock: BigInt(timelock),
             amount: amount,
             finalized: false,
+            partialFills: Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(64)),
+            totalFilled: 0n,
+            direction: 0n,
         };
 
         const lockJettonMsg = {
@@ -58,7 +62,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
             amount: amount,
             sender: senderPubKey,
             actionOpcode: 0xf512f7dfn, // LockJetton opcode
-            actionPayload: beginCell().store(lockJettonMsg).endCell(),
+            actionPayload: beginCell().store(storeLockJetton(lockJettonMsg)).endCell(),
         };
 
         await tonFusion.send(
@@ -71,12 +75,17 @@ export async function run(provider: NetworkProvider, args: string[]) {
     } else if (orderType === 'create') {
         // Create CreateOrder (same-chain)
         const order = {
-            id: chainId,
+            $$type: 'Order' as const,
+            id: BigInt(chainId),
             srcJettonAddress: srcJettonAddress,
             senderPubKey: senderPubKey,
             hashlock: hashlock,
-            timelock: timelock,
+            timelock: BigInt(timelock),
             amount: amount,
+            finalized: false,
+            partialFills: Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(64)),
+            totalFilled: 0n,
+            direction: 0n,
         };
 
         const createOrderMsg = {
@@ -92,7 +101,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
             amount: amount,
             sender: senderPubKey,
             actionOpcode: 0x7362d09cn, // CreateOrder opcode
-            actionPayload: beginCell().store(createOrderMsg).endCell(),
+            actionPayload: beginCell().store(storeCreateOrder(createOrderMsg)).endCell(),
         };
 
         await tonFusion.send(

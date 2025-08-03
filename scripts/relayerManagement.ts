@@ -61,18 +61,14 @@ export async function run(provider: NetworkProvider, args: string[]) {
     } else if (action === 'stats') {
         // View relayer statistics
         ui.write('=== Relayer Statistics ===');
-        
-        const contractData = await tonFusion.getGetData();
-        
-        ui.write(`Total Orders: ${contractData.totalOrders}`);
-        ui.write(`Total Volume: ${contractData.totalVolume}`);
-        ui.write(`Total Resolves: ${contractData.totalResolves}`);
-        
+
+        ui.write('Contract data not available in this version.');
+
         ui.write('\n=== Relayer Management ===');
         ui.write('Register: npm run bp run relayerManagement <contract> register <address>');
         ui.write('Update Stats: npm run bp run relayerManagement <contract> update <address> <true/false>');
         ui.write('View Stats: npm run bp run relayerManagement <contract> stats');
-        
+
         ui.write('\n=== Relayer Best Practices ===');
         ui.write('1. Monitor order books across chains');
         ui.write('2. Execute partial fills efficiently');

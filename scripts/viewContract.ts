@@ -17,21 +17,10 @@ export async function run(provider: NetworkProvider, args: string[]) {
     ui.write('=== TonFusion Enhanced Contract State ===');
     ui.write(`Contract Address: ${contractAddress}`);
     ui.write(`Owner: ${provider.sender().address?.toString()}`);
-    
-    // Get contract data
-    const contractData = await tonFusion.getGetData();
-    
+
+    // Contract data not available in this version
     ui.write('\n=== Contract Statistics ===');
-    ui.write(`Total Orders: ${contractData.totalOrders}`);
-    ui.write(`Total Volume: ${contractData.totalVolume}`);
-    ui.write(`Total Resolves: ${contractData.totalResolves}`);
-    ui.write(`Escrow Lock Orders: ${contractData.escrowLock.size}`);
-    ui.write(`Escrow Order Orders: ${contractData.escrowOrder.size}`);
-    ui.write(`Jettons: ${contractData.jettons.size}`);
-    ui.write(`Jetton Accounts: ${contractData.jettonAccount.size}`);
-    ui.write(`Whitelist Entries: ${contractData.whiteLists.size}`);
-    ui.write(`Relayers: ${contractData.relayers.size}`);
-    ui.write(`Escrow Contracts: ${contractData.escrowContracts.size}`);
+    ui.write('Contract data not available in this version.');
 
     ui.write('\n=== Enhanced Features ===');
     ui.write('✅ Bi-directional swaps (TON ↔ EVM)');

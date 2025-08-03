@@ -30,7 +30,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
             },
             {
                 $$type: 'DeployEscrow' as const,
-                chainId: chainId,
+                chainId: BigInt(chainId),
                 targetAddress: targetAddress,
                 customPayload: null,
             }
@@ -42,13 +42,9 @@ export async function run(provider: NetworkProvider, args: string[]) {
     } else if (action === 'list') {
         // List deployed escrow contracts
         ui.write('=== Deployed Escrow Contracts ===');
-        
-        const contractData = await tonFusion.getGetData();
-        
-        ui.write(`Total Orders: ${contractData.totalOrders}`);
-        ui.write(`Total Volume: ${contractData.totalVolume}`);
-        ui.write(`Total Resolves: ${contractData.totalResolves}`);
-        
+
+        ui.write('Contract data not available in this version.');
+
         ui.write('\n=== Supported Chains ===');
         ui.write('1 = Ethereum Mainnet');
         ui.write('137 = Polygon');
@@ -57,7 +53,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
         ui.write('42161 = Arbitrum');
         ui.write('-3 = TON Mainnet');
         ui.write('-239 = TON Testnet');
-        
+
         ui.write('\n=== Usage Examples ===');
         ui.write('Deploy to Ethereum: npm run bp run escrowFactory <contract> deploy 1 <address>');
         ui.write('Deploy to Base: npm run bp run escrowFactory <contract> deploy 8453 <address>');

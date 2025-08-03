@@ -60,7 +60,6 @@ export async function run(provider: NetworkProvider, args: string[]) {
                 $$type: 'CompletePartialFill' as const,
                 orderHash: orderHash,
                 secret: secret,
-                customPayload: null,
             }
         );
 

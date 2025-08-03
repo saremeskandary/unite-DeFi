@@ -1,5 +1,5 @@
-import { Address, toNano, beginCell } from '@ton/core';
-import { TonFusion } from '../build/TonFusion/TonFusion_TonFusion';
+import { Address, toNano, beginCell, Cell, Dictionary } from '@ton/core';
+import { TonFusion, storeCreateOrder } from '../build/TonFusion/TonFusion_TonFusion';
 import { NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider, args: string[]) {
@@ -32,23 +32,26 @@ export async function run(provider: NetworkProvider, args: string[]) {
     if (direction === 'ton-to-evm') {
         // TON → EVM order
         const orderConfig = {
-            id: toChainId,
+            $$type: 'OrderConfig' as const,
+            id: BigInt(toChainId),
             srcJettonAddress: srcJettonAddress,
             senderPubKey: senderPubKey,
             receiverPubKey: receiverPubKey,
             hashlock: hashlock,
-            timelock: timelock,
+            timelock: BigInt(timelock),
             amount: amount,
             finalized: false,
-            partialFills: {},
+            partialFills: Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(64)),
             totalFilled: 0n,
-            direction: 0, // TON_TO_EVM
+            direction: 0n, // TON_TO_EVM
         };
+
+        const evmContractAddress = beginCell().storeAddress(Address.parse(args.length > 10 ? args[10] : await ui.input('EVM contract address'))).endCell();
 
         const createOrderMsg = {
             $$type: 'CreateTONToEVMOrder' as const,
             orderConfig: orderConfig,
-            targetChainId: toChainId,
+            evmContractAddress: evmContractAddress,
             customPayload: null,
         };
 
@@ -62,20 +65,21 @@ export async function run(provider: NetworkProvider, args: string[]) {
     } else if (direction === 'evm-to-ton') {
         // EVM → TON order
         const orderConfig = {
-            id: fromChainId,
+            $$type: 'OrderConfig' as const,
+            id: BigInt(fromChainId),
             srcJettonAddress: srcJettonAddress,
             senderPubKey: senderPubKey,
             receiverPubKey: receiverPubKey,
             hashlock: hashlock,
-            timelock: timelock,
+            timelock: BigInt(timelock),
             amount: amount,
             finalized: false,
-            partialFills: {},
+            partialFills: Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(64)),
             totalFilled: 0n,
-            direction: 1, // EVM_TO_TON
+            direction: 1n, // EVM_TO_TON
         };
 
-        const evmContractAddress = Address.parse(args.length > 10 ? args[10] : await ui.input('EVM contract address'));
+        const evmContractAddress = beginCell().storeAddress(Address.parse(args.length > 10 ? args[10] : await ui.input('EVM contract address'))).endCell();
 
         const createOrderMsg = {
             $$type: 'CreateEVMToTONOrder' as const,
@@ -94,16 +98,17 @@ export async function run(provider: NetworkProvider, args: string[]) {
     } else if (direction === 'ton-to-ton') {
         // TON → TON order
         const order = {
-            id: toChainId,
+            $$type: 'Order' as const,
+            id: BigInt(toChainId),
             srcJettonAddress: srcJettonAddress,
             senderPubKey: senderPubKey,
             hashlock: hashlock,
-            timelock: timelock,
+            timelock: BigInt(timelock),
             amount: amount,
             finalized: false,
-            partialFills: {},
+            partialFills: Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.BigUint(64)),
             totalFilled: 0n,
-            direction: 2, // TON_TO_TON
+            direction: 2n, // TON_TO_TON
         };
 
         const jetton = beginCell().storeUint(0, 32).endCell();
@@ -121,7 +126,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
             amount: amount,
             sender: senderPubKey,
             actionOpcode: 0x7362d09cn, // CreateOrder opcode
-            actionPayload: beginCell().store(createOrderMsg).endCell(),
+            actionPayload: beginCell().store(storeCreateOrder(createOrderMsg)).endCell(),
         };
 
         await tonFusion.send(
