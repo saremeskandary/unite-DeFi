@@ -100,6 +100,13 @@ export class FusionBitcoinIntegration {
   }
 
   /**
+   * Monitor order status
+   */
+  async monitorOrderStatus(orderHash: string): Promise<any> {
+    return await this.monitoringService.monitorSecretReveal(orderHash, '', Buffer.alloc(0));
+  }
+
+  /**
    * Verify Bitcoin transaction
    */
   async verifyBitcoinTransaction(txId: string, expectedAmount: string): Promise<boolean> {

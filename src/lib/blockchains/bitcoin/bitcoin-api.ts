@@ -1,4 +1,5 @@
 import * as bitcoin from 'bitcoinjs-lib';
+import { payments } from 'bitcoinjs-lib';
 import axios from 'axios';
 
 export interface BitcoinNetworkConfig {
@@ -314,11 +315,11 @@ export class BitcoinAPIService {
     try {
       const outputScript = bitcoin.address.toOutputScript(address, this.network);
 
-      if (bitcoin.address.payments.p2pkh({ output: outputScript, network: this.network })) {
+      if (payments.p2pkh({ output: outputScript, network: this.network })) {
         return 'legacy';
-      } else if (bitcoin.address.payments.p2sh({ output: outputScript, network: this.network })) {
+      } else if (payments.p2sh({ output: outputScript, network: this.network })) {
         return 'p2sh';
-      } else if (bitcoin.address.payments.p2wpkh({ output: outputScript, network: this.network })) {
+      } else if (payments.p2wpkh({ output: outputScript, network: this.network })) {
         return 'bech32';
       }
 

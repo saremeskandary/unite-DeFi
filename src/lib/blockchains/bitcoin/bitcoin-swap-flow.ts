@@ -1,3 +1,4 @@
+import { NetworkEnum } from '@1inch/fusion-sdk';
 import { BitcoinHTLCOperations } from './bitcoin-htlc-operations';
 import { BitcoinNetworkOperations } from './bitcoin-network-operations';
 import { FusionOrderManager } from './fusion-order-manager';
@@ -45,11 +46,13 @@ export class BitcoinSwapFlow {
   constructor(
     private privateKey: string,
     private btcPrivateKeyWIF: string,
+    private rpcUrl: string = process.env.ETH_RPC_URL || 'https://eth-mainnet.g.alchemy.com/v2/test-key',
+    private network: NetworkEnum = NetworkEnum.ETHEREUM,
     private useBtcTestnet: boolean = true
   ) {
     this.htlcOperations = new BitcoinHTLCOperations(useBtcTestnet);
     this.networkOperations = new BitcoinNetworkOperations(btcPrivateKeyWIF, useBtcTestnet);
-    this.orderManager = new FusionOrderManager(privateKey);
+    this.orderManager = new FusionOrderManager(privateKey, rpcUrl, network);
     this.monitoringService = new SwapMonitoringService(
       this.htlcOperations,
       this.networkOperations,
@@ -69,24 +72,23 @@ export class BitcoinSwapFlow {
    */
   async handleERC20ToBTCSwap(params: BitcoinSwapFlowParams): Promise<BitcoinSwapFlowResult> {
     try {
-      // 1. Create Fusion+ order for ERC20 → BTC
-      const order = await this.orderManager.createERC20ToBTCOrder({
-        fromToken: params.fromToken,
-        toToken: params.toToken,
-        fromAmount: params.fromAmount,
-        toAmount: params.toAmount,
-        userAddress: params.userEthereumAddress,
-        bitcoinAddress: params.userBitcoinAddress
-      });
-
-      // 2. Generate secret and hash for HTLC
+      // 1. Generate secret and hash for HTLC
       const secret = params.secret || this.generateSecret();
       const secretHash = this.htlcOperations.generateSecretHash(secret);
+
+      // 2. Create Fusion+ order for ERC20 → BTC
+      const order = await this.orderManager.createERC20ToBTCOrder({
+        makerAsset: params.fromToken === 'ERC20' ? '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599' : '0x0000000000000000000000000000000000000000', // WBTC address
+        makerAmount: params.fromAmount,
+        btcAddress: params.userBitcoinAddress,
+        btcAmount: parseInt(params.toAmount),
+        secret: secret
+      });
 
       // 3. Create Bitcoin HTLC script
       const htlcScript = this.htlcOperations.createBitcoinHTLCScript({
         secretHash,
-        recipientPublicKey: this.networkOperations.getResolverAddress(),
+        recipientPublicKey: Buffer.from(this.networkOperations.getResolverAddress(), 'hex'),
         lockTimeBlocks: await this.networkOperations.getCurrentBlockHeight() + 144 // 24 hours
       });
 
@@ -101,14 +103,14 @@ export class BitcoinSwapFlow {
 
       // 6. Start monitoring for secret reveal
       this.monitoringService.monitorSecretReveal(
-        order.orderHash,
+        order.fusionOrder.orderHash,
         htlcAddress,
         htlcScript
       );
 
       return {
         success: true,
-        orderHash: order.orderHash,
+        orderHash: order.fusionOrder.orderHash,
         htlcAddress,
         secretHash: secretHash.toString('hex'),
         instructions: [
@@ -140,48 +142,40 @@ export class BitcoinSwapFlow {
    */
   async handleBTCToERC20Swap(params: BitcoinSwapFlowParams): Promise<BitcoinSwapFlowResult> {
     try {
-      // 1. Create Fusion+ order for BTC → ERC20
-      const order = await this.orderManager.createBTCToERC20Order({
-        fromToken: params.fromToken,
-        toToken: params.toToken,
-        fromAmount: params.fromAmount,
-        toAmount: params.toAmount,
-        userAddress: params.userEthereumAddress,
-        bitcoinAddress: params.userBitcoinAddress
-      });
-
-      // 2. Generate secret and hash for HTLC
+      // 1. Generate secret and hash for HTLC
       const secret = params.secret || this.generateSecret();
       const secretHash = this.htlcOperations.generateSecretHash(secret);
+
+      // 2. Create Fusion+ order for BTC → ERC20
+      const order = await this.orderManager.createBTCToERC20Order({
+        btcTxId: '', // Will be filled when user sends BTC
+        btcAmount: parseInt(params.fromAmount),
+        takerAsset: params.toToken === 'ERC20' ? '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599' : '0x0000000000000000000000000000000000000000',
+        takerAmount: params.toAmount,
+        ethAddress: params.userEthereumAddress,
+        secret: secret
+      });
 
       // 3. Create Bitcoin HTLC script for user to send BTC to
       const htlcScript = this.htlcOperations.createBitcoinHTLCScript({
         secretHash,
-        recipientPublicKey: params.userBitcoinAddress,
+        recipientPublicKey: Buffer.from(params.userBitcoinAddress, 'hex'),
         lockTimeBlocks: await this.networkOperations.getCurrentBlockHeight() + 144 // 24 hours
       });
 
       // 4. Create HTLC address for user to send BTC to
       const htlcAddress = this.htlcOperations.createHTLCAddress(htlcScript);
 
-      // 5. Lock ERC20 tokens in escrow
-      await this.orderManager.lockERC20TokensInEscrow({
-        orderHash: order.orderHash,
-        tokenAddress: params.toToken,
-        amount: params.toAmount,
-        userAddress: params.userEthereumAddress
-      });
-
-      // 6. Start monitoring for Bitcoin deposit
+      // 5. Start monitoring for Bitcoin deposit
       this.monitoringService.monitorBitcoinSecretReveal(
-        order.orderHash,
+        order.fusionOrder.orderHash,
         htlcAddress,
         secretHash.toString('hex')
       );
 
       return {
         success: true,
-        orderHash: order.orderHash,
+        orderHash: order.fusionOrder.orderHash,
         htlcAddress,
         secretHash: secretHash.toString('hex'),
         instructions: [
