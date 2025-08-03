@@ -1,0 +1,25 @@
+[profile.default]
+solc = "0.8.23"
+src = 'contracts/src'
+out = 'dist/contracts'
+libs = ['contracts/lib']
+via_ir = true
+optimizer_runs = 1000000
+eth-rpc-url = 'http://localhost:8545'
+extra_output = ['storageLayout']
+fs_permissions = [
+    { access = "read", path = "dist/contracts" },
+    { access = "read-write", path = ".forge-snapshots/" },
+]
+
+# Tron-specific optimizations
+[profile.tron]
+inherits = "default"
+optimizer_runs = 2000000 # Higher optimization for Tron gas efficiency
+via_ir = true
+
+[rpc_endpoints]
+ethereum = "https://eth.llamarpc.com"
+tron_mainnet = "https://tron-rpc.publicnode.com"
+tron_nile = "https://api.nileex.io"
+tron_shasta = "https://api.shasta.trongrid.io"
