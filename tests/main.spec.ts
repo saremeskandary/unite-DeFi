@@ -1,27 +1,27 @@
 import 'dotenv/config'
-import {expect, jest} from '@jest/globals'
+import { expect, jest } from '@jest/globals'
 
-import {createServer, CreateServerReturnType} from 'prool'
-import {anvil} from 'prool/instances'
+import { createServer, CreateServerReturnType } from 'prool'
+// import { anvil } from 'prool/instances' // Anvil is for Ethereum, not needed for TRON
 
-import Sdk from '@1inch/cross-chain-sdk'
-import TronWeb from 'tronweb'
-import {uint8ArrayToHex, UINT_40_MAX} from '@1inch/byte-utils'
+import * as Sdk from '@1inch/cross-chain-sdk'
+import { TronWeb } from 'tronweb'
+import { uint8ArrayToHex, UINT_40_MAX } from '@1inch/byte-utils'
 import assert from 'node:assert'
-import {ChainConfig, config} from './config'
-import {Wallet} from './wallet'
-import {Resolver} from './resolver'
-import {EscrowFactory} from './escrow-factory'
+import { ChainConfig, config } from './config'
+import { Wallet } from './wallet'
+import { Resolver } from './resolver'
+import { EscrowFactory } from './escrow-factory'
 import factoryContract from '../dist/contracts/TestEscrowFactory.sol/TestEscrowFactory.json'
 import resolverContract from '../dist/contracts/Resolver.sol/Resolver.json'
 
 // Helper functions to replace ethers utilities
 function parseEther(value: string): bigint {
-    return BigInt(parseFloat(value) * 10**18)
+    return BigInt(parseFloat(value) * 10 ** 18)
 }
 
 function parseUnits(value: string, decimals: number): bigint {
-    return BigInt(parseFloat(value) * 10**decimals)
+    return BigInt(parseFloat(value) * 10 ** decimals)
 }
 
 function randomBytes(length: number): Uint8Array {
@@ -33,11 +33,15 @@ function randomBytes(length: number): Uint8Array {
 const MaxUint256 = (2n ** 256n) - 1n
 
 function computeAddress(privateKey: string): string {
-    const tronWeb = new TronWeb({fullHost: 'https://api.nileex.io'})
-    return tronWeb.address.fromPrivateKey(privateKey)
+    const tronWeb = new TronWeb({ fullHost: 'https://api.nileex.io' })
+    const address = tronWeb.address.fromPrivateKey(privateKey)
+    if (!address) {
+        throw new Error('Failed to compute address from private key')
+    }
+    return address
 }
 
-const {Address} = Sdk
+// Address is now accessed via Sdk.Address
 
 jest.setTimeout(1000 * 60)
 
@@ -51,7 +55,7 @@ describe('Resolving example', () => {
 
     type Chain = {
         node?: CreateServerReturnType | undefined
-        tronWeb: TronWeb
+        tronWeb: InstanceType<typeof TronWeb>
         escrowFactory: string
         resolver: string
     }
@@ -121,7 +125,7 @@ describe('Resolving example', () => {
     async function getBalances(
         srcToken: string,
         dstToken: string
-    ): Promise<{src: {user: bigint; resolver: bigint}; dst: {user: bigint; resolver: bigint}}> {
+    ): Promise<{ src: { user: bigint; resolver: bigint }; dst: { user: bigint; resolver: bigint } }> {
         return {
             src: {
                 user: await srcChainUser.tokenBalance(srcToken),
@@ -137,7 +141,8 @@ describe('Resolving example', () => {
     afterAll(async () => {
         // TronWeb doesn't have a destroy method like ethers providers
         // Just clean up any remaining resources
-        await Promise.all([src.node?.stop(), dst.node?.stop()])
+        if (src?.node) await src.node.stop()
+        if (dst?.node) await dst.node.stop()
     })
 
     // eslint-disable-next-line max-lines-per-function
@@ -151,14 +156,14 @@ describe('Resolving example', () => {
             // User creates order
             const secret = uint8ArrayToHex(randomBytes(32)) // note: use crypto secure random number in real world
             const order = Sdk.CrossChainOrder.new(
-                new Address(src.escrowFactory),
+                new Sdk.Address(src.escrowFactory),
                 {
                     salt: Sdk.randBigInt(1000n),
-                    maker: new Address(await srcChainUser.getAddress()),
+                    maker: new Sdk.Address(srcChainUser.address),
                     makingAmount: parseUnits('100', 6),
                     takingAmount: parseUnits('99', 6),
-                    makerAsset: new Address(config.chain.source.tokens.USDC.address),
-                    takerAsset: new Address(config.chain.destination.tokens.USDC.address)
+                    makerAsset: new Sdk.Address(config.chain.source.tokens.USDC.address),
+                    takerAsset: new Sdk.Address(config.chain.destination.tokens.USDC.address)
                 },
                 {
                     hashLock: Sdk.HashLock.forSingleFill(secret),
@@ -172,7 +177,7 @@ describe('Resolving example', () => {
                         dstCancellation: 101n // 1sec public withdrawal
                     }),
                     srcChainId,
-                    dstChainId,
+                    dstChainId: dstChainId as Sdk.SupportedChain,
                     srcSafetyDeposit: parseEther('0.001'),
                     dstSafetyDeposit: parseEther('0.001')
                 },
@@ -185,7 +190,7 @@ describe('Resolving example', () => {
                     }),
                     whitelist: [
                         {
-                            address: new Address(src.resolver),
+                            address: new Sdk.Address(src.resolver),
                             allowFrom: 0n
                         }
                     ],
@@ -206,7 +211,7 @@ describe('Resolving example', () => {
             console.log(`[${srcChainId}]`, `Filling order ${orderHash}`)
 
             const fillAmount = order.makingAmount
-            const {txHash: orderFillHash, blockHash: srcDeployBlock} = await srcChainResolver.send(
+            const { txHash: orderFillHash, blockHash: srcDeployBlock } = await srcChainResolver.send(
                 resolverContract.deploySrc(
                     srcChainId,
                     order,
@@ -225,10 +230,10 @@ describe('Resolving example', () => {
 
             const dstImmutables = srcEscrowEvent[0]
                 .withComplement(srcEscrowEvent[1])
-                .withTaker(new Address(resolverContract.dstAddress))
+                .withTaker(new Sdk.Address(resolverContract.dstSdk.Address))
 
             console.log(`[${dstChainId}]`, `Depositing ${dstImmutables.amount} for order ${orderHash}`)
-            const {txHash: dstDepositHash, blockTimestamp: dstDeployedAt} = await dstChainResolver.send(
+            const { txHash: dstDepositHash, blockTimestamp: dstDeployedAt } = await dstChainResolver.send(
                 resolverContract.deployDst(dstImmutables)
             )
             console.log(`[${dstChainId}]`, `Created dst deposit for order ${orderHash} in tx ${dstDepositHash}`)
@@ -236,16 +241,16 @@ describe('Resolving example', () => {
             const ESCROW_SRC_IMPLEMENTATION = await srcFactory.getSourceImpl()
             const ESCROW_DST_IMPLEMENTATION = await dstFactory.getDestinationImpl()
 
-            const srcEscrowAddress = new Sdk.EscrowFactory(new Address(src.escrowFactory)).getSrcEscrowAddress(
+            const srcEscrowAddress = new Sdk.EscrowFactory(new Sdk.Address(src.escrowFactory)).getSrcEscrowAddress(
                 srcEscrowEvent[0],
                 ESCROW_SRC_IMPLEMENTATION
             )
 
-            const dstEscrowAddress = new Sdk.EscrowFactory(new Address(dst.escrowFactory)).getDstEscrowAddress(
+            const dstEscrowAddress = new Sdk.EscrowFactory(new Sdk.Address(dst.escrowFactory)).getDstEscrowAddress(
                 srcEscrowEvent[0],
                 srcEscrowEvent[1],
                 dstDeployedAt,
-                new Address(resolverContract.dstAddress),
+                new Sdk.Address(resolverContract.dstSdk.Address),
                 ESCROW_DST_IMPLEMENTATION
             )
 
@@ -257,7 +262,7 @@ describe('Resolving example', () => {
             )
 
             console.log(`[${srcChainId}]`, `Withdrawing funds for resolver from ${srcEscrowAddress}`)
-            const {txHash: resolverWithdrawHash} = await srcChainResolver.send(
+            const { txHash: resolverWithdrawHash } = await srcChainResolver.send(
                 resolverContract.withdraw('src', srcEscrowAddress, secret, srcEscrowEvent[0])
             )
             console.log(
@@ -286,18 +291,18 @@ describe('Resolving example', () => {
 
             // User creates order
             // 11 secrets
-            const secrets = Array.from({length: 11}).map(() => uint8ArrayToHex(randomBytes(32))) // note: use crypto secure random number in the real world
+            const secrets = Array.from({ length: 11 }).map(() => uint8ArrayToHex(randomBytes(32))) // note: use crypto secure random number in the real world
             const secretHashes = secrets.map((s) => Sdk.HashLock.hashSecret(s))
             const leaves = Sdk.HashLock.getMerkleLeaves(secrets)
             const order = Sdk.CrossChainOrder.new(
-                new Address(src.escrowFactory),
+                new Sdk.Address(src.escrowFactory),
                 {
                     salt: Sdk.randBigInt(1000n),
-                    maker: new Address(await srcChainUser.getAddress()),
+                    maker: new Sdk.Address(srcChainUser.address),
                     makingAmount: parseUnits('100', 6),
                     takingAmount: parseUnits('99', 6),
-                    makerAsset: new Address(config.chain.source.tokens.USDC.address),
-                    takerAsset: new Address(config.chain.destination.tokens.USDC.address)
+                    makerAsset: new Sdk.Address(config.chain.source.tokens.USDC.address),
+                    takerAsset: new Sdk.Address(config.chain.destination.tokens.USDC.address)
                 },
                 {
                     hashLock: Sdk.HashLock.forMultipleFills(leaves),
@@ -311,7 +316,7 @@ describe('Resolving example', () => {
                         dstCancellation: 101n // 1sec public withdrawal
                     }),
                     srcChainId,
-                    dstChainId,
+                    dstChainId: dstChainId as Sdk.SupportedChain,
                     srcSafetyDeposit: parseEther('0.001'),
                     dstSafetyDeposit: parseEther('0.001')
                 },
@@ -324,7 +329,7 @@ describe('Resolving example', () => {
                     }),
                     whitelist: [
                         {
-                            address: new Address(src.resolver),
+                            address: new Sdk.Address(src.resolver),
                             allowFrom: 0n
                         }
                     ],
@@ -348,7 +353,7 @@ describe('Resolving example', () => {
             const idx = secrets.length - 1 // last index to fulfill
             // Number((BigInt(secrets.length - 1) * (fillAmount - 1n)) / order.makingAmount)
 
-            const {txHash: orderFillHash, blockHash: srcDeployBlock} = await srcChainResolver.send(
+            const { txHash: orderFillHash, blockHash: srcDeployBlock } = await srcChainResolver.send(
                 resolverContract.deploySrc(
                     srcChainId,
                     order,
@@ -356,7 +361,7 @@ describe('Resolving example', () => {
                     Sdk.TakerTraits.default()
                         .setExtension(order.extension)
                         .setInteraction(
-                            new Sdk.EscrowFactory(new Address(src.escrowFactory)).getMultipleFillInteraction(
+                            new Sdk.EscrowFactory(new Sdk.Address(src.escrowFactory)).getMultipleFillInteraction(
                                 Sdk.HashLock.getProof(leaves, idx),
                                 idx,
                                 secretHashes[idx]
@@ -375,10 +380,10 @@ describe('Resolving example', () => {
 
             const dstImmutables = srcEscrowEvent[0]
                 .withComplement(srcEscrowEvent[1])
-                .withTaker(new Address(resolverContract.dstAddress))
+                .withTaker(new Sdk.Address(resolverContract.dstSdk.Address))
 
             console.log(`[${dstChainId}]`, `Depositing ${dstImmutables.amount} for order ${orderHash}`)
-            const {txHash: dstDepositHash, blockTimestamp: dstDeployedAt} = await dstChainResolver.send(
+            const { txHash: dstDepositHash, blockTimestamp: dstDeployedAt } = await dstChainResolver.send(
                 resolverContract.deployDst(dstImmutables)
             )
             console.log(`[${dstChainId}]`, `Created dst deposit for order ${orderHash} in tx ${dstDepositHash}`)
@@ -388,16 +393,16 @@ describe('Resolving example', () => {
             const ESCROW_SRC_IMPLEMENTATION = await srcFactory.getSourceImpl()
             const ESCROW_DST_IMPLEMENTATION = await dstFactory.getDestinationImpl()
 
-            const srcEscrowAddress = new Sdk.EscrowFactory(new Address(src.escrowFactory)).getSrcEscrowAddress(
+            const srcEscrowAddress = new Sdk.EscrowFactory(new Sdk.Address(src.escrowFactory)).getSrcEscrowAddress(
                 srcEscrowEvent[0],
                 ESCROW_SRC_IMPLEMENTATION
             )
 
-            const dstEscrowAddress = new Sdk.EscrowFactory(new Address(dst.escrowFactory)).getDstEscrowAddress(
+            const dstEscrowAddress = new Sdk.EscrowFactory(new Sdk.Address(dst.escrowFactory)).getDstEscrowAddress(
                 srcEscrowEvent[0],
                 srcEscrowEvent[1],
                 dstDeployedAt,
-                new Address(resolverContract.dstAddress),
+                new Sdk.Address(resolverContract.dstSdk.Address),
                 ESCROW_DST_IMPLEMENTATION
             )
 
@@ -409,7 +414,7 @@ describe('Resolving example', () => {
             )
 
             console.log(`[${srcChainId}]`, `Withdrawing funds for resolver from ${srcEscrowAddress}`)
-            const {txHash: resolverWithdrawHash} = await srcChainResolver.send(
+            const { txHash: resolverWithdrawHash } = await srcChainResolver.send(
                 resolverContract.withdraw('src', srcEscrowAddress, secret, srcEscrowEvent[0])
             )
             console.log(
@@ -438,18 +443,18 @@ describe('Resolving example', () => {
 
             // User creates order
             // 11 secrets
-            const secrets = Array.from({length: 11}).map(() => uint8ArrayToHex(randomBytes(32))) // note: use crypto secure random number in the real world
+            const secrets = Array.from({ length: 11 }).map(() => uint8ArrayToHex(randomBytes(32))) // note: use crypto secure random number in the real world
             const secretHashes = secrets.map((s) => Sdk.HashLock.hashSecret(s))
             const leaves = Sdk.HashLock.getMerkleLeaves(secrets)
             const order = Sdk.CrossChainOrder.new(
-                new Address(src.escrowFactory),
+                new Sdk.Address(src.escrowFactory),
                 {
                     salt: Sdk.randBigInt(1000n),
-                    maker: new Address(await srcChainUser.getAddress()),
+                    maker: new Sdk.Address(srcChainUser.address),
                     makingAmount: parseUnits('100', 6),
                     takingAmount: parseUnits('99', 6),
-                    makerAsset: new Address(config.chain.source.tokens.USDC.address),
-                    takerAsset: new Address(config.chain.destination.tokens.USDC.address)
+                    makerAsset: new Sdk.Address(config.chain.source.tokens.USDC.address),
+                    takerAsset: new Sdk.Address(config.chain.destination.tokens.USDC.address)
                 },
                 {
                     hashLock: Sdk.HashLock.forMultipleFills(leaves),
@@ -463,7 +468,7 @@ describe('Resolving example', () => {
                         dstCancellation: 101n // 1sec public withdrawal
                     }),
                     srcChainId,
-                    dstChainId,
+                    dstChainId: dstChainId as Sdk.SupportedChain,
                     srcSafetyDeposit: parseEther('0.001'),
                     dstSafetyDeposit: parseEther('0.001')
                 },
@@ -476,7 +481,7 @@ describe('Resolving example', () => {
                     }),
                     whitelist: [
                         {
-                            address: new Address(src.resolver),
+                            address: new Sdk.Address(src.resolver),
                             allowFrom: 0n
                         }
                     ],
@@ -499,7 +504,7 @@ describe('Resolving example', () => {
             const fillAmount = order.makingAmount / 2n
             const idx = Number((BigInt(secrets.length - 1) * (fillAmount - 1n)) / order.makingAmount)
 
-            const {txHash: orderFillHash, blockHash: srcDeployBlock} = await srcChainResolver.send(
+            const { txHash: orderFillHash, blockHash: srcDeployBlock } = await srcChainResolver.send(
                 resolverContract.deploySrc(
                     srcChainId,
                     order,
@@ -507,7 +512,7 @@ describe('Resolving example', () => {
                     Sdk.TakerTraits.default()
                         .setExtension(order.extension)
                         .setInteraction(
-                            new Sdk.EscrowFactory(new Address(src.escrowFactory)).getMultipleFillInteraction(
+                            new Sdk.EscrowFactory(new Sdk.Address(src.escrowFactory)).getMultipleFillInteraction(
                                 Sdk.HashLock.getProof(leaves, idx),
                                 idx,
                                 secretHashes[idx]
@@ -526,10 +531,10 @@ describe('Resolving example', () => {
 
             const dstImmutables = srcEscrowEvent[0]
                 .withComplement(srcEscrowEvent[1])
-                .withTaker(new Address(resolverContract.dstAddress))
+                .withTaker(new Sdk.Address(resolverContract.dstSdk.Address))
 
             console.log(`[${dstChainId}]`, `Depositing ${dstImmutables.amount} for order ${orderHash}`)
-            const {txHash: dstDepositHash, blockTimestamp: dstDeployedAt} = await dstChainResolver.send(
+            const { txHash: dstDepositHash, blockTimestamp: dstDeployedAt } = await dstChainResolver.send(
                 resolverContract.deployDst(dstImmutables)
             )
             console.log(`[${dstChainId}]`, `Created dst deposit for order ${orderHash} in tx ${dstDepositHash}`)
@@ -539,16 +544,16 @@ describe('Resolving example', () => {
             const ESCROW_SRC_IMPLEMENTATION = await srcFactory.getSourceImpl()
             const ESCROW_DST_IMPLEMENTATION = await dstFactory.getDestinationImpl()
 
-            const srcEscrowAddress = new Sdk.EscrowFactory(new Address(src.escrowFactory)).getSrcEscrowAddress(
+            const srcEscrowAddress = new Sdk.EscrowFactory(new Sdk.Address(src.escrowFactory)).getSrcEscrowAddress(
                 srcEscrowEvent[0],
                 ESCROW_SRC_IMPLEMENTATION
             )
 
-            const dstEscrowAddress = new Sdk.EscrowFactory(new Address(dst.escrowFactory)).getDstEscrowAddress(
+            const dstEscrowAddress = new Sdk.EscrowFactory(new Sdk.Address(dst.escrowFactory)).getDstEscrowAddress(
                 srcEscrowEvent[0],
                 srcEscrowEvent[1],
                 dstDeployedAt,
-                new Address(resolverContract.dstAddress),
+                new Sdk.Address(resolverContract.dstSdk.Address),
                 ESCROW_DST_IMPLEMENTATION
             )
 
@@ -560,7 +565,7 @@ describe('Resolving example', () => {
             )
 
             console.log(`[${srcChainId}]`, `Withdrawing funds for resolver from ${srcEscrowAddress}`)
-            const {txHash: resolverWithdrawHash} = await srcChainResolver.send(
+            const { txHash: resolverWithdrawHash } = await srcChainResolver.send(
                 resolverContract.withdraw('src', srcEscrowAddress, secret, srcEscrowEvent[0])
             )
             console.log(
@@ -593,14 +598,14 @@ describe('Resolving example', () => {
             // User creates order
             const hashLock = Sdk.HashLock.forSingleFill(uint8ArrayToHex(randomBytes(32))) // note: use crypto secure random number in real world
             const order = Sdk.CrossChainOrder.new(
-                new Address(src.escrowFactory),
+                new Sdk.Address(src.escrowFactory),
                 {
                     salt: Sdk.randBigInt(1000n),
-                    maker: new Address(await srcChainUser.getAddress()),
+                    maker: new Sdk.Address(srcChainUser.address),
                     makingAmount: parseUnits('100', 6),
                     takingAmount: parseUnits('99', 6),
-                    makerAsset: new Address(config.chain.source.tokens.USDC.address),
-                    takerAsset: new Address(config.chain.destination.tokens.USDC.address)
+                    makerAsset: new Sdk.Address(config.chain.source.tokens.USDC.address),
+                    takerAsset: new Sdk.Address(config.chain.destination.tokens.USDC.address)
                 },
                 {
                     hashLock,
@@ -614,7 +619,7 @@ describe('Resolving example', () => {
                         dstCancellation: 101n // 1sec public withdrawal
                     }),
                     srcChainId,
-                    dstChainId,
+                    dstChainId: dstChainId as Sdk.SupportedChain,
                     srcSafetyDeposit: parseEther('0.001'),
                     dstSafetyDeposit: parseEther('0.001')
                 },
@@ -627,7 +632,7 @@ describe('Resolving example', () => {
                     }),
                     whitelist: [
                         {
-                            address: new Address(src.resolver),
+                            address: new Sdk.Address(src.resolver),
                             allowFrom: 0n
                         }
                     ],
@@ -648,7 +653,7 @@ describe('Resolving example', () => {
             console.log(`[${srcChainId}]`, `Filling order ${orderHash}`)
 
             const fillAmount = order.makingAmount
-            const {txHash: orderFillHash, blockHash: srcDeployBlock} = await srcChainResolver.send(
+            const { txHash: orderFillHash, blockHash: srcDeployBlock } = await srcChainResolver.send(
                 resolverContract.deploySrc(
                     srcChainId,
                     order,
@@ -667,10 +672,10 @@ describe('Resolving example', () => {
 
             const dstImmutables = srcEscrowEvent[0]
                 .withComplement(srcEscrowEvent[1])
-                .withTaker(new Address(resolverContract.dstAddress))
+                .withTaker(new Sdk.Address(resolverContract.dstSdk.Address))
 
             console.log(`[${dstChainId}]`, `Depositing ${dstImmutables.amount} for order ${orderHash}`)
-            const {txHash: dstDepositHash, blockTimestamp: dstDeployedAt} = await dstChainResolver.send(
+            const { txHash: dstDepositHash, blockTimestamp: dstDeployedAt } = await dstChainResolver.send(
                 resolverContract.deployDst(dstImmutables)
             )
             console.log(`[${dstChainId}]`, `Created dst deposit for order ${orderHash} in tx ${dstDepositHash}`)
@@ -678,16 +683,16 @@ describe('Resolving example', () => {
             const ESCROW_SRC_IMPLEMENTATION = await srcFactory.getSourceImpl()
             const ESCROW_DST_IMPLEMENTATION = await dstFactory.getDestinationImpl()
 
-            const srcEscrowAddress = new Sdk.EscrowFactory(new Address(src.escrowFactory)).getSrcEscrowAddress(
+            const srcEscrowAddress = new Sdk.EscrowFactory(new Sdk.Address(src.escrowFactory)).getSrcEscrowAddress(
                 srcEscrowEvent[0],
                 ESCROW_SRC_IMPLEMENTATION
             )
 
-            const dstEscrowAddress = new Sdk.EscrowFactory(new Address(dst.escrowFactory)).getDstEscrowAddress(
+            const dstEscrowAddress = new Sdk.EscrowFactory(new Sdk.Address(dst.escrowFactory)).getDstEscrowAddress(
                 srcEscrowEvent[0],
                 srcEscrowEvent[1],
                 dstDeployedAt,
-                new Address(resolverContract.dstAddress),
+                new Sdk.Address(resolverContract.dstSdk.Address),
                 ESCROW_DST_IMPLEMENTATION
             )
 
@@ -699,7 +704,7 @@ describe('Resolving example', () => {
             )
 
             console.log(`[${srcChainId}]`, `Cancelling src escrow ${srcEscrowAddress}`)
-            const {txHash: cancelSrcEscrow} = await srcChainResolver.send(
+            const { txHash: cancelSrcEscrow } = await srcChainResolver.send(
                 resolverContract.cancel('src', srcEscrowAddress, srcEscrowEvent[0])
             )
             console.log(`[${srcChainId}]`, `Cancelled src escrow ${srcEscrowAddress} in tx ${cancelSrcEscrow}`)
@@ -716,18 +721,18 @@ describe('Resolving example', () => {
 
 async function initChain(
     cnf: ChainConfig
-): Promise<{node?: CreateServerReturnType; tronWeb: TronWeb; escrowFactory: string; resolver: string}> {
-    const {node, tronWeb} = await getProvider(cnf)
+): Promise<{ node?: CreateServerReturnType; tronWeb: InstanceType<typeof TronWeb>; escrowFactory: string; resolver: string }> {
+    const { node, tronWeb } = await getProvider(cnf)
     const deployer = new Wallet(cnf.ownerPrivateKey, tronWeb)
 
-    // deploy EscrowFactory
+    // deploy Sdk.EscrowFactory
     const escrowFactory = await deploy(
         factoryContract,
         [
             cnf.limitOrderProtocol,
             cnf.wrappedNative, // feeToken,
-            Address.fromBigInt(0n).toString(), // accessToken,
-            await deployer.getAddress(), // owner
+            Sdk.Address.fromBigInt(0n).toString(), // accessToken,
+            deployer.address, // owner
             60 * 30, // src rescue delay
             60 * 30 // dst rescue delay
         ],
@@ -749,10 +754,10 @@ async function initChain(
     )
     console.log(`[${cnf.chainId}]`, `Resolver contract deployed to`, resolver)
 
-    return {node: node, tronWeb, resolver, escrowFactory}
+    return { node: node, tronWeb, resolver, escrowFactory }
 }
 
-async function getProvider(cnf: ChainConfig): Promise<{node?: CreateServerReturnType; tronWeb: TronWeb}> {
+async function getProvider(cnf: ChainConfig): Promise<{ node?: CreateServerReturnType; tronWeb: InstanceType<typeof TronWeb> }> {
     if (!cnf.createFork) {
         return {
             tronWeb: new TronWeb({
@@ -764,37 +769,22 @@ async function getProvider(cnf: ChainConfig): Promise<{node?: CreateServerReturn
     // For forked environments, we'll still create a TronWeb instance
     // but note that anvil/prool is designed for Ethereum, not Tron
     // This would need to be adapted for Tron-specific testing infrastructure
-    const node = createServer({
-        instance: anvil({forkUrl: cnf.url, chainId: cnf.chainId}),
-        limit: 1
-    })
-    await node.start()
-
-    const address = node.address()
-    assert(address)
-
-    const tronWeb = new TronWeb({
-        fullHost: `http://[${address.address}]:${address.port}/1`
-    })
-
-    return {
-        tronWeb,
-        node
-    }
+    // For now, we'll skip the forked node creation for TRON
+    throw new Error('Fork creation not supported for TRON networks. Use createFork: false in config.')
 }
 
 /**
  * Deploy contract and return its address
  */
 async function deploy(
-    json: {abi: any; bytecode: any},
+    json: { abi: any; bytecode: any },
     params: unknown[],
-    tronWeb: TronWeb,
+    tronWeb: InstanceType<typeof TronWeb>,
     deployer: Wallet
 ): Promise<string> {
     // Create contract instance for deployment
     const contract = tronWeb.contract()
-    
+
     // Deploy the contract
     const deployment = await contract.new({
         abi: json.abi,
@@ -804,5 +794,8 @@ async function deploy(
         callValue: 0
     })
 
+    if (!deployment.address) {
+        throw new Error('Failed to deploy contract - no address returned')
+    }
     return deployment.address
 }

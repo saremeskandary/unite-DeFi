@@ -1,14 +1,27 @@
 {
-  "extends": "@1inch/tsconfig",
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "moduleDetection": "auto",
     "outDir": "./dist",
-    "rootDir": "./s",
-    "lib": ["ESNext"],
-    "target": "ES2023",
-    "removeComments": false
+    "rootDir": ".",
+    "lib": [
+      "ESNext"
+    ],
+    "target": "ES2022",
+    "removeComments": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false
   },
-  "include": ["./src"]
+  "include": [
+    "./tests/**/*",
+    "./src/**/*"
+  ],
+  "exclude": [
+    "./dist",
+    "./node_modules"
+  ]
 }

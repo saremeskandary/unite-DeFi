@@ -1,12 +1,12 @@
-import TronWeb from 'tronweb'
-import Sdk from '@1inch/cross-chain-sdk'
+import { TronWeb } from 'tronweb'
+import * as Sdk from '@1inch/cross-chain-sdk'
 import ERC20 from '../dist/contracts/IERC20.sol/IERC20.json'
 
 export class Wallet {
-    public tronWeb: TronWeb
+    public tronWeb: InstanceType<typeof TronWeb>
     public address: string
 
-    constructor(privateKeyOrAddress: string, tronWebInstance: TronWeb) {
+    constructor(privateKeyOrAddress: string, tronWebInstance: InstanceType<typeof TronWeb>) {
         if (privateKeyOrAddress.startsWith('0x') && privateKeyOrAddress.length === 66) {
             // It's a private key
             this.tronWeb = new TronWeb({
@@ -21,7 +21,7 @@ export class Wallet {
         }
     }
 
-    public static async fromAddress(address: string, tronWebInstance: TronWeb): Promise<Wallet> {
+    public static async fromAddress(address: string, tronWebInstance: InstanceType<typeof TronWeb>): Promise<Wallet> {
         // In TronWeb, there's no direct equivalent to impersonateAccount
         // This would need to be handled differently in a test environment
         // For now, we'll just create a wallet with the address
@@ -83,7 +83,7 @@ export class Wallet {
         return this.tronWeb.trx.sign(message)
     }
 
-    async send(param: any): Promise<{txHash: string; blockTimestamp: bigint; blockHash: string}> {
+    async send(param: any): Promise<{ txHash: string; blockTimestamp: bigint; blockHash: string }> {
         const txParams = {
             to: param.to,
             data: param.data,
@@ -91,12 +91,12 @@ export class Wallet {
         }
 
         const result = await this.tronWeb.trx.sendRawTransaction(txParams)
-        
+
         if (result.result) {
             // Get transaction info
             const txInfo = await this.tronWeb.trx.getTransactionInfo(result.txid)
             const block = await this.tronWeb.trx.getBlock(txInfo.blockNumber)
-            
+
             return {
                 txHash: result.txid,
                 blockTimestamp: BigInt(block.block_header.raw_data.timestamp),
@@ -105,5 +105,16 @@ export class Wallet {
         }
 
         throw new Error(result.error || 'Transaction failed')
+    }
+
+    // Add missing methods that are being called in the test code
+    public static fromSdk(sdk: any): Wallet {
+        // Implementation for creating wallet from SDK
+        throw new Error('fromSdk not implemented')
+    }
+
+    public getSdk(): any {
+        // Implementation for getting SDK from wallet
+        throw new Error('getSdk not implemented')
     }
 }

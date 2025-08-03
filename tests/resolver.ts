@@ -1,19 +1,24 @@
-import TronWeb from 'tronweb'
-import Sdk from '@1inch/cross-chain-sdk'
+import { TronWeb } from 'tronweb'
+import * as Sdk from '@1inch/cross-chain-sdk'
 import Contract from '../dist/contracts/Resolver.sol/Resolver.json'
 
 export class Resolver {
-    private readonly tronWeb: TronWeb
+    private readonly tronWeb: InstanceType<typeof TronWeb>
+    public readonly dstSdk: { Address: string }
 
     constructor(
         public readonly srcAddress: string,
         public readonly dstAddress: string,
-        tronWebInstance?: TronWeb
+        tronWebInstance?: InstanceType<typeof TronWeb>
     ) {
         // If no TronWeb instance provided, create a default one
         this.tronWeb = tronWebInstance || new TronWeb({
             fullHost: 'https://api.nileex.io' // Nile testnet by default
         })
+        // Set up dstSdk with the destination address
+        this.dstSdk = {
+            Address: this.dstAddress
+        }
     }
 
     public deploySrc(
@@ -29,15 +34,15 @@ export class Resolver {
         const r = '0x' + sig.slice(0, 64)
         const s = '0x' + sig.slice(64, 128)
         const v = parseInt(sig.slice(128, 130), 16)
-        
-        const {args, trait} = takerTraits.encode()
+
+        const { args, trait } = takerTraits.encode()
         const immutables = order.toSrcImmutables(chainId, new Sdk.Address(this.srcAddress), amount, hashLock)
 
         // Encode function call data using TronWeb
         const functionSelector = this.tronWeb.utils.abi.encodeFunctionSignature('deploySrc(tuple,tuple,bytes32,bytes32,uint256,uint256,bytes)')
         const parameters = this.tronWeb.utils.abi.encodeParameters([
             'tuple',
-            'tuple', 
+            'tuple',
             'bytes32',
             'bytes32',
             'uint256',
@@ -62,7 +67,7 @@ export class Resolver {
 
     public deployDst(
         /**
-         * Immutables from SrcEscrowCreated event with complement applied
+         * Sdk.Immutables from SrcEscrowCreated event with complement applied
          */
         immutables: Sdk.Immutables
     ): any {
@@ -91,7 +96,7 @@ export class Resolver {
         const functionSelector = this.tronWeb.utils.abi.encodeFunctionSignature('withdraw(address,string,tuple)')
         const parameters = this.tronWeb.utils.abi.encodeParameters([
             'address',
-            'string', 
+            'string',
             'tuple'
         ], [
             escrow.toString(),

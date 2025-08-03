@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import Sdk from '@1inch/cross-chain-sdk'
+import * as Sdk from '@1inch/cross-chain-sdk'
 import * as process from 'node:process'
 
 const bool = z
@@ -19,7 +19,7 @@ const fromEnv = ConfigSchema.parse(process.env)
 export const config = {
     chain: {
         source: {
-            chainId: Sdk.NetworkEnum.ETHEREUM,
+            chainId: 1, // Ethereum mainnet
             url: fromEnv.SRC_CHAIN_RPC,
             createFork: fromEnv.SRC_CHAIN_CREATE_FORK,
             limitOrderProtocol: '0x111111125421ca6dc452d289314280a0f8842a65',
@@ -33,7 +33,7 @@ export const config = {
             }
         },
         destination: {
-            chainId: Sdk.NetworkEnum.TRON, // Tron network
+            chainId: 728126428, // Tron mainnet
             url: fromEnv.DST_CHAIN_RPC,
             createFork: fromEnv.DST_CHAIN_CREATE_FORK,
             limitOrderProtocol: 'TEosHrPmqr9vbSgJZwMBo6YJ6uWNE5mjjz', // Example Tron address - needs to be updated with actual deployment
