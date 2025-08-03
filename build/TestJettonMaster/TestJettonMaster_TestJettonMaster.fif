@@ -1,4 +1,4 @@
-// automatically generated from `@stdlib/std/stdlib.fc` `/Users/sarem/Documents/GitHub/unite-DeFi-ton/build/TestJettonMaster/TestJettonMaster_TestJettonMaster.fc` 
+// automatically generated from `@stdlib/std/stdlib.fc` `/home/sarem/projects/hackathon/ton-branch/build/TestJettonMaster/TestJettonMaster_TestJettonMaster.fc` 
 PROGRAM{
   DECLPROC __tact_context_get
   DECLPROC __tact_context_get_sender
