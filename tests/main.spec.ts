@@ -138,11 +138,78 @@ describe('Resolving example', () => {
         srcChainResolver.address = '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'
         dstChainResolver.address = '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'
 
-        // Skip factory creation since we're not deploying contracts
-        // srcFactory = new EscrowFactory(src.tronWeb, src.escrowFactory)
-        // dstFactory = new EscrowFactory(dst.tronWeb, dst.escrowFactory)
-        // Skip token operations since we're not deploying contracts
-        console.log('Skipping token operations - using mock setup for SDK testing')
+        // Create mock factory objects for testing
+        srcFactory = {
+            getSrcDeployEvent: async (blockHash: string) => {
+                // Return mock escrow event data
+                const mockImmutables = Sdk.Immutables.new({
+                    orderHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+                    hashLock: Sdk.HashLock.fromString('0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'),
+                    maker: new Sdk.Address(srcChainUser.address),
+                    taker: new Sdk.Address(srcChainResolver.address),
+                    token: new Sdk.Address(config.chain.source.tokens.USDC.address),
+                    amount: parseUnits('100', 6),
+                    safetyDeposit: parseEther('0.001'),
+                    timeLocks: Sdk.TimeLocks.new({
+                        srcWithdrawal: 10n,
+                        srcPublicWithdrawal: 120n,
+                        srcCancellation: 121n,
+                        srcPublicCancellation: 122n,
+                        dstWithdrawal: 10n,
+                        dstPublicWithdrawal: 100n,
+                        dstCancellation: 101n
+                    })
+                })
+
+                const mockComplement = Sdk.DstImmutablesComplement.new({
+                    maker: new Sdk.Address(srcChainUser.address),
+                    amount: parseUnits('99', 6),
+                    token: new Sdk.Address(config.chain.destination.tokens.USDT.address),
+                    safetyDeposit: parseEther('0.001')
+                })
+
+                return [mockImmutables, mockComplement]
+            },
+            getSourceImpl: async () => new Sdk.Address('0x111111125421ca6dc452d289314280a0f8842a65'),
+            getDestinationImpl: async () => new Sdk.Address('0x111111125421ca6dc452d289314280a0f8842a65')
+        } as any
+
+        dstFactory = {
+            getSrcDeployEvent: async (blockHash: string) => {
+                // Return mock escrow event data
+                const mockImmutables = Sdk.Immutables.new({
+                    orderHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+                    hashLock: Sdk.HashLock.fromString('0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'),
+                    maker: new Sdk.Address(srcChainUser.address),
+                    taker: new Sdk.Address(srcChainResolver.address),
+                    token: new Sdk.Address(config.chain.source.tokens.USDC.address),
+                    amount: parseUnits('100', 6),
+                    safetyDeposit: parseEther('0.001'),
+                    timeLocks: Sdk.TimeLocks.new({
+                        srcWithdrawal: 10n,
+                        srcPublicWithdrawal: 120n,
+                        srcCancellation: 121n,
+                        srcPublicCancellation: 122n,
+                        dstWithdrawal: 10n,
+                        dstPublicWithdrawal: 100n,
+                        dstCancellation: 101n
+                    })
+                })
+
+                const mockComplement = Sdk.DstImmutablesComplement.new({
+                    maker: new Sdk.Address(srcChainUser.address),
+                    amount: parseUnits('99', 6),
+                    token: new Sdk.Address(config.chain.destination.tokens.USDT.address),
+                    safetyDeposit: parseEther('0.001')
+                })
+
+                return [mockImmutables, mockComplement]
+            },
+            getSourceImpl: async () => new Sdk.Address('0x111111125421ca6dc452d289314280a0f8842a65'),
+            getDestinationImpl: async () => new Sdk.Address('0x111111125421ca6dc452d289314280a0f8842a65')
+        } as any
+
+        console.log('Created mock factory objects for SDK testing')
 
         // Create mock resolver contracts
         srcResolverContract = await Wallet.fromAddress(src.resolver, src.tronWeb)

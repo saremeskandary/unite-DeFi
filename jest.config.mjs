@@ -26,5 +26,9 @@ export default {
         }]
     },
     transformIgnorePatterns: [],
-    setupFilesAfterEnv: ['<rootDir>/setup.js']
+    setupFilesAfterEnv: ['<rootDir>/setup.js'],
+    // Add BigInt serialization support
+    globals: {
+        BigInt: global.BigInt
+    }
 }
