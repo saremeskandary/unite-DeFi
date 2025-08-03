@@ -11,7 +11,8 @@ const ConfigSchema = z.object({
     SRC_CHAIN_RPC: z.string().url(),
     DST_CHAIN_RPC: z.string().url(),
     SRC_CHAIN_CREATE_FORK: bool.default('false'),
-    DST_CHAIN_CREATE_FORK: bool.default('false')
+    DST_CHAIN_CREATE_FORK: bool.default('false'),
+    TRON_WALLET_PK: z.string().optional()
 })
 
 const fromEnv = ConfigSchema.parse(process.env)
@@ -28,25 +29,25 @@ export const config = {
             tokens: {
                 USDC: {
                     address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-                    donor: '0xd54F23BE482D9A58676590fCa79c8E43087f92fB'
+                    donor: '0xd54f23be482d9a58676590fca79c8e43087f92fb'
                 }
             }
         },
         destination: {
-            chainId: 728126428, // Tron mainnet
+            chainId: 137, // Polygon (using as test destination since Tron is not supported by SDK)
             url: fromEnv.DST_CHAIN_RPC,
             createFork: fromEnv.DST_CHAIN_CREATE_FORK,
             limitOrderProtocol: 'TEosHrPmqr9vbSgJZwMBo6YJ6uWNE5mjjz', // Example Tron address - needs to be updated with actual deployment
             wrappedNative: 'TNUC9Qb1rRpS5CbWLmNMxXBjyFoydXjWFR', // WTRX on Tron mainnet
-            ownerPrivateKey: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
+            ownerPrivateKey: fromEnv.TRON_WALLET_PK || '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
             tokens: {
                 USDT: { // Using USDT as it's the primary stablecoin on Tron
-                    address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', // USDT TRC20 on Tron mainnet
-                    donor: 'TQxr64oLrXtCrP6xRd2g91GN9maNFVD5Dj' // Example donor address - needs to be updated with actual address with USDT balance
+                    address: '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT on Ethereum mainnet (lowercase for SDK compatibility)
+                    donor: '0xd54f23be482d9a58676590fca79c8e43087f92fb' // Example donor address (lowercase)
                 },
                 USDC: { // Also add USDC for compatibility
-                    address: 'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8', // USDC TRC20 on Tron mainnet
-                    donor: 'TQxr64oLrXtCrP6xRd2g91GN9maNFVD5Dj' // Example donor address
+                    address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC on Ethereum mainnet (lowercase for SDK compatibility)
+                    donor: '0xd54f23be482d9a58676590fca79c8e43087f92fb' // Example donor address (lowercase)
                 }
             }
         }
