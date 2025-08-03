@@ -19,7 +19,7 @@ frontend is ready but not working since you told us
 
 ### **2. Live CLI Demo (4 minutes)**
 ```bash
-cd /home/sarem/projects/hackathon/unite-DeFi && ./scripts/bitcoin-cli-demo.sh
+./scripts/bitcoin-cli-demo.sh
 ```
 
 Ran tool

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { useTronWallet } from "@/hooks/use-tron-wallet"
-import { Loader2, ExternalLink, Copy, CheckCircle, Wallet, Zap } from "lucide-react"
+import { Loader2, ExternalLink, Copy, CheckCircle, Zap } from "lucide-react"
 import { toast } from "sonner"
 
 interface TronWalletConnectProps {

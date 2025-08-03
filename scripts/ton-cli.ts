@@ -56,7 +56,7 @@ export class TONCLI {
 
     try {
       this.tonConnect = new TonConnect({
-        manifestUrl: 'https://your-app.com/tonconnect-manifest.json'
+        manifestUrl: 'https://fusionswap.es/tonconnect-manifest.json'
       });
 
       // Listen for wallet connection
