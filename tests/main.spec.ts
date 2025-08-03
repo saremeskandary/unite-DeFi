@@ -759,9 +759,11 @@ async function initChain(
 
 async function getProvider(cnf: ChainConfig): Promise<{ node?: CreateServerReturnType; tronWeb: InstanceType<typeof TronWeb> }> {
     if (!cnf.createFork) {
+        // Ensure the URL is properly formatted for TronWeb
+        const fullHost = cnf.url.endsWith('/') ? cnf.url.slice(0, -1) : cnf.url
         return {
             tronWeb: new TronWeb({
-                fullHost: cnf.url
+                fullHost: fullHost
             })
         }
     }

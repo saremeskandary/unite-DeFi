@@ -8,12 +8,15 @@ export class Wallet {
 
     constructor(privateKeyOrAddress: string, tronWebInstance: InstanceType<typeof TronWeb>) {
         if (privateKeyOrAddress.startsWith('0x') && privateKeyOrAddress.length === 66) {
-            // It's a private key
+            // It's a private key - create a new TronWeb instance with the private key
+            // TronWeb expects private keys without 0x prefix
+            const fullHost = String((tronWebInstance as any).fullHost || 'https://nile.trongrid.io')
+            const privateKey = privateKeyOrAddress.slice(2) // Remove 0x prefix
             this.tronWeb = new TronWeb({
-                fullHost: tronWebInstance.fullHost,
-                privateKey: privateKeyOrAddress
+                fullHost: fullHost,
+                privateKey: privateKey
             })
-            this.address = this.tronWeb.address.fromPrivateKey(privateKeyOrAddress)
+            this.address = this.tronWeb.address.fromPrivateKey(privateKey)
         } else {
             // It's an address
             this.tronWeb = tronWebInstance

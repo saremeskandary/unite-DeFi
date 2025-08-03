@@ -25,7 +25,6 @@ export default {
             }
         }]
     },
-    extensionsToTreatAsEsm: ['.ts'],
     transformIgnorePatterns: [],
     setupFilesAfterEnv: ['<rootDir>/setup.js']
 }
