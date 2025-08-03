@@ -1,35 +1,45 @@
-# Cursor Rules for TON EVM Integration Project
+# Cursor Rules for Foundry Tron Project
 
 ## Build Commands
 
-- Always use `npx blueprint build --all` instead of `npx blueprint build` to avoid interactive prompts
-- Use `npm run build` as an alternative for building all contracts
-- For specific contract builds, use `npx blueprint build <contract-name>`
+- Use `forge build` to compile all contracts
+- Use `forge build --force` to force recompilation
+- Check build output in `out/` directory for compiled contracts
 
 ## Testing Commands
 
-- Use `npm test` to run all tests
-- Use `./scripts/run-tests.sh` for comprehensive test suite including contract building
-- For specific test files: `npm test tests/jetton_integration.spec.ts` or `npm test tests/evm_integration.spec.ts`
+- Use `forge test` to run all tests
+- Use `forge test -vvv` for verbose test output with detailed logs
+- Use `forge test --gas-report` to generate gas usage reports
+- For specific test files: `forge test --match-path test/ContractName.t.sol`
+- For specific test functions: `forge test --match-test testFunctionName`
 
 ## Development Workflow
 
-- Always build contracts before running tests
-- Use `tact --config ./tact.config.json` for Tact contract compilation
-- Check build output in `build/` directory for compiled contracts
+- Always build contracts before running tests: `forge build && forge test`
+- Use `forge fmt` to format Solidity code
+- Use `forge clean` to clean build artifacts
+- Use `forge snapshot` to create gas usage snapshots
+
+## Deployment Commands
+
+- Use `forge script script/Deploy.s.sol --rpc-url tron_nile --broadcast` for testnet deployment
+- Use `forge script script/Deploy.s.sol --rpc-url tron_mainnet --broadcast` for mainnet deployment
+- Always verify deployments on Tronscan after deployment
 
 ## Automation Guidelines
 
-- Avoid interactive prompts in scripts and commands
-- Use `--all` flags when available to automate multi-contract operations
+- Use `--broadcast` flag for actual deployments
+- Use `--verify` flag to verify contracts on block explorers
 - Prefer non-interactive commands for CI/CD compatibility
 
 ## Project Structure
 
-- Contracts are in `contracts/` directory
-- Tests are in `tests/` directory
-- Build output goes to `build/` directory
-- Scripts are in `scripts/` directory
+- Contracts are in `src/` directory
+- Tests are in `test/` directory
+- Deployment scripts are in `script/` directory
+- Dependencies are in `lib/` directory
+- Build output goes to `out/` directory
 
 ## Terminal Management & Recovery
 
@@ -65,3 +75,11 @@
 3. Use `clear` or `Ctrl+L` to clean up the display
 4. If still stuck, switch away and back with `Alt+Tab`
 5. As last resort, open new terminal and use `tmux attach` if using tmux
+
+## Foundry Specific Guidelines
+
+- Use `forge install` to add dependencies (e.g., `forge install OpenZeppelin/openzeppelin-contracts`)
+- Dependencies are tracked in `lib/` and should be committed to git
+- Use `forge update` to update dependencies
+- Configure networks in `foundry.toml` under `[rpc_endpoints]`
+- Use `forge coverage` to generate test coverage reports
