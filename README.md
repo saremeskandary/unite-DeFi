@@ -1,139 +1,46 @@
-# Tron Foundry Project
+# cross-chain-resolver-example
 
-A comprehensive Foundry-based smart contract development environment for the Tron blockchain.
+## Installation
 
-## 🚀 Features
+Install example deps
 
-- **HTLC (Hash Time Locked Contracts)** - Secure cross-chain atomic swaps
-- **Escrow System** - Source and destination escrow contracts
-- **Factory Pattern** - Efficient contract deployment and management
-- **Foundry Integration** - Modern Solidity development toolchain
-
-## 📋 Project Structure
-
-```
-├── src/                    # Smart contracts
-│   ├── TronHTLC.sol       # Hash Time Locked Contract
-│   ├── EscrowFactory.sol  # Escrow factory contract
-│   ├── EscrowSrc.sol      # Source escrow contract
-│   ├── EscrowDst.sol      # Destination escrow contract
-│   ├── interfaces/        # Contract interfaces
-│   └── libraries/         # Shared libraries
-├── test/                  # Foundry tests
-├── script/                # Deployment scripts
-├── lib/                   # Dependencies
-└── foundry.toml          # Foundry configuration
+```shell
+pnpm install
 ```
 
-## 🛠 Prerequisites
+Install [foundry](https://book.getfoundry.sh/getting-started/installation)
 
-- [Foundry](https://book.getfoundry.sh/getting-started/installation)
-- [Node.js](https://nodejs.org/) (for additional tooling)
-- [Git](https://git-scm.com/)
+```shell
+curl -L https://foundry.paradigm.xyz | bash
+```
 
-## 🚀 Quick Start
+Install contract deps
 
-### Installation
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd tron-foundry-project
-
-# Install Foundry dependencies
+```shell
 forge install
-
-# Install Node.js dependencies (optional)
-npm install
 ```
 
-### Build Contracts
+## Running
 
-```bash
-# Build all contracts
-forge build
-# or
-npm run build
+To run tests you need to provide fork urls for Ethereum and Tron
+
+```shell
+SRC_CHAIN_RPC=ETH_FORK_URL DST_CHAIN_RPC=TRON_FORK_URL pnpm test
 ```
 
-### Run Tests
+### Public rpc
 
-```bash
-# Run all tests
-forge test
-# or
-npm test
+| Chain    | Url                              |
+|----------|----------------------------------|
+| Ethereum | https://eth.merkle.io            |
+| Tron     | https://tron-rpc.publicnode.com  |
 
-# Run tests with verbose output
-forge test -vvv
-# or
-npm run test:verbose
+## Test accounts
 
-# Generate gas report
-forge test --gas-report
-# or
-npm run test:gas
+### Available Accounts
+
 ```
-
-### Deploy Contracts
-
-```bash
-# Deploy to Tron Nile Testnet
-npm run deploy:nile
-
-# Deploy to Tron Mainnet
-npm run deploy:mainnet
+(0) 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" Owner of EscrowFactory
+(1) 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" User
+(2) 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" Resolver
 ```
-
-## 🧪 Testing
-
-The project includes comprehensive test suites for all contracts:
-
-- **EscrowFactory.t.sol** - Factory contract tests
-- **TronHTLC.t.sol** - HTLC functionality tests
-- **Escrow.t.sol** - Escrow contract tests
-
-Run specific test files:
-
-```bash
-forge test --match-path test/TronHTLC.t.sol
-```
-
-## 🔧 Configuration
-
-The project is configured for Tron networks in `foundry.toml`:
-
-- **Tron Nile Testnet** - https://nile.trongrid.io
-- **Tron Mainnet** - https://api.trongrid.io
-
-## 📚 Smart Contracts
-
-### TronHTLC
-
-Hash Time Locked Contract for atomic cross-chain swaps with time-based locks and secret reveal mechanisms.
-
-### EscrowFactory
-
-Factory contract for deploying escrow instances with standardized parameters and management.
-
-### EscrowSrc & EscrowDst
-
-Source and destination escrow contracts for secure multi-party transactions.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🔗 Resources
-
-- [Foundry Documentation](https://book.getfoundry.sh/)
-- [Tron Documentation](https://developers.tron.network/)
-- [Solidity Documentation](https://docs.soliditylang.org/)
