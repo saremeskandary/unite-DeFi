@@ -13,7 +13,7 @@ export class Resolver {
     ) {
         // If no TronWeb instance provided, create a default one
         this.tronWeb = tronWebInstance || new TronWeb({
-            fullHost: 'https://api.nileex.io' // Nile testnet by default
+            fullHost: process.env.DST_CHAIN_RPC || 'https://nile.trongrid.io' // Nile testnet by default
         })
         // Set up dstSdk with the destination address
         this.dstSdk = {

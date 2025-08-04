@@ -25,7 +25,7 @@ export interface TronWalletInfo {
 }
 
 export interface TronNetworkConfig {
-  network: 'mainnet' | 'nile' | 'shasta';
+  network: 'mainnet' | 'nile' | 'shasta' | 'local';
   rpcUrl: string;
   apiUrl: string;
   blockExplorer: string;
@@ -188,7 +188,7 @@ export class TronWalletService {
       if (address && network) {
         this.currentAddress = address;
         this.currentNetwork = network;
-        
+
         // Update TronWeb to use the correct network
         if (this.networks[network]) {
           this.tronWeb = new TronWeb({
@@ -196,7 +196,7 @@ export class TronWalletService {
             headers: { "TRON-PRO-API-KEY": process.env.NEXT_PUBLIC_TRON_API_KEY || "" }
           });
         }
-        
+
         console.log('Tron wallet connection restored from localStorage');
       }
     } catch (error) {
@@ -248,7 +248,7 @@ export class TronWalletService {
       }
 
       this.currentAddress = this.tronWeb.address.fromHex(account.address);
-      
+
       // Save connection state
       this.saveConnectionState();
 
@@ -457,7 +457,7 @@ export class TronWalletService {
     if (fullHost.includes('nile')) return 'nile';
     if (fullHost.includes('shasta')) return 'shasta';
     if (fullHost.includes('trongrid')) return 'mainnet';
-    
+
     return 'nile'; // Default to Nile testnet
   }
 
@@ -538,6 +538,6 @@ export const tronWallet = new TronWalletService();
 // Add TronWeb to window for TronLink integration
 declare global {
   interface Window {
-    tronWeb?: TronWeb;
+    tronWeb?: TronWeb & { ready?: boolean };
   }
 } 

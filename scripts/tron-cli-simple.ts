@@ -22,10 +22,18 @@ async function main() {
   }
 
   const command = args[0];
-  const network = args.includes('--mainnet') ? 'mainnet' :
-    args.includes('--shasta') ? 'shasta' : 'nile';
+  const network = args.includes('--local') ? 'local' :
+    args.includes('--mainnet') ? 'mainnet' :
+      args.includes('--shasta') ? 'shasta' : 'nile';
 
   const networks: Record<string, TronNetworkConfig> = {
+    local: {
+      network: 'local',
+      rpcUrl: 'http://localhost:9090',
+      apiUrl: 'http://localhost:9090',
+      blockExplorer: 'http://localhost:9090',
+      confirmations: 1
+    },
     mainnet: {
       network: 'mainnet',
       rpcUrl: 'https://api.trongrid.io',

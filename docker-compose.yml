@@ -60,6 +60,16 @@ services:
       "
     restart: unless-stopped
 
+  # Tron local testnet (like Anvil for Tron)
+  tron-local:
+    image: trontools/quickstart
+    container_name: tron-local
+    ports:
+      - "9090:9090" # HTTP API
+      - "8090:8090" # FullNode
+      - "6060:6060" # SolidityNode
+    restart: unless-stopped
+
 volumes:
   bitcoin-testnet-data:
     driver: local

@@ -21,5 +21,5 @@ via_ir = true
 [rpc_endpoints]
 ethereum = "https://eth.llamarpc.com"
 tron_mainnet = "https://tron-rpc.publicnode.com"
-tron_nile = "https://api.nileex.io"
+tron_nile = "https://nile.trongrid.io"
 tron_shasta = "https://api.shasta.trongrid.io"

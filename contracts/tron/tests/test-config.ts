@@ -10,7 +10,7 @@ export const testConfig = {
       name: 'Shasta Testnet'
     },
     nile: {
-      rpcUrl: 'https://api.nileex.io',
+      rpcUrl: 'https://nile.trongrid.io',
       chainId: 201910292,
       name: 'Nile Testnet'
     },
