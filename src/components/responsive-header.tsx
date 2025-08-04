@@ -14,7 +14,7 @@ export default function ResponsiveHeader() {
     <header className="max-w-[950px] mx-auto flex justify-center">
       <div className="container mx-auto px-4 py-4 flex flex-row justify-between items-center">
         <Link href="/" className="text-foreground hover:text-primary transition-colors left-2">
-          <Image src="/Unite-Defi-favicon.png" alt={`${appInfo.name} Logo`} width={70} height={70} />
+          <Image src="/fusion-swap-favicon.png" alt={`${appInfo.name} Logo`} width={70} height={70} />
         </Link>
 
         {/* Mobile menu button */}

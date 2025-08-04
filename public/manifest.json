@@ -1,6 +1,6 @@
 {
-  "name": "FusionSwap - Cross-Chain Bitcoin Swaps",
-  "short_name": "FusionSwap",
+  "name": "Swap Chain - Cross-Chain Bitcoin Swaps",
+  "short_name": "Swap Chain",
   "description": "Seamlessly swap between Bitcoin and ERC20 tokens using atomic swaps powered by 1inch Fusion+",
   "start_url": "/",
   "display": "standalone",

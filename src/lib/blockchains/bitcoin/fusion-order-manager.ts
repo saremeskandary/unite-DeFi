@@ -1,5 +1,4 @@
 import {
-  FusionSDK,
   NetworkEnum,
   PrivateKeyProviderConnector,
   Web3Like,
@@ -15,13 +14,14 @@ import {
   BitcoinSwapOrderExtension,
   BitcoinSwapOrder
 } from './bitcoin-swap-types';
+import { FusionAPIWrapper } from './fusion-api-wrapper';
 
 /**
  * Fusion Order Manager
  * Handles 1inch Fusion+ order creation, submission, and monitoring
  */
 export class FusionOrderManager {
-  private fusionSDK: FusionSDK;
+  private fusionAPI: FusionAPIWrapper;
   private crossChainSDK: CrossChainSDK;
   private provider: ethers.JsonRpcProvider;
   private signer: ethers.Wallet;
@@ -47,15 +47,12 @@ export class FusionOrderManager {
     };
     const connector = new PrivateKeyProviderConnector(privateKey, web3Provider);
 
-    this.fusionSDK = new FusionSDK({
-      url: 'https://api.1inch.dev/fusion',
-      network: this.network,
-      blockchainProvider: connector
-    });
+    // Use custom API wrapper to avoid CORS issues
+    this.fusionAPI = new FusionAPIWrapper();
 
     this.crossChainSDK = new CrossChainSDK({
       url: 'https://api.1inch.dev/fusion-plus',
-      authKey: process.env.INCH_API_KEY || '',
+      authKey: process.env.NEXT_PUBLIC_INCH_API_KEY || '',
     });
   }
 
@@ -85,13 +82,28 @@ export class FusionOrderManager {
 
       const orderParams: OrderParams = {
         fromTokenAddress: params.makerAsset,
-        toTokenAddress: '0x0000000000000000000000000000000000000000', // Placeholder
+        toTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // Native token address
         amount: params.makerAmount,
         walletAddress: this.signer.address,
       };
 
-      // Create Fusion order using 1inch SDK
-      const fusionOrder = await this.fusionSDK.placeOrder(orderParams);
+      // Create Fusion order using custom API wrapper
+      const fusionOrderResponse = await this.fusionAPI.placeOrder({
+        fromTokenAddress: orderParams.fromTokenAddress,
+        toTokenAddress: orderParams.toTokenAddress,
+        amount: orderParams.amount,
+        walletAddress: orderParams.walletAddress,
+      });
+
+      // Convert to expected format
+      const fusionOrder = {
+        orderHash: fusionOrderResponse.orderHash,
+        quoteId: fusionOrderResponse.quoteId,
+        status: fusionOrderResponse.status,
+        order: {}, // Placeholder
+        signature: '', // Placeholder
+        extension: bitcoinExtension
+      } as any; // Type assertion to avoid complex type issues
 
       console.log('ERC20→BTC Fusion+ order created:', fusionOrder.orderHash);
       return { fusionOrder, secretHash: hash160.toString('hex') };
@@ -122,13 +134,28 @@ export class FusionOrderManager {
       };
 
       const orderParams: OrderParams = {
-        fromTokenAddress: '0x0000000000000000000000000000000000000000', // BTC placeholder
+        fromTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // Native token address
         toTokenAddress: params.takerAsset,
         amount: params.btcAmount.toString(),
         walletAddress: this.signer.address,
       };
 
-      const fusionOrder = await this.fusionSDK.placeOrder(orderParams);
+      const fusionOrderResponse = await this.fusionAPI.placeOrder({
+        fromTokenAddress: orderParams.fromTokenAddress,
+        toTokenAddress: orderParams.toTokenAddress,
+        amount: orderParams.amount,
+        walletAddress: orderParams.walletAddress,
+      });
+
+      // Convert to expected format
+      const fusionOrder = {
+        orderHash: fusionOrderResponse.orderHash,
+        quoteId: fusionOrderResponse.quoteId,
+        status: fusionOrderResponse.status,
+        order: {}, // Placeholder
+        signature: '', // Placeholder
+        extension: bitcoinExtension
+      } as any; // Type assertion to avoid complex type issues
 
       console.log('BTC→ERC20 Fusion+ order created:', fusionOrder.orderHash);
       return { fusionOrder, secretHash: hash160.toString('hex') };
@@ -174,7 +201,7 @@ export class FusionOrderManager {
           `https://api.1inch.dev/fusion-plus/orders/${orderHash}`,
           {
             headers: {
-              'Authorization': `Bearer ${process.env.INCH_API_KEY}`
+              'Authorization': `Bearer ${process.env.NEXT_PUBLIC_INCH_API_KEY}`
             }
           }
         );
@@ -268,7 +295,7 @@ export class FusionOrderManager {
         },
         {
           headers: {
-            'Authorization': `Bearer ${process.env.INCH_API_KEY}`,
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_INCH_API_KEY}`,
             'Content-Type': 'application/json'
           }
         }
@@ -304,7 +331,7 @@ export class FusionOrderManager {
         },
         {
           headers: {
-            'Authorization': `Bearer ${process.env.INCH_API_KEY}`,
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_INCH_API_KEY}`,
             'Content-Type': 'application/json'
           }
         }
@@ -341,7 +368,7 @@ export class FusionOrderManager {
         },
         {
           headers: {
-            'Authorization': `Bearer ${process.env.INCH_API_KEY}`,
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_INCH_API_KEY}`,
             'Content-Type': 'application/json'
           }
         }

@@ -5,7 +5,7 @@ const urlsToCache = [
   '/portfolio',
   '/settings',
   '/manifest.json',
-  '/Unite-Defi-favicon.png'
+  '/fusion-swap-favicon.png'
 ];
 
 // Install event - cache resources
@@ -27,7 +27,7 @@ self.addEventListener('fetch', (event) => {
         // Return cached version or fetch from network
         return response || fetch(event.request);
       }
-    )
+      )
   );
 });
 
