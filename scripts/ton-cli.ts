@@ -34,6 +34,20 @@ interface TransactionStatus {
   timestamp: number;
 }
 
+// Node.js-compatible in-memory storage for TonConnect
+class NodeStorage {
+  private store: Record<string, string> = {};
+  async getItem(key: string) {
+    return this.store[key] ?? null;
+  }
+  async setItem(key: string, value: string) {
+    this.store[key] = value;
+  }
+  async removeItem(key: string) {
+    delete this.store[key];
+  }
+}
+
 export class TONCLI {
   private client: TonClient;
   private wallet: WalletContractV4 | null = null;
@@ -56,7 +70,8 @@ export class TONCLI {
 
     try {
       this.tonConnect = new TonConnect({
-        manifestUrl: 'https://fusionswap.es/tonconnect-manifest.json'
+        manifestUrl: 'https://fusionswap.es/tonconnect-manifest.json',
+        storage: new NodeStorage()
       });
 
       // Listen for wallet connection
