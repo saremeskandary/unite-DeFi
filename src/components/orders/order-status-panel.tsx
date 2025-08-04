@@ -58,15 +58,15 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
       case "pending":
         return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
       case "funding":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30"
+        return "bg-primary/20 text-primary border-primary/30"
       case "executing":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30"
+        return "bg-primary/20 text-primary border-primary/30"
       case "completed":
         return "bg-green-500/20 text-green-400 border-green-500/30"
       case "failed":
-        return "bg-red-500/20 text-red-400 border-red-500/30"
+        return "bg-destructive/20 text-destructive border-destructive/30"
       default:
-        return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+        return "bg-muted text-muted-foreground border-muted"
     }
   }
 
@@ -93,13 +93,13 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
 
   if (!orderId) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-card/50 border-border">
         <CardContent className="p-8 text-center">
-          <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Clock className="w-8 h-8 text-slate-400" />
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+            <Clock className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">No Active Orders</h3>
-          <p className="text-slate-400">Create a swap order to track its progress here</p>
+          <h3 className="text-lg font-semibold text-foreground mb-2">No Active Orders</h3>
+          <p className="text-muted-foreground">Create a swap order to track its progress here</p>
         </CardContent>
       </Card>
     )
@@ -107,12 +107,12 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
 
   if (isLoading || !order) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-card/50 border-border">
         <CardContent className="p-8 text-center">
-          <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-400">Loading order details...</p>
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading order details...</p>
           {isMonitoring && (
-            <div className="mt-2 text-xs text-blue-400">
+            <div className="mt-2 text-xs text-primary">
               Real-time monitoring active
             </div>
           )}
@@ -123,13 +123,13 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
 
   if (error) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-card/50 border-border">
         <CardContent className="p-8 text-center">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-red-400" />
+          <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-destructive" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Error Loading Order</h3>
-          <p className="text-slate-400 mb-4">{error.message}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Error Loading Order</h3>
+          <p className="text-muted-foreground mb-4">{error.message}</p>
           <Button onClick={refreshStatus} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
             Retry
@@ -140,10 +140,10 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
   }
 
   return (
-    <Card className="bg-slate-800/50 border-slate-700">
+    <Card className="bg-card/50 border-border">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-white text-lg">Order Status</CardTitle>
+          <CardTitle className="text-foreground text-lg">Order Status</CardTitle>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary" className={getStatusColor(order.status)}>
               {getStatusIcon(order.status)}
@@ -160,11 +160,11 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
         {/* Progress */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Progress</span>
-            <span className="text-white">{order.progress}%</span>
+            <span className="text-muted-foreground">Progress</span>
+            <span className="text-foreground">{order.progress}%</span>
           </div>
           <Progress value={order.progress} className="h-2" />
-          <div className="text-center text-sm text-slate-400">
+          <div className="text-center text-sm text-muted-foreground">
             Estimated completion: {timeRemaining}
           </div>
         </div>
@@ -172,14 +172,14 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
         {/* Order Details */}
         <div className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-slate-400">Order ID</span>
+            <span className="text-muted-foreground">Order ID</span>
             <div className="flex items-center space-x-2">
-              <span className="text-white font-mono text-sm">{order.id.slice(0, 12)}...</span>
+              <span className="text-foreground font-mono text-sm">{order.id.slice(0, 12)}...</span>
               <Button
                 onClick={() => copyToClipboard(order.id)}
                 variant="ghost"
                 size="sm"
-                className="h-auto p-1 text-slate-400 hover:text-white"
+                className="h-auto p-1 text-muted-foreground hover:text-foreground"
               >
                 <Copy className="w-3 h-3" />
               </Button>
@@ -187,23 +187,23 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
           </div>
 
           <div className="flex justify-between">
-            <span className="text-slate-400">Swap</span>
-            <span className="text-white">
+            <span className="text-muted-foreground">Swap</span>
+            <span className="text-foreground">
               {order.fromAmount} {order.fromToken} → {order.toAmount} {order.toToken}
             </span>
           </div>
 
           <div className="flex justify-between">
-            <span className="text-slate-400">Destination</span>
+            <span className="text-muted-foreground">Destination</span>
             <div className="flex items-center space-x-2">
-              <span className="text-white font-mono text-sm">
+              <span className="text-foreground font-mono text-sm">
                 {order.bitcoinAddress.slice(0, 8)}...{order.bitcoinAddress.slice(-8)}
               </span>
               <Button
                 onClick={() => copyToClipboard(order.bitcoinAddress)}
                 variant="ghost"
                 size="sm"
-                className="h-auto p-1 text-slate-400 hover:text-white"
+                className="h-auto p-1 text-muted-foreground hover:text-foreground"
               >
                 <Copy className="w-3 h-3" />
               </Button>
@@ -213,20 +213,20 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
 
         {/* Transaction Hashes */}
         <div className="space-y-3">
-          <h4 className="text-white font-medium">Transactions</h4>
+          <h4 className="text-foreground font-medium">Transactions</h4>
 
           {order.txHashes.ethereum && (
-            <div className="flex items-center justify-between bg-slate-700/30 rounded-lg p-3">
+            <div className="flex items-center justify-between bg-muted/30 rounded-lg p-3">
               <div>
-                <div className="text-sm text-white font-medium">Ethereum</div>
-                <div className="text-xs text-slate-400 font-mono">
+                <div className="text-sm text-foreground font-medium">Ethereum</div>
+                <div className="text-xs text-muted-foreground font-mono">
                   {order.txHashes.ethereum.slice(0, 10)}...{order.txHashes.ethereum.slice(-10)}
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-blue-400 hover:text-blue-300"
+                className="text-primary hover:text-primary/80"
                 onClick={() => window.open(`https://etherscan.io/tx/${order.txHashes.ethereum}`, "_blank")}
               >
                 <ExternalLink className="w-4 h-4" />
@@ -235,32 +235,32 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
           )}
 
           {order.txHashes.bitcoin ? (
-            <div className="flex items-center justify-between bg-slate-700/30 rounded-lg p-3">
+            <div className="flex items-center justify-between bg-muted/30 rounded-lg p-3">
               <div>
-                <div className="text-sm text-white font-medium">Bitcoin</div>
-                <div className="text-xs text-slate-400 font-mono">
+                <div className="text-sm text-foreground font-medium">Bitcoin</div>
+                <div className="text-xs text-muted-foreground font-mono">
                   {order.txHashes.bitcoin.slice(0, 10)}...{order.txHashes.bitcoin.slice(-10)}
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-blue-400 hover:text-blue-300"
+                className="text-primary hover:text-primary/80"
                 onClick={() => window.open(`https://blockstream.info/tx/${order.txHashes.bitcoin}`, "_blank")}
               >
                 <ExternalLink className="w-4 h-4" />
               </Button>
             </div>
           ) : (
-            <div className="bg-slate-700/30 rounded-lg p-3">
-              <div className="text-sm text-slate-400">Bitcoin transaction pending...</div>
+            <div className="bg-muted/30 rounded-lg p-3">
+              <div className="text-sm text-muted-foreground">Bitcoin transaction pending...</div>
             </div>
           )}
         </div>
 
         {/* Status Steps */}
         <div className="space-y-3">
-          <h4 className="text-white font-medium">Swap Phases</h4>
+          <h4 className="text-foreground font-medium">Swap Phases</h4>
 
           <div className="space-y-2">
             {[
@@ -271,8 +271,8 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
               { phase: "Swap Completed", completed: order.phases.swapCompleted },
             ].map((step, index) => (
               <div key={index} className="flex items-center space-x-3">
-                <div className={`w-2 h-2 rounded-full ${step.completed ? "bg-green-400" : "bg-slate-600"}`} />
-                <span className={`text-sm ${step.completed ? "text-white" : "text-slate-400"}`}>{step.phase}</span>
+                <div className={`w-2 h-2 rounded-full ${step.completed ? "bg-green-400" : "bg-muted"}`} />
+                <span className={`text-sm ${step.completed ? "text-foreground" : "text-muted-foreground"}`}>{step.phase}</span>
                 {step.completed && <CheckCircle className="w-4 h-4 text-green-400" />}
               </div>
             ))}
@@ -280,8 +280,8 @@ export function OrderStatusPanel({ orderId }: OrderStatusPanelProps) {
         </div>
 
         {/* Monitoring Controls */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-          <div className="text-sm text-slate-400">
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <div className="text-sm text-muted-foreground">
             {isMonitoring ? "Real-time monitoring active" : "Monitoring paused"}
           </div>
           <div className="flex space-x-2">

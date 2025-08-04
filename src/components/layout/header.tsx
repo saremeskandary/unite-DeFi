@@ -27,10 +27,17 @@ export function Header() {
   const navigationItems = [
     { href: "/", label: "Swap" },
     { href: "/orders", label: "Orders" },
+  ]
+
+  const moreItems = [
     { href: "/portfolio", label: "Portfolio" },
+    { href: "/multi-chain-swap", label: "Multi-chain Swap" },
+    { href: "/bitcoin-swap", label: "Bitcoin Swap" },
+    { href: "/bitcoin-keys", label: "Bitcoin Keys" },
     { href: "/settings", label: "Settings" },
-    // { href: "/ton-test", label: "TON Test" },
-    // { href: "/ton-debug", label: "TON Debug" },
+    { href: "/about", label: "About" },
+    { href: "/terms", label: "Terms" },
+    { href: "/privacy", label: "Privacy" },
   ]
 
   return (
@@ -60,15 +67,44 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`transition-colors whitespace-nowrap ${
-                  isActive(item.href)
-                    ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                    : "text-slate-400 hover:text-white"
-                }`}
+                className={`transition-colors whitespace-nowrap ${isActive(item.href)
+                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                  : "text-slate-400 hover:text-white"
+                  }`}
               >
                 {item.label}
               </Link>
             ))}
+
+            {/* More Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={`transition-colors whitespace-nowrap ${moreItems.some(item => isActive(item.href))
+                    ? "text-blue-400 border-b-2 border-blue-400 pb-1"
+                    : "text-slate-400 hover:text-white"
+                    }`}
+                >
+                  More
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-slate-800 border-slate-700">
+                {moreItems.map((item) => (
+                  <DropdownMenuItem key={item.href} asChild>
+                    <Link
+                      href={item.href}
+                      className={`cursor-pointer ${isActive(item.href)
+                        ? "text-blue-400 bg-blue-500/10"
+                        : "text-slate-300 hover:text-white hover:bg-slate-700"
+                        }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           {/* Wallet Connections - Desktop */}
@@ -108,15 +144,34 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-4 py-2 transition-colors ${
-                    isActive(item.href)
-                      ? "text-blue-400 bg-blue-500/10 border-l-2 border-blue-400"
-                      : "text-slate-400 hover:text-white hover:bg-slate-800"
-                  }`}
+                  className={`block px-4 py-2 transition-colors ${isActive(item.href)
+                    ? "text-blue-400 bg-blue-500/10 border-l-2 border-blue-400"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800"
+                    }`}
                 >
                   {item.label}
                 </Link>
               ))}
+
+              {/* More items in mobile */}
+              <div className="border-t border-slate-700 pt-2 mt-2">
+                <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  More
+                </div>
+                {moreItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block px-4 py-2 transition-colors ${isActive(item.href)
+                      ? "text-blue-400 bg-blue-500/10 border-l-2 border-blue-400"
+                      : "text-slate-400 hover:text-white hover:bg-slate-800"
+                      }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </nav>
           </div>
         )}

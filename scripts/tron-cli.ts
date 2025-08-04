@@ -5,6 +5,10 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { TronAPIService, TronNetworkConfig } from '../src/lib/blockchains/tron/tron-api';
 import { TronWeb } from 'tronweb';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config({ path: '.env.local' });
 
 const program = new Command();
 
@@ -337,7 +341,7 @@ program
     console.log(chalk.white('  monitor <txid>       - Monitor transaction confirmation'));
     console.log(chalk.white('  validate <address>   - Validate Tron address'));
     console.log(chalk.white('  generate             - Generate new wallet'));
-    console.log(chalk.white('  demo                 - Run interactive demo'));
+    console.log(chalk.white('  demo                 - Run interactive demo (uses env address)'));
     console.log(chalk.white('  help                 - Show this help'));
 
     console.log(chalk.green('\n⚙️  Options:'));
@@ -369,27 +373,32 @@ program
 async function runDemo() {
   console.log(chalk.blue.bold('\n🚀 Tron Integration Demo'));
   console.log(chalk.gray('This demo showcases key Tron CLI features for the hackathon.'));
+  console.log(chalk.gray('Uses address from NEXT_PUBLIC_TRON_ADDRESS environment variable.'));
 
   // 1. Connect to network (already done by CLI setup)
   console.log(chalk.yellow('\n1. Connecting to Tron network...'));
   await new Promise(resolve => setTimeout(resolve, 1000));
   console.log(chalk.green('Connected!'));
 
-  // 2. Generate a new wallet
-  console.log(chalk.yellow('\n2. Generating a new Tron wallet...'));
-  const tronWeb = tronService.getTronWeb();
-  const account = tronWeb.utils.accounts.generateAccount();
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  console.log(chalk.green('Wallet generated:'));
-  console.log(chalk.white(`  Address: ${account.address.base58}`));
-  console.log(chalk.white(`  Private Key: ${account.privateKey}`));
-  console.log(chalk.white(`  Hex Address: ${account.address.hex}`));
+  // 2. Get address from environment variables
+  console.log(chalk.yellow('\n2. Using Tron address from environment variables...'));
+  const tronAddress = process.env.NEXT_PUBLIC_TRON_ADDRESS;
 
-  // 3. Fetch address info (for the generated wallet)
-  console.log(chalk.yellow('\n3. Fetching address info for the generated wallet...'));
+  if (!tronAddress) {
+    console.log(chalk.red('❌ No Tron address found in environment variables'));
+    console.log(chalk.yellow('Please set NEXT_PUBLIC_TRON_ADDRESS in your .env.local file'));
+    return;
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  console.log(chalk.green('Address loaded from environment:'));
+  console.log(chalk.white(`  Address: ${tronAddress}`));
+
+  // 3. Fetch address info (for the address from environment)
+  console.log(chalk.yellow('\n3. Fetching address info for the address from environment...'));
   const spinner = ora('Fetching address information...').start();
   try {
-    const addressInfo = await tronService.getAddressInfo(account.address.base58);
+    const addressInfo = await tronService.getAddressInfo(tronAddress);
     spinner.succeed('Address information retrieved');
     console.log(chalk.green('\n📋 Address Information:'));
     console.log(chalk.white(`Address: ${addressInfo?.address}`));

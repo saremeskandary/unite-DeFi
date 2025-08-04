@@ -165,7 +165,7 @@ export function BitcoinKeyGeneratorComponent() {
               </div>
 
               {generatedKey && (
-                <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
                   <div className="flex items-center justify-between">
                     <Label className="font-semibold">Private Key (WIF)</Label>
                     {getCopyButton(generatedKey.privateKeyWIF, 'wif')}
@@ -199,8 +199,8 @@ export function BitcoinKeyGeneratorComponent() {
                   <div className="flex items-center justify-between">
                     <Label className="font-semibold">Network</Label>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${generatedKey.network === 'testnet'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-green-100 text-green-800'
+                      ? 'bg-yellow-500/20 text-yellow-600'
+                      : 'bg-green-500/20 text-green-600'
                       }`}>
                       {generatedKey.network}
                     </span>
@@ -208,7 +208,7 @@ export function BitcoinKeyGeneratorComponent() {
                 </div>
               )}
 
-              <Alert className="border-blue-200 bg-blue-50">
+              <Alert className="border-primary/50 bg-primary/10">
                 <AlertDescription>
                   <strong>Security Note:</strong>
                   <ul className="mt-2 list-disc list-inside text-sm">
@@ -238,14 +238,14 @@ export function BitcoinKeyGeneratorComponent() {
 
               {validationResult && (
                 <Alert className={`${validationResult.isValid
-                    ? 'border-green-200 bg-green-50'
-                    : 'border-red-200 bg-red-50'
+                  ? 'border-green-500/50 bg-green-500/10'
+                  : 'border-destructive/50 bg-destructive/10'
                   }`}>
                   <div className="flex items-center gap-2">
                     {validationResult.isValid ? (
                       <CheckCircle className="h-4 w-4 text-green-500" />
                     ) : (
-                      <XCircle className="h-4 w-4 text-red-500" />
+                      <XCircle className="h-4 w-4 text-destructive" />
                     )}
                     <AlertDescription>
                       <div className="font-semibold">
@@ -310,7 +310,7 @@ export function BitcoinKeyGeneratorComponent() {
               </Button>
 
               {generatedKey && (
-                <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
                   <div className="flex items-center justify-between">
                     <Label className="font-semibold">Converted WIF Key</Label>
                     {getCopyButton(generatedKey.privateKeyWIF, 'converted')}
@@ -320,7 +320,7 @@ export function BitcoinKeyGeneratorComponent() {
                     readOnly
                     className="font-mono text-sm"
                   />
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     <div><strong>Address:</strong> {generatedKey.address}</div>
                     <div><strong>Network:</strong> {generatedKey.network}</div>
                   </div>
@@ -329,12 +329,12 @@ export function BitcoinKeyGeneratorComponent() {
             </TabsContent>
           </Tabs>
 
-          <Alert className="mt-6 border-yellow-200 bg-yellow-50">
+          <Alert className="mt-6 border-yellow-500/50 bg-yellow-500/10">
             <AlertDescription>
               <strong>Environment Variable Setup:</strong>
               <div className="mt-2 text-sm">
                 Copy your WIF key to your <code>.env.local</code> file:
-                <pre className="mt-1 bg-gray-100 p-2 rounded text-xs">
+                <pre className="mt-1 bg-muted p-2 rounded text-xs">
                   NEXT_PUBLIC_BTC_PRIVATE_KEY_WIF=your_wif_key_here
                 </pre>
               </div>

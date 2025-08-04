@@ -282,9 +282,9 @@ export function BitcoinSwapInterface() {
 
             {/* Status Display */}
             {swapStatus.status !== 'idle' && (
-              <Alert className={`mt-4 ${swapStatus.status === 'error' ? 'border-red-200 bg-red-50' :
-                swapStatus.status === 'success' ? 'border-green-200 bg-green-50' :
-                  'border-blue-200 bg-blue-50'
+              <Alert className={`mt-4 ${swapStatus.status === 'error' ? 'border-destructive/50 bg-destructive/10' :
+                swapStatus.status === 'success' ? 'border-green-500/50 bg-green-500/10' :
+                  'border-primary/50 bg-primary/10'
                 }`}>
                 <div className="flex items-center gap-2">
                   {getStatusIcon()}
@@ -301,11 +301,11 @@ export function BitcoinSwapInterface() {
             )}
 
             {/* Environment Variables Warning */}
-            <Alert className="mt-4 border-yellow-200 bg-yellow-50">
+            <Alert className="mt-4 border-yellow-500/50 bg-yellow-500/10">
               <AlertDescription>
                 <strong>Important:</strong> This demo requires environment variables to be configured.
                 Create a <code>.env.local</code> file with:
-                <pre className="mt-2 text-xs bg-gray-100 p-2 rounded">
+                <pre className="mt-2 text-xs bg-muted p-2 rounded">
                   NEXT_PUBLIC_ETH_PRIVATE_KEY=your_private_key{'\n'}
                   NEXT_PUBLIC_BTC_PRIVATE_KEY_WIF=your_btc_private_key{'\n'}
                   NEXT_PUBLIC_ETH_RPC_URL=your_rpc_url{'\n'}
